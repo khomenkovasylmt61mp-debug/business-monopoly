@@ -9,7 +9,7 @@ const S = {
   diceKey: '', overShown: null, myTurn: false,
   chatSeen: 0, chatUnread: 0, connected: true,
   clockOffset: 0, theme: null, tapped: false,
-  turnLeft: 0, turnLeftAt: 0,
+  turnLeft: 0, turnLeftAt: 0, prevPos: {}, casinoBet: 200,
 };
 
 const LS_SESSION = 'mono.session.v1';
@@ -263,6 +263,7 @@ function tileIcon(t) {
   if (t.type === 'chance') return '❓';
   if (t.type === 'chest') return '🎁';
   if (t.type === 'tax') return '💸';
+  if (t.type === 'casino') return '🎰';
   if (t.type === 'rr') return '🚂';
   if (t.type === 'util') return t.id === 12 ? '💡' : '🚰';
   return null;
@@ -368,6 +369,7 @@ function renderBoard(st) {
 
 function renderTokens(st) {
   const layer = $('tokenLayer');
+  const prevPos = S.prevPos || {};
   layer.innerHTML = '';
   const byTile = new Map();
   st.players.forEach((p) => {
@@ -394,6 +396,7 @@ function renderTokens(st) {
     shown.forEach((p) => {
       const t = document.createElement('div');
       t.className = 'token' + (p.id === S.pid ? ' me' : '') + (st.turn === p.id ? ' active' : '');
+      t.dataset.pid = p.id;
       t.textContent = p.piece || '';
       t.style.borderColor = p.hex;
       t.title = p.name + (p.pieceName ? ' · ' + p.pieceName : '');
@@ -408,6 +411,55 @@ function renderTokens(st) {
     }
     cell.appendChild(stack);
     layer.appendChild(cell);
+  });
+  const nextPos = {};
+  st.players.forEach((p) => { nextPos[p.id] = p.pos; });
+  S.prevPos = nextPos;
+  animateMoves(st, prevPos);
+}
+
+const MOVE_STEP_MS = 110;
+
+function animateMoves(st, prevPos) {
+  const layer = $('tokenLayer');
+  if (!layer || !tileEls.length) return;
+  const lr = layer.getBoundingClientRect();
+  st.players.forEach((p) => {
+    if (p.bankrupt) return;
+    const old = prevPos[p.id];
+    if (old == null || old === p.pos) return;
+    const steps = (p.pos - old + 40) % 40;
+    if (!steps || steps > 12) return;
+    const real = layer.querySelector(`.token[data-pid="${p.id}"]`);
+    const from = tileEls[old];
+    if (!real || !from) return;
+    const ghost = document.createElement('div');
+    ghost.className = 'token token-ghost';
+    ghost.textContent = p.piece || '';
+    ghost.style.borderColor = p.hex;
+    const place = (idx) => {
+      const r = tileEls[idx].getBoundingClientRect();
+      ghost.style.left = (r.left - lr.left + r.width / 2) + 'px';
+      ghost.style.top = (r.top - lr.top + r.height / 2) + 'px';
+    };
+    place(old);
+    layer.appendChild(ghost);
+    real.style.visibility = 'hidden';
+    let i = 0;
+    const step = () => {
+      i += 1;
+      place((old + i) % 40);
+      if (i < steps) {
+        setTimeout(step, MOVE_STEP_MS);
+      } else {
+        setTimeout(() => {
+          ghost.remove();
+          const cur = layer.querySelector(`.token[data-pid="${p.id}"]`);
+          if (cur) cur.style.visibility = '';
+        }, MOVE_STEP_MS);
+      }
+    };
+    setTimeout(step, 40);
   });
 }
 
@@ -463,9 +515,12 @@ function renderCenter(st) {
       </div>
       <div class="cp-top">
         <div class="cp-banner">Події гри</div>
-        <div class="cp-dice">
-          ${dieHTML(dice ? dice[0] : 0, anim)}
-          ${dieHTML(dice ? dice[1] : 0, anim)}
+        <div class="cp-dice-wrap">
+          <div class="cp-dice">
+            ${dieHTML(dice ? dice[0] : 0, anim)}
+            ${dieHTML(dice ? dice[1] : 0, anim)}
+          </div>
+          ${dice ? `<div class="cp-sum"><span>${dice[0]} + ${dice[1]} =</span><b>${dice[0] + dice[1]}</b></div>` : ''}
         </div>
       </div>
       <div class="cp-feed" id="cpFeed">${items || '<div class="feed-empty">Гра от-от почнеться…</div>'}</div>
@@ -715,6 +770,7 @@ function renderStrip(st) {
       </div>
       <div class="pbadges">
         ${p.jail && !p.bankrupt ? '<span>🚔</span>' : ''}
+        ${p.credit ? '<span>💳</span>' : ''}
         ${p.afk ? '<span>💤</span>' : ''}
         ${p.cards > 0 ? `<span>🎟${p.cards}</span>` : ''}
       </div>
@@ -803,6 +859,57 @@ function renderActions(st) {
     row.appendChild(btn('На аукціон', 'ghost', () => act('decline_buy')));
     card.appendChild(row);
     el.appendChild(card);
+    return;
+  }
+
+  if (aw.type === 'pay_rent' && st.turn === S.pid) {
+    const t = S.boardData.board[aw.tile] || { name: '' };
+    const owner = playerById(st, aw.to);
+    const card = document.createElement('div');
+    card.className = 'action-card rent';
+    card.innerHTML = `
+      <div class="ac-title">Рента ${money(aw.amount)}</div>
+      <div class="ac-sub">«${esc(t.name)}» · ${owner ? esc(owner.name) : 'банк'} · у вас ${money(me.money)}</div>`;
+    el.appendChild(card);
+    el.appendChild(btn(`Сплатити ${money(aw.amount)}`, 'primary big', () => act('pay_rent')));
+    if (me.money < aw.amount) {
+      const hint = document.createElement('p');
+      hint.className = 'hint';
+      hint.textContent = 'Не вистачає грошей — продайте будинки або заставте майно в «Мої».';
+      el.appendChild(hint);
+    }
+    return;
+  }
+
+  if (aw.type === 'casino' && st.turn === S.pid) {    if (![100, 200, 500].includes(S.casinoBet)) S.casinoBet = 200;
+    const canBet = me.money >= S.casinoBet;
+    const card = document.createElement('div');
+    card.className = 'action-card casino';
+    card.innerHTML = `
+      <div class="ac-title">🎰 Казино</div>
+      <div class="ac-sub">Ставка ${money(S.casinoBet)} · у вас ${money(me.money)}. Зеро — на користь банку.</div>`;
+    const chips = document.createElement('div');
+    chips.className = 'chips casino-chips';
+    [100, 200, 500].forEach((v) => {
+      const b = btn(money(v), v === S.casinoBet ? 'gold' : 'ghost', () => {
+        S.casinoBet = v;
+        renderActions(S.state);
+      });
+      b.disabled = me.money < v;
+      chips.appendChild(b);
+    });
+    card.appendChild(chips);
+    const row = document.createElement('div');
+    row.className = 'ac-row casino-row';
+    const red = btn('♥ Червоне', 'danger', () => act('casino_bet', { bet: S.casinoBet, color: 'red' }));
+    const black = btn('♠ Чорне', 'dark', () => act('casino_bet', { bet: S.casinoBet, color: 'black' }));
+    red.disabled = !canBet;
+    black.disabled = !canBet;
+    row.appendChild(red);
+    row.appendChild(black);
+    card.appendChild(row);
+    el.appendChild(card);
+    el.appendChild(btn('Пропустити', 'ghost', () => act('casino_skip')));
     return;
   }
 
@@ -997,6 +1104,18 @@ function renderMine(st, body) {
     .sort((a, b) => order.indexOf(a.t.group) - order.indexOf(b.t.group));
 
   const rows = owned.map((x) => propRow(st, x.i, me)).join('');
+  const cr = me.credit;
+  const cool = me.creditCool || 0;
+  const creditBox = `
+    <div class="credit-box${cr ? ' active' : ''}">
+      <div class="cb-main">
+        <span>💳 Кредит</span>
+        <b>${cr ? `${money(cr.due)} · ${cr.turns} ход.` : (cool > 0 ? `через ${cool} ход.` : '500 ₴ → 600 ₴ · 15 ход.')}</b>
+      </div>
+      ${cr
+      ? `<button class="pc-btn" id="repayCredit" ${me.money < cr.due ? 'disabled' : ''}>Погасити ${money(cr.due)}</button>`
+      : `<button class="pc-btn" id="takeCredit" ${cool > 0 ? 'disabled' : ''}>Взяти 500 ₴</button>`}
+    </div>`;
   body.innerHTML = `
     <div class="mine-head">
       <div>
@@ -1008,12 +1127,17 @@ function renderMine(st, body) {
         <button class="btn tiny gold" id="tradeBtn">Обмін</button>
       </div>
     </div>
+    ${creditBox}
     ${owned.length
     ? `<div class="prop-list">${rows}</div>`
     : `<div class="hand-empty"><div class="hand-empty-card">?</div><p>Рука порожня. Купуйте клітинки, на які потрапляєте, — і тут з’являться картки власності.</p></div>`}`;
 
   const tb = $('tradeBtn');
   if (tb) tb.onclick = openTrade;
+  const takeB = $('takeCredit');
+  if (takeB) takeB.onclick = () => act('take_credit');
+  const repayB = $('repayCredit');
+  if (repayB) repayB.onclick = () => act('repay_credit');
   body.querySelectorAll('[data-pact]').forEach((b) => {
     b.onclick = async (e) => {
       e.stopPropagation();
@@ -1092,7 +1216,7 @@ function propState(st, i, me) {
   }
 
   let status = 'вільна';
-  if (ts.mortgaged) status = 'застава';
+  if (ts.mortgaged) status = ts.mortgageLeft ? `застава · ${ts.mortgageLeft} ход.` : 'застава';
   else if (ts.houses === 5) status = 'готель';
   else if (ts.houses) status = `${ts.houses} буд.`;
   else if (full) status = 'монополія';
