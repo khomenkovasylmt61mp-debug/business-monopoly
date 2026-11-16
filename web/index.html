@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#15120e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Бізнес-Монополія — на всю компанію</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c0392b'/%3E%3Ctext x='50' y='72' font-size='64' text-anchor='middle' fill='%23fff' font-family='Georgia'%3EМ%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<div id="app">
+
+  <!-- ================= ГОЛОВНА ================= -->
+  <section id="screen-home" class="screen active">
+    <div class="home">
+      <div class="hero">
+        <div class="hero-kicker">БРЕНДИ · УГОДИ · ВЕЛИКІ ГРОШІ</div>
+        <div class="hero-title"><span>БІЗНЕС</span><b>МОНОПОЛІЯ</b></div>
+        <div class="hero-line"></div>
+        <p class="tagline">Класичні правила · до 12 гравців · без ліміту в 5</p>
+      </div>
+      <div class="home-card">
+        <label class="field">
+          <span>Ваше ім'я</span>
+          <input id="nameInput" maxlength="16" placeholder="Наприклад, Діма" autocomplete="nickname">
+        </label>
+        <button id="createBtn" class="btn primary big">Створити гру</button>
+        <div class="divider"><span>або увійти за кодом</span></div>
+        <div class="join-row">
+          <input id="codeInput" class="code" maxlength="5" placeholder="КОД" autocomplete="off" spellcheck="false">
+          <button id="joinBtn" class="btn">Увійти</button>
+        </div>
+      </div>
+      <p class="foot">Один телефон — одне місце. Посилання кидайте в чат, код вставляти не доведеться.</p>
+    </div>
+  </section>
+
+  <!-- ================= ЛОБІ ================= -->
+  <section id="screen-lobby" class="screen">
+    <div class="lobby">
+      <div class="lobby-head">
+        <div class="lobby-code">
+          <span>Код кімнати</span>
+          <b id="lobbyCode">-----</b>
+        </div>
+        <div class="row">
+          <button id="copyCodeBtn" class="btn tiny">Скопіювати посилання</button>
+          <button id="leaveLobbyBtn" class="btn tiny ghost">Вийти</button>
+        </div>
+      </div>
+
+      <div class="lobby-grid">
+        <div class="lobby-players" id="lobbyPlayers"></div>
+        <div class="lobby-side">
+          <div class="panel-box">
+            <h3>Поле</h3>
+            <div class="chips" id="themeChips"></div>
+            <h3>Правила</h3>
+            <div class="chips" id="modeChips"></div>
+            <div class="rules-preview" id="rulesPreview"></div>
+            <label class="switch-row">
+              <input type="checkbox" id="parkingToggle">
+              <span>Банк на парковці <i>— усі штрафи й податки збираються в центрі, хто став на «Парковку», забирає банк</i></span>
+            </label>
+          </div>
+          <div class="panel-box">
+            <h3>Боти</h3>
+            <div class="row">
+              <button id="addBotBtn" class="btn tiny">+ бот</button>
+              <button id="delBotBtn" class="btn tiny ghost">− бот</button>
+            </div>
+          </div>
+          <div class="panel-box">
+            <h3>Запрошення</h3>
+            <input id="shareLink" class="share-input" readonly>
+            <button id="copyLinkBtn" class="btn ghost wide">Скопіювати посилання</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="lobby-bottom">
+        <p id="lobbyHint" class="hint"></p>
+        <button id="startBtn" class="btn primary big">Почати гру</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ГРА ================= -->
+  <section id="screen-game" class="screen">
+    <header class="topbar">
+      <div class="brand">БІЗНЕС-МОНОПОЛІЯ</div>
+      <div class="players-strip" id="playersStrip"></div>
+      <button id="menuBtn" class="icon-btn" title="Меню">⋯</button>
+    </header>
+
+    <main class="layout">
+      <div class="board-wrap">
+        <div class="board" id="board">
+          <div class="board-center" id="boardCenter"></div>
+          <div class="token-layer" id="tokenLayer"></div>
+        </div>
+      </div>
+
+      <aside class="panel">
+        <div id="status" class="status"></div>
+        <div id="actions" class="actions"></div>
+        <div class="tabs" id="tabs">
+          <button data-tab="mine" class="active">Мої</button>
+          <button data-tab="log">Лог</button>
+          <button data-tab="chat">Чат <i id="chatDot" class="dot"></i></button>
+        </div>
+        <div class="tab-body" id="tabBody"></div>
+      </aside>
+    </main>
+  </section>
+</div>
+
+<div id="overlay" class="overlay hidden"></div>
+<div id="toasts" class="toasts"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>
