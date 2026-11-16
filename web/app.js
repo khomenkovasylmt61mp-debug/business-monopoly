@@ -9,6 +9,7 @@ const S = {
   diceKey: '', overShown: null, myTurn: false,
   chatSeen: 0, chatUnread: 0, connected: true,
   clockOffset: 0, theme: null, tapped: false,
+  turnLeft: 0, turnLeftAt: 0,
 };
 
 const LS_SESSION = 'mono.session.v1';
@@ -338,7 +339,8 @@ function renderBoard(st) {
     if (owner) {
       dot.hidden = false;
       dot.textContent = owner.piece || '';
-      dot.style.borderColor = owner.hex;
+      dot.style.background = owner.hex;
+      dot.style.borderColor = '#fffdf6e6';
       dot.title = owner.name + (owner.pieceName ? ' · ' + owner.pieceName : '');
     } else {
       dot.hidden = true;
@@ -388,6 +390,7 @@ function renderTokens(st) {
       return pb - pa;
     });
     const shown = ordered.slice(0, 7);
+    stack.dataset.n = String(shown.length);
     shown.forEach((p) => {
       const t = document.createElement('div');
       t.className = 'token' + (p.id === S.pid ? ' me' : '') + (st.turn === p.id ? ' active' : '');
@@ -469,6 +472,7 @@ function renderCenter(st) {
       ${CITY_SVG}
       <div class="cp-foot">
         <span class="cp-line">${esc(line)}</span>
+        <span class="turn-clock" id="turnClock"></span>
         <span class="cp-bank">🏠 ${st.housesLeft} · 🏨 ${st.hotelsLeft}${potOn ? ` · 🅿️ ${money(st.pot || 0)}` : ''}</span>
       </div>
       ${card}
@@ -476,6 +480,26 @@ function renderCenter(st) {
     </div>`;
   const feed = $('cpFeed');
   if (feed) feed.scrollTop = feed.scrollHeight;
+  S.turnLeft = Number(st.turnLeft || 0);
+  S.turnLeftAt = Date.now();
+  clockTick();
+}
+
+function fmtClock(sec) {
+  const s = Math.max(0, Math.ceil(sec));
+  const m = Math.floor(s / 60);
+  return m + ':' + String(s % 60).padStart(2, '0');
+}
+
+function clockTick() {
+  const el = document.getElementById('turnClock');
+  if (!el) return;
+  const st = S.state;
+  const total = Number(st && st.turnLeft) || 0;
+  if (!total) { el.textContent = ''; el.classList.remove('warn'); return; }
+  const left = Math.max(0, total - (Date.now() - (S.turnLeftAt || 0)) / 1000);
+  el.textContent = '⏳ ' + fmtClock(left);
+  el.classList.toggle('warn', left <= 10);
 }
 
 function openTileInfo(i) {
@@ -625,12 +649,22 @@ function renderLobby(st) {
   const sc = mode === 'classic'
     ? { startMoney: 1500, houses: 32, hotels: 12, rent: 1, label: 'Офіційні правила' }
     : scaleFor(n);
+  const timer = Number((st.options && st.options.turnTimer) || 0);
+  $('timerChips').innerHTML = [[30, '30 с'], [60, '60 с'], [90, '90 с'], [0, 'Вимк']]
+    .map(([v, l]) => `<button class="chip-btn ${timer === v ? 'active' : ''}" data-timer="${v}">${l}</button>`).join('');
+  $('timerChips').querySelectorAll('[data-timer]').forEach((b) => {
+    b.onclick = () => {
+      if (!isHost) return toast('Змінює лише власник кімнати');
+      act('set_timer', { value: Number(b.dataset.timer) });
+    };
+  });
   $('rulesPreview').innerHTML = `
     <div class="rv"><span>Гравців</span><b>${n}</b></div>
     <div class="rv"><span>Стартовий капітал</span><b>${money(sc.startMoney)}</b></div>
     <div class="rv"><span>Банк будинків</span><b>${sc.houses} / ${sc.hotels} готелів</b></div>
     <div class="rv"><span>Рента</span><b>×${sc.rent}</b></div>
     <div class="rv"><span>Динамічна рента</span><b>${mode === 'classic' ? 'вимкнена' : '+10% кожні 5 кіл'}</b></div>
+    <div class="rv"><span>Таймер хода</span><b>${timer ? timer + ' с' : 'вимкнено'}</b></div>
     <div class="rv"><span>Аукціон при відмові</span><b>так</b></div>`;
 
   const park = !!(st.options && st.options.parkingPot);
@@ -962,6 +996,7 @@ function renderMine(st, body) {
     .filter((x) => x.t.owner === S.pid)
     .sort((a, b) => order.indexOf(a.t.group) - order.indexOf(b.t.group));
 
+  const rows = owned.map((x) => propRow(st, x.i, me)).join('');
   body.innerHTML = `
     <div class="mine-head">
       <div>
@@ -974,47 +1009,86 @@ function renderMine(st, body) {
       </div>
     </div>
     ${owned.length
-    ? `<div class="hand-scroll">${owned.map((x) => propCard(st, x.i, me)).join('')}</div>`
+    ? `<div class="prop-list">${rows}</div>`
     : `<div class="hand-empty"><div class="hand-empty-card">?</div><p>Рука порожня. Купуйте клітинки, на які потрапляєте, — і тут з’являться картки власності.</p></div>`}`;
 
   const tb = $('tradeBtn');
   if (tb) tb.onclick = openTrade;
   body.querySelectorAll('[data-pact]').forEach((b) => {
-    b.onclick = async () => {
+    b.onclick = async (e) => {
+      e.stopPropagation();
       b.disabled = true;
       try { await act(b.dataset.pact, { tile: Number(b.dataset.i) }); }
       finally { b.disabled = false; }
     };
   });
+  body.querySelectorAll('[data-open]').forEach((row) => {
+    row.onclick = () => openPropCard(Number(row.dataset.open));
+  });
 }
 
-function propCard(st, i, me) {
+/* компактний рядок у «Мої» */
+function propRow(st, i, me) {
+  const info = propState(st, i, me);
+  const t = info.t;
+  const logo = t.logo
+    ? `<img src="/logos/${t.logo}" alt="" draggable="false">`
+    : `<span>${tileIcon(t) || '🏠'}</span>`;
+  const color = t.brandColor || groupColor(t) || '#2c5fa8';
+  const acts = info.acts.map((a) => `<button class="pc-btn" data-pact="${a.pact}" data-i="${i}" ${a.disabled ? 'disabled' : ''}>${a.label}</button>`).join('');
+  return `<div class="prop-row${info.ts.mortgaged ? ' mortgaged' : ''}" data-open="${i}" style="--row-color:${color}" title="Відкрити картку">
+      <div class="pr-line">
+        <span class="pr-logo" style="border-color:${color}">${logo}</span>
+        <span class="pr-main">
+          <b>${esc(t.name)}</b>
+          <i>${info.status}</i>
+        </span>
+        <span class="pr-val">${t.price ? money(t.price) : ''}</span>
+      </div>
+      ${acts ? `<div class="pr-acts">${acts}</div>` : ''}
+    </div>`;
+}
+
+function openPropCard(i) {
+  const st = S.state;
+  const me = meP(st);
+  if (!st || !me) return;
+  const modal = openModal(`<div class="pc-modal">${propCard(st, i, me)}</div>
+    <div class="modal-actions"><button class="btn ghost" id="pcClose">Закрити</button></div>`);
+  modal.querySelector('#pcClose').onclick = closeModal;
+  modal.querySelectorAll('[data-pact]').forEach((b) => {
+    b.onclick = async () => {
+      b.disabled = true;
+      try { await act(b.dataset.pact, { tile: Number(b.dataset.i) }); closeModal(); }
+      finally { b.disabled = false; }
+    };
+  });
+}
+
+function propState(st, i, me) {
   const t = S.boardData.board[i];
   const ts = st.tiles[i];
   const full = t.group ? ownsGroup(st, S.pid, t.group) : false;
   const groupHouses = t.group ? groupTiles(t.group).map((x) => st.tiles[x].houses) : [0];
   const rm = rentMult(st);
-  const color = groupColor(t) || '#2c5fa8';
-  const headColor = t.brandColor || color;
-  const headLight = isLightColor(headColor);
   const acts = [];
 
   if (t.type === 'street' && full && !ts.mortgaged) {
     const evenOk = ts.houses === Math.min(...groupHouses);
     const canBuild = ts.houses < 5 && evenOk && me.money >= t.house;
     if (canBuild) {
-      acts.push(`<button class="pc-btn" data-pact="build" data-i="${i}">+ ${ts.houses === 4 ? 'Готель' : 'Дім'} ${money(t.house)}</button>`);
+      acts.push({ pact: 'build', label: `+ ${ts.houses === 4 ? 'Готель' : 'Дім'} ${money(t.house)}` });
     }
     if (ts.houses > 0 && ts.houses === Math.max(...groupHouses)) {
-      acts.push(`<button class="pc-btn" data-pact="sell_house" data-i="${i}">− Дім +${money(t.house / 2)}</button>`);
+      acts.push({ pact: 'sell_house', label: `− Дім +${money(t.house / 2)}` });
     }
   }
   const groupHasHouses = t.group ? groupTiles(t.group).some((x) => st.tiles[x].houses > 0) : false;
   if (!ts.mortgaged && !groupHasHouses) {
-    acts.push(`<button class="pc-btn" data-pact="mortgage" data-i="${i}">Залог +${money(Math.floor(t.price / 2))}</button>`);
+    acts.push({ pact: 'mortgage', label: `Залог +${money(Math.floor(t.price / 2))}` });
   } else if (ts.mortgaged) {
     const cost = Math.round(t.price * 0.55);
-    acts.push(`<button class="pc-btn" data-pact="unmortgage" data-i="${i}" ${me.money < cost ? 'disabled' : ''}>Викуп ${money(cost)}</button>`);
+    acts.push({ pact: 'unmortgage', label: `Викуп ${money(cost)}`, disabled: me.money < cost });
   }
 
   let status = 'вільна';
@@ -1022,6 +1096,15 @@ function propCard(st, i, me) {
   else if (ts.houses === 5) status = 'готель';
   else if (ts.houses) status = `${ts.houses} буд.`;
   else if (full) status = 'монополія';
+
+  return { t, ts, full, groupHouses, rm, acts, status };
+}
+
+function propCard(st, i, me) {
+  const { t, ts, full, groupHouses, rm, acts, status } = propState(st, i, me);
+  const color = groupColor(t) || '#2c5fa8';
+  const headColor = t.brandColor || color;
+  const headLight = isLightColor(headColor);
 
   const row = (icon, label, value) => `<div class="pc-row"><span class="pc-ico">${icon}</span><span class="pc-lbl">${label}</span><b>${value}</b></div>`;
   const rows = [row('💰', 'Ціна', money(t.price))];
@@ -1064,7 +1147,7 @@ function propCard(st, i, me) {
       <div class="pc-art"><div class="pc-logo-wrap">${logo}</div></div>
       <div class="pc-table">${rows.join('')}</div>
       ${foot}
-      ${acts.length ? `<div class="pc-actions">${acts.join('')}</div>` : ''}
+      ${acts.length ? `<div class="pc-actions">${acts.map((a) => `<button class="pc-btn" data-pact="${a.pact}" data-i="${i}" ${a.disabled ? 'disabled' : ''}>${a.label}</button>`).join('')}</div>` : ''}
     </div>`;
 }
 
@@ -1418,6 +1501,7 @@ async function boot() {
   buildBoard();
   wire();
   fitBoard();
+  setInterval(clockTick, 250);
   if (window.ResizeObserver) {
     new ResizeObserver(fitBoard).observe($('board'));
   }
