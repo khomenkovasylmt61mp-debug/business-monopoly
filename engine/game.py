@@ -1516,7 +1516,15 @@ class Room:
                         key = (st["turn"], st["turns"])
                         if st.get("autoKey") != key:
                             st["autoKey"] = key
-                            self._log(f"Час вийшов — {cur['name']} грає автоматично", "turn", cur["id"])
+                            fine = min(100, max(0, int(cur["money"])))
+                            if fine > 0:
+                                cur["money"] -= fine
+                                if st["options"].get("parkingPot"):
+                                    st["pot"] = st.get("pot", 0) + fine
+                            self._log(
+                                f"Час вийшов — {cur['name']} грає автоматично"
+                                + (f", штраф {fmt(fine)}" if fine else ""),
+                                "turn", cur["id"])
                         auto = None
                         try:
                             auto = self._bot_choice(cur)
