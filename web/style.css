@@ -446,9 +446,10 @@ input.code {
   display: flex; justify-content: center; gap: .12em; z-index: 5;
   pointer-events: none;
 }
-.tile.bottom .houses { top: .42em; bottom: auto; }
-.tile.top .houses { top: auto; bottom: .42em; }
-.tile.left .houses, .tile.right .houses { top: auto; bottom: .42em; }
+.tile.bottom .houses { top: auto; bottom: 17%; left: 6%; right: 6%; }
+.tile.top .houses { top: 17%; bottom: auto; left: 6%; right: 6%; }
+.tile.left .houses { top: auto; bottom: 11%; left: 8%; right: 8%; }
+.tile.right .houses { top: auto; bottom: 11%; left: 8%; right: 8%; }
 .house {
   width: .8em; height: .8em;
   background: linear-gradient(180deg, #5ad07f, #1f7a41);
