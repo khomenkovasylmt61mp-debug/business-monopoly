@@ -37,7 +37,7 @@ class Room:
         self.state = {
             "code": code,
             "phase": "lobby",
-            "options": {"mode": "company", "parkingPot": False, "theme": "brands"},
+            "options": {"mode": "company", "parkingPot": False, "theme": "brands", "turnTimer": 60},
             "players": [],
             "host": None,
             "turn": None,
@@ -62,6 +62,7 @@ class Room:
             "rentBoost": 1.0,
             "updated": time.time(),
             "startedAt": None,
+            "turnActivity": None,
         }
 
     # ---------- players ----------
@@ -244,6 +245,12 @@ class Room:
             mode = st["options"].get("mode", "company")
             parking = bool(st["options"].get("parkingPot", False))
             theme = st["options"].get("theme", "brands")
+            try:
+                turn_timer = int(st["options"].get("turnTimer", 60) or 0)
+            except (TypeError, ValueError):
+                turn_timer = 60
+            if turn_timer not in (0, 30, 60, 90):
+                turn_timer = 60
             self.theme = theme
             self.board = BOARD_BRANDS if theme == "brands" else BOARD
             if mode == "classic":
@@ -262,6 +269,7 @@ class Room:
                 "rentMult": sc["rent"],
                 "scaleLabel": sc["label"],
                 "accel": mode != "classic",
+                "turnTimer": turn_timer,
             }
             st["pot"] = 0
             st["round"] = 1
@@ -292,6 +300,7 @@ class Room:
             st["auction"] = None
             st["trade"] = None
             st["awaiting"] = {"type": "jail"} if self._player(order[0])["jail"] else {"type": "roll"}
+            st["turnActivity"] = time.time()
             self._log("Гра почалася! Стартовий капітал " + fmt(money), "start")
             self._log(f"Першим ходить {self._player(order[0])['name']}", "turn")
             self._bump()
@@ -560,12 +569,16 @@ class Room:
         st["turn"] = nxt
         np = self._player(nxt)
         st["awaiting"] = {"type": "jail"} if np["jail"] else {"type": "roll"}
+        st["turnActivity"] = time.time()
         self._log(f"Хід переходить до {np['name']}", "turn", nxt)
 
     # ---------- actions ----------
 
     def act(self, pid, action):
         with self.cond:
+            cur = self._cur()
+            if cur and cur["id"] == pid and self.state["phase"] == "playing":
+                self.state["turnActivity"] = time.time()
             try:
                 self._apply(pid, action)
             except RulesError:
@@ -656,6 +669,20 @@ class Room:
             st["options"]["parkingPot"] = bool(a.get("value"))
             return
 
+        if t == "set_timer":
+            if st["host"] != pid:
+                raise RulesError("Лише власник кімнати")
+            if st["phase"] != "lobby":
+                raise RulesError("Пізно змінювати")
+            try:
+                value = int(a.get("value", 60))
+            except (TypeError, ValueError):
+                raise RulesError("Невірний таймер")
+            if value not in (0, 30, 60, 90):
+                raise RulesError("Невірний таймер")
+            st["options"]["turnTimer"] = value
+            return
+
         if t == "skip_turn":
             if st["host"] != pid:
                 raise RulesError("Лише власник кімнати")
@@ -699,6 +726,7 @@ class Room:
             st["turns"] = 0
             st["rentBoost"] = 1.0
             st["log"] = []
+            st["turnActivity"] = None
             for p in st["players"]:
                 p["money"] = 0
                 p["pos"] = 0
@@ -1320,6 +1348,31 @@ class Room:
                                 except RulesError:
                                     pass
                             changed = True
+
+                limit = int(st["options"].get("turnTimer") or 0)
+                if limit > 0 and cur and not cur["bot"]:
+                    idle = now - (st.get("turnActivity") or now)
+                    if cur["debt"]:
+                        if idle > limit * 2:
+                            self._log(f"Час вийшов — {cur['name']} не розрахувався", "turn", cur["id"])
+                            self._bankrupt(cur, cur["debt"].get("to"))
+                            changed = True
+                    elif idle > limit:
+                        aw = st["awaiting"] or {}
+                        st["trade"] = None
+                        if aw.get("type") == "buy":
+                            self._log(f"Час вийшов — {cur['name']} не купує", "turn", cur["id"])
+                            try:
+                                self._apply(cur["id"], {"type": "decline_buy"})
+                            except RulesError:
+                                self._end_turn(cur)
+                        else:
+                            self._log(f"Час вийшов — хід {cur['name']} пропущено", "turn", cur["id"])
+                            try:
+                                self._end_turn(cur)
+                            except Exception:
+                                traceback.print_exc()
+                        changed = True
             if changed:
                 self._bump()
 
@@ -1364,5 +1417,11 @@ class Room:
                 "updated": st["updated"],
                 "startedAt": st["startedAt"],
             }
+            limit = int(st["options"].get("turnTimer") or 0)
+            left = 0
+            if limit > 0 and st["phase"] == "playing" and st["turn"]:
+                act_t = st.get("turnActivity") or now
+                left = max(0, int(round(limit - (now - act_t))))
+            data["turnLeft"] = left
             data["you"] = pid
             return data
