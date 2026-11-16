@@ -339,17 +339,17 @@ function renderBoard(st) {
     const owner = ts.owner ? playerById(st, ts.owner) : null;
     const dot = el.querySelector('.owner-dot');
     const edge = el.querySelector('.owner-edge');
+    el.classList.toggle('owned', !!owner);
     if (owner) {
+      el.style.setProperty('--own', owner.hex);
       dot.hidden = false;
       dot.textContent = owner.piece || '';
       dot.style.background = owner.hex;
       dot.style.borderColor = '#fffdf6e6';
       dot.title = owner.name + (owner.pieceName ? ' · ' + owner.pieceName : '');
-      if (edge) {
-        edge.hidden = false;
-        edge.style.setProperty('--own', owner.hex);
-      }
+      if (edge) edge.hidden = false;
     } else {
+      el.style.removeProperty('--own');
       dot.hidden = true;
       dot.textContent = '';
       if (edge) edge.hidden = true;
@@ -425,7 +425,7 @@ function renderTokens(st) {
   animateMoves(st, prevPos);
 }
 
-const MOVE_STEP_MS = 110;
+const MOVE_STEP_MS = 170;
 
 function animateMoves(st, prevPos) {
   const layer = $('tokenLayer');
