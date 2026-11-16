@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Простой, но аккуратный бот: покупает, строит, платит, торгуется с банком."""
+import random
+
 from .data import BOARD, GROUP_TILES
 
 
@@ -111,6 +113,14 @@ def choose_action(state, p):
         if p["money"] - price >= 60:
             return {"type": "buy"}
         return {"type": "decline_buy"}
+
+    if t == "casino":
+        if p["money"] >= 900:
+            return {"type": "casino_bet", "bet": 100, "color": random.choice(("red", "black"))}
+        return {"type": "casino_skip"}
+
+    if t == "pay_rent":
+        return {"type": "pay_rent"}
 
     if t == "endturn":
         target = _pick_build(state, pid, 0)
