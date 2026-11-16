@@ -282,7 +282,7 @@ input.code {
 }
 .icon-btn:hover { color: var(--text); border-color: #3f5d84; }
 
-.layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 360px; }
+.layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) clamp(330px, 23vw, 460px); }
 .board-wrap {
   min-height: 0; min-width: 0;
   display: flex; align-items: center; justify-content: center;
@@ -303,8 +303,8 @@ input.code {
 /* ============ поле ============ */
 .board {
   position: relative;
-  width: min(100%, calc(100dvh - 100px));
-  max-width: 960px;
+  width: min(100%, calc(100dvh - 96px));
+  max-width: 1240px;
   aspect-ratio: 1 / 1;
   display: grid;
   grid-template-columns: minmax(0, 1.85fr) repeat(9, minmax(0, 1fr)) minmax(0, 1.85fr);
@@ -711,8 +711,8 @@ input.code {
   gap: 2px; width: 96%; height: 96%;
   padding: 2%;
 }
-.token-stack[data-n="3"], .token-stack[data-n="4"] { --tokscale: .8; }
-.token-stack[data-n="5"], .token-stack[data-n="6"], .token-stack[data-n="7"] { --tokscale: .64; }
+.token-stack[data-n="3"], .token-stack[data-n="4"] { --tokscale: .85; }
+.token-stack[data-n="5"], .token-stack[data-n="6"], .token-stack[data-n="7"] { --tokscale: .7; }
 .token-cell.tok-bottom .token-stack { padding-bottom: 13%; }
 .token-cell.tok-top .token-stack { padding-top: 13%; }
 .token-cell.tok-left .token-stack { padding-left: 13%; }
@@ -722,7 +722,7 @@ input.code {
 .token-cell.c-tl .token-stack { justify-content: flex-start; align-content: flex-start; padding: 5%; }
 .token-cell.c-tr .token-stack { justify-content: flex-end; align-content: flex-start; padding: 5%; }
 .token {
-  --tok: clamp(18px, 3.9cqw, 36px);
+  --tok: clamp(18px, 4.2cqw, 40px);
   --sz: calc(var(--tok) * var(--tokscale, 1));
   position: relative;
   width: var(--sz); height: var(--sz);
@@ -1274,6 +1274,14 @@ input.code {
   .hero { padding: 18px 22px 16px; }
 }
 @media (min-width: 1500px) {
-  .layout { grid-template-columns: minmax(0, 1fr) 400px; }
-  .board { max-width: 900px; }
+  .layout { grid-template-columns: minmax(0, 1fr) clamp(380px, 22vw, 480px); }
+  .board { max-width: 1240px; }
+  .pcard { min-width: 128px; }
+  .status .t1 { font-size: 16px; }
+  .status .t2 { font-size: 13px; }
+  .actions .btn { font-size: 15px; padding: 13px 16px; }
+  .prop-row { padding: 9px 11px; }
+  .pr-main b { font-size: 14px; }
+  .pr-main i { font-size: 11.5px; }
+  .pr-val { font-size: 12.5px; }
 }
