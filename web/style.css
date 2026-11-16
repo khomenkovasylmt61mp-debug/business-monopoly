@@ -465,6 +465,15 @@ input.code {
 }
 .tile.hl { box-shadow: inset 0 0 0 2px #c0392b; z-index: 2; }
 
+/* клітинка повністю в рамці власника */
+.tile.owned {
+  box-shadow:
+    inset 0 0 0 3px var(--own, #c0392b),
+    inset 0 0 0 4px #ffffff66,
+    0 0 10px #00000030;
+}
+.tile.owned.mortgaged { box-shadow: inset 0 0 0 3px #b9ab8c, inset 0 0 0 4px #ffffff44; }
+
 /* смуга власника на внутрішньому краї клітинки */
 .tile .owner-edge {
   position: absolute; z-index: 4; pointer-events: none;
@@ -780,7 +789,7 @@ input.code {
   transform: translate(-50%, -50%) scale(1.06);
   z-index: 30;
   pointer-events: none;
-  transition: left .11s linear, top .11s linear;
+  transition: left .17s linear, top .17s linear;
   animation: none !important;
 }
 .token.me { border-color: var(--gold); box-shadow: 0 0 0 2px #fffb, 0 3px 6px #00000070; }
