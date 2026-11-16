@@ -29,7 +29,7 @@ class Room:
         self.code = code
         self.lock = threading.RLock()
         self.cond = threading.Condition(self.lock)
-        self.rng = random.Random(seed)
+        self.rng = random.Random(seed) if seed is not None else random.SystemRandom()
         self.counter = 0
         self.trade_seq = 0
         self.theme = "brands"
@@ -109,6 +109,8 @@ class Room:
                 "bankrupt": False,
                 "bot": bool(bot),
                 "debt": None,
+                "credit": None,
+                "creditCool": 0,
                 "lastSeen": time.time(),
                 "joined": time.time(),
             })
@@ -284,6 +286,8 @@ class Room:
                 p["cards"] = 0
                 p["bankrupt"] = False
                 p["debt"] = None
+                p["credit"] = None
+                p["creditCool"] = 0
             st["decks"]["chance"] = self.rng.sample(CHANCE, len(CHANCE))
             st["decks"]["chest"] = self.rng.sample(CHEST, len(CHEST))
             st["tiles"] = [{"owner": None, "houses": 0, "mortgaged": False} for _ in BOARD]
@@ -364,12 +368,20 @@ class Room:
         self.state["dice"] = [d1, d2]
         return d1, d2
 
+    def _exact_start_bonus(self):
+        return 0 if self.state["options"].get("mode") == "classic" else 100
+
     def _move_by(self, p, steps, collect_go=True):
         pos = (p["pos"] + steps) % 40
         if collect_go and steps > 0 and (p["pos"] + steps) >= 40:
             p["money"] += 200
             self._log(f"{p['name']} проходить СТАРТ і отримує 200 ₴", "money", p["id"])
         p["pos"] = pos
+        if collect_go and steps > 0 and pos == 0:
+            bonus = self._exact_start_bonus()
+            if bonus:
+                p["money"] += bonus
+                self._log(f"{p['name']} зупиняється точно на СТАРТі — бонус +{fmt(bonus)}", "money", p["id"])
 
     def _move_to(self, p, idx, collect_go=True):
         if collect_go and (idx < p["pos"] or idx == 0) and p["pos"] != 0:
@@ -378,6 +390,11 @@ class Room:
         elif collect_go and p["pos"] == 0 and idx == 0:
             pass
         p["pos"] = idx
+        if collect_go and idx == 0:
+            bonus = self._exact_start_bonus()
+            if bonus:
+                p["money"] += bonus
+                self._log(f"{p['name']} зупиняється точно на СТАРТі — бонус +{fmt(bonus)}", "money", p["id"])
 
     def _rent_for(self, tile, idx, dice_sum=7, multiplier=1, util_ten=False):
         st = self.state["tiles"][idx]
@@ -427,8 +444,8 @@ class Room:
                 return
             rent = self._rent_for(tile, idx, dice_sum=dice_sum, multiplier=multiplier, util_ten=util_ten)
             owner = self._player(ts["owner"])
-            self._log(f"{p['name']} платить ренту {fmt(rent)} за «{tile['name']}» гравцю {owner['name']}", "rent", p["id"])
-            self._charge(p, rent, to=owner["id"], reason=f"рента «{tile['name']}»")
+            st["awaiting"] = {"type": "pay_rent", "tile": idx, "to": owner["id"], "amount": rent}
+            self._log(f"{p['name']} має сплатити ренту {fmt(rent)} за «{tile['name']}» гравцю {owner['name']}", "rent", p["id"])
             return
         if t == "tax":
             self._charge(p, tile["amount"], reason=tile["name"])
@@ -438,6 +455,10 @@ class Room:
             return
         if t == "chest":
             self._draw_card(p, "chest", depth)
+            return
+        if t == "casino":
+            st["awaiting"] = {"type": "casino"}
+            self._log(f"{p['name']} потрапляє до казино", "move", p["id"])
             return
         if t == "gotojail":
             self._send_to_jail(p, "клітинка «До тюрми»")
@@ -540,7 +561,7 @@ class Room:
     def _after_resolution(self, p):
         st = self.state
         aw = st["awaiting"]
-        if aw and aw.get("type") == "buy":
+        if aw and aw.get("type") in ("buy", "pay_rent"):
             return
         if p["debt"]:
             st["awaiting"] = {"type": "debt"}
@@ -552,8 +573,47 @@ class Room:
         else:
             st["awaiting"] = {"type": "endturn"}
 
+    def _on_turn_end(self, p):
+        """Credit countdown and mortgage deadlines for the player ending this turn."""
+        st = self.state
+        cr = p.get("credit")
+        if cr:
+            cr["turns"] -= 1
+            if cr["turns"] <= 0:
+                due = cr["due"]
+                p["credit"] = None
+                p["creditCool"] = 5
+                if p["money"] >= due:
+                    p["money"] -= due
+                    self._log(f"{p['name']} автоматично погашає кредит {fmt(due)}", "money", p["id"])
+                else:
+                    p["debt"] = {"amount": due, "to": None}
+                    st["awaiting"] = {"type": "debt"}
+                    self._log(f"{p['name']} не зміг погасити кредит {fmt(due)} — борг банку", "debt", p["id"])
+        if p.get("creditCool", 0) > 0:
+            p["creditCool"] -= 1
+        for i, ts in enumerate(st["tiles"]):
+            if ts.get("owner") != p["id"] or not ts.get("mortgaged"):
+                continue
+            left = ts.get("mortgageLeft")
+            if left is None:
+                continue
+            left -= 1
+            if left <= 0:
+                name = self.board[i]["name"]
+                ts["owner"] = None
+                ts["mortgaged"] = False
+                ts["mortgageLeft"] = None
+                ts["houses"] = 0
+                self._log(f"{p['name']} втрачає «{name}» через завершення строку застави", "mortgage", p["id"])
+            else:
+                ts["mortgageLeft"] = left
+        return bool(p["debt"])
+
     def _end_turn(self, p):
         st = self.state
+        if self._on_turn_end(p):
+            return
         st["doubles"] = 0
         st["dice"] = None
         st["noExtra"] = False
@@ -683,6 +743,96 @@ class Room:
             st["options"]["turnTimer"] = value
             return
 
+        if t == "casino_bet":
+            p = self._require_turn(pid)
+            aw = st["awaiting"] or {}
+            if aw.get("type") != "casino":
+                raise RulesError("Зараз не казино")
+            try:
+                bet = int(a.get("bet", 0))
+            except (TypeError, ValueError):
+                raise RulesError("Невірна ставка")
+            if bet not in (100, 200, 500):
+                raise RulesError("Ставка: 100, 200 або 500 ₴")
+            if p["money"] < bet:
+                raise RulesError("Недостатньо грошей")
+            color = str(a.get("color", ""))
+            if color not in ("red", "black"):
+                raise RulesError("Оберіть червоне або чорне")
+            n = self.rng.randint(0, 36)
+            if n == 0:
+                p["money"] -= bet
+                self._log(f"{p['name']} у казино: випадає 0 — зеро, програш −{fmt(bet)}", "money", p["id"])
+            else:
+                shown = "червоне" if n <= 18 else "чорне"
+                win = (n <= 18 and color == "red") or (n > 18 and color == "black")
+                if win:
+                    p["money"] += bet
+                    self._log(f"{p['name']} у казино: {n} {shown} — виграш +{fmt(bet)}", "money", p["id"])
+                else:
+                    p["money"] -= bet
+                    self._log(f"{p['name']} у казино: {n} {shown} — програш −{fmt(bet)}", "money", p["id"])
+            st["awaiting"] = {"type": "endturn"}
+            return
+
+        if t == "casino_skip":
+            p = self._require_turn(pid)
+            aw = st["awaiting"] or {}
+            if aw.get("type") != "casino":
+                raise RulesError("Зараз не казино")
+            self._log(f"{p['name']} проходить повз казино", "move", p["id"])
+            st["awaiting"] = {"type": "endturn"}
+            return
+
+        if t == "pay_rent":
+            p = self._require_turn(pid)
+            aw = st["awaiting"] or {}
+            if aw.get("type") != "pay_rent":
+                raise RulesError("Зараз немає ренти")
+            idx = aw.get("tile")
+            to = aw.get("to")
+            amount = int(aw.get("amount") or 0)
+            owner = self._player(to) if to else None
+            name = self.board[idx]["name"] if idx is not None else ""
+            self._charge(p, amount, to=to, reason=f"рента «{name}»")
+            self._log(
+                f"{p['name']} сплачує ренту {fmt(amount)} за «{name}»"
+                + (f" гравцю {owner['name']}" if owner else ""),
+                "rent", p["id"])
+            if p["debt"]:
+                st["awaiting"] = {"type": "debt"}
+                return
+            st["awaiting"] = {"type": "endturn"}
+            self._after_resolution(p)
+            return
+
+        if t == "take_credit":
+            p = self._player(pid)
+            if st["phase"] != "playing" or p["bankrupt"]:
+                raise RulesError("Зараз не можна")
+            if p.get("credit"):
+                raise RulesError("Уже є кредит")
+            if p.get("creditCool", 0) > 0:
+                raise RulesError(f"Новий кредит через {p['creditCool']} ходів")
+            p["money"] += 500
+            p["credit"] = {"amount": 500, "due": 600, "turns": 15}
+            self._log(f"{p['name']} бере кредит 500 ₴ — повернути 600 ₴ за 15 ходів", "money", p["id"])
+            return
+
+        if t == "repay_credit":
+            p = self._player(pid)
+            cr = p.get("credit")
+            if not cr:
+                raise RulesError("Кредиту немає")
+            due = cr["due"]
+            if p["money"] < due:
+                raise RulesError(f"Потрібно {fmt(due)}")
+            p["money"] -= due
+            p["credit"] = None
+            p["creditCool"] = 5
+            self._log(f"{p['name']} погашає кредит {fmt(due)}", "money", p["id"])
+            return
+
         if t == "skip_turn":
             if st["host"] != pid:
                 raise RulesError("Лише власник кімнати")
@@ -735,6 +885,8 @@ class Room:
                 p["cards"] = 0
                 p["bankrupt"] = False
                 p["debt"] = None
+                p["credit"] = None
+                p["creditCool"] = 0
             self._log("Нова гра — повертаємось у лобі", "start")
             return
 
@@ -1056,7 +1208,7 @@ class Room:
         houses = [st["tiles"][i]["houses"] for i in GROUP_TILES[group]]
         if stt["houses"] < max(houses):
             raise RulesError("Спочатку продайте будинки там, де їх більше")
-        refund = tile["house"] // 2
+        refund = tile["house"] if st["options"].get("mode") != "classic" else tile["house"] // 2
         if stt["houses"] == 5:
             if st["housesLeft"] < 4:
                 raise RulesError("У банку не вистачає будинків для обміну готелю")
@@ -1086,6 +1238,7 @@ class Room:
         if group and any(st["tiles"][i]["houses"] > 0 for i in GROUP_TILES[group]):
             raise RulesError("Спочатку продайте будинки в цій групі")
         stt["mortgaged"] = True
+        stt["mortgageLeft"] = 10
         amount = tile["price"] // 2
         p["money"] += amount
         self._log(f"{p['name']} заставляє «{tile['name']}» (+{fmt(amount)})", "mortgage", p["id"])
@@ -1099,11 +1252,12 @@ class Room:
         stt = st["tiles"][idx]
         if stt["owner"] != p["id"] or not stt["mortgaged"]:
             raise RulesError("Нічого викуповувати")
-        cost = int(round(tile["price"] * 0.55))
+        cost = int(round(tile["price"] * 0.6))
         if p["money"] < cost:
             raise RulesError(f"Потрібно {fmt(cost)}")
         p["money"] -= cost
         stt["mortgaged"] = False
+        stt["mortgageLeft"] = None
         self._log(f"{p['name']} викуповує «{tile['name']}» за {fmt(cost)}", "mortgage", p["id"])
 
     # ---------- bankruptcy ----------
@@ -1357,17 +1511,26 @@ class Room:
                             self._log(f"Час вийшов — {cur['name']} не розрахувався", "turn", cur["id"])
                             self._bankrupt(cur, cur["debt"].get("to"))
                             changed = True
-                    elif idle > limit:
-                        aw = st["awaiting"] or {}
+                    elif idle > limit and not st["auction"]:
                         st["trade"] = None
-                        if aw.get("type") == "buy":
-                            self._log(f"Час вийшов — {cur['name']} не купує", "turn", cur["id"])
+                        key = (st["turn"], st["turns"])
+                        if st.get("autoKey") != key:
+                            st["autoKey"] = key
+                            self._log(f"Час вийшов — {cur['name']} грає автоматично", "turn", cur["id"])
+                        auto = None
+                        try:
+                            auto = self._bot_choice(cur)
+                        except Exception:
+                            traceback.print_exc()
+                        if auto:
                             try:
-                                self._apply(cur["id"], {"type": "decline_buy"})
+                                self._apply(cur["id"], auto)
                             except RulesError:
-                                self._end_turn(cur)
+                                try:
+                                    self._end_turn(cur)
+                                except Exception:
+                                    traceback.print_exc()
                         else:
-                            self._log(f"Час вийшов — хід {cur['name']} пропущено", "turn", cur["id"])
                             try:
                                 self._end_turn(cur)
                             except Exception:
