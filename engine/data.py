@@ -40,7 +40,7 @@ BOARD = [
     {"id": 19, "type": "street", "name": "Нью-Йорк",           "group": "orange",    "price": 200, "house": 100, "rent": [16, 80, 220, 600, 800, 1000]},
     {"id": 20, "type": "parking","name": "Парковка"},
     {"id": 21, "type": "street", "name": "Кентуккі",           "group": "red",       "price": 220, "house": 150, "rent": [18, 90, 250, 700, 875, 1050]},
-    {"id": 22, "type": "chance", "name": "Шанс"},
+    {"id": 22, "type": "casino", "name": "Казино",            "sub": "червоне або чорне"},
     {"id": 23, "type": "street", "name": "Індіана",            "group": "red",       "price": 220, "house": 150, "rent": [18, 90, 250, 700, 875, 1050]},
     {"id": 24, "type": "street", "name": "Іллінойс",           "group": "red",       "price": 240, "house": 150, "rent": [20, 100, 300, 750, 925, 1100]},
     {"id": 25, "type": "rr",     "name": "B&O",                "group": "rr",        "price": 200, "rent": [25, 50, 100, 200]},
