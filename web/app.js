@@ -719,7 +719,7 @@ function renderLobby(st) {
     <div class="rv"><span>Банк будинків</span><b>${sc.houses} / ${sc.hotels} готелів</b></div>
     <div class="rv"><span>Рента</span><b>×${sc.rent}</b></div>
     <div class="rv"><span>Динамічна рента</span><b>${mode === 'classic' ? 'вимкнена' : '+10% кожні 5 кіл'}</b></div>
-    <div class="rv"><span>Таймер хода</span><b>${timer ? timer + ' с' : 'вимкнено'}</b></div>
+    <div class="rv"><span>Таймер хода</span><b>${timer ? timer + ' с · штраф 100 ₴' : 'вимкнено'}</b></div>
     <div class="rv"><span>Аукціон при відмові</span><b>так</b></div>`;
 
   const park = !!(st.options && st.options.parkingPot);
