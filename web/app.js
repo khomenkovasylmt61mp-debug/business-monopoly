@@ -199,6 +199,7 @@ const LOG_ICONS = {
   roll: '🎲', move: '👣', money: '💰', rent: '🏠', prop: '🏷', build: '🏗',
   mortgage: '🏦', auction: '🔨', trade: '🤝', jail: '🚔', card: '🎴',
   bankrupt: '💀', win: '🏆', turn: '➡️', join: '👋', leave: '👋', start: '🚀', debt: '⚠️',
+  mission: '🎯',
 };
 const PIPS = { 1: [5], 2: [1, 9], 3: [1, 5, 9], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9] };
 
@@ -320,7 +321,7 @@ function buildBoard() {
         <div class="tile-name${longest > 10 ? ' long' : ''}">${tileLabel(label)}</div>
         ${sub ? `<div class="tile-sub">${sub}</div>` : ''}
       </div>`;
-    el.innerHTML = `${bar}${body}${priceHtml}<div class="houses"></div><div class="owner-dot" hidden></div>`;
+    el.innerHTML = `${bar}${body}${priceHtml}<div class="houses"></div><div class="owner-edge" hidden></div><div class="owner-dot" hidden></div>`;
     el.addEventListener('click', () => openTileInfo(i));
     board.insertBefore(el, $('tokenLayer'));
     tileEls[i] = el;
@@ -337,15 +338,21 @@ function renderBoard(st) {
     el.classList.toggle('has-tokens', occupied.has(i));
     const owner = ts.owner ? playerById(st, ts.owner) : null;
     const dot = el.querySelector('.owner-dot');
+    const edge = el.querySelector('.owner-edge');
     if (owner) {
       dot.hidden = false;
       dot.textContent = owner.piece || '';
       dot.style.background = owner.hex;
       dot.style.borderColor = '#fffdf6e6';
       dot.title = owner.name + (owner.pieceName ? ' · ' + owner.pieceName : '');
+      if (edge) {
+        edge.hidden = false;
+        edge.style.setProperty('--own', owner.hex);
+      }
     } else {
       dot.hidden = true;
       dot.textContent = '';
+      if (edge) edge.hidden = true;
     }
     el.classList.toggle('mortgaged', !!ts.mortgaged);
     el.classList.toggle('hl', !!(cur && cur.pos === i));
@@ -626,7 +633,7 @@ function openTileInfo(i) {
     : '';
 
   let foot = '';
-  if (t.type === 'street') foot = `<div class="tc-foot"><span>🏗 Ціна філії</span><b>${money(t.house)}</b></div>`;
+  if (t.type === 'street') foot = `<div class="tc-foot"><span>🏗 ${owner ? 'Наступна філія' : 'Філія від'}</span><b>${owner && ts.houses >= 5 ? '—' : money(t.house * ((ts.houses || 0) + 1))}</b></div>`;
   else if (isProp) foot = `<div class="tc-foot"><span>🏦 Залог</span><b>${money(Math.floor(t.price / 2))}</b></div>`;
   else if (t.type === 'tax') foot = `<div class="tc-foot"><span>💸 До сплати</span><b>${money(t.amount)}</b></div>`;
 
@@ -1106,6 +1113,14 @@ function renderMine(st, body) {
   const rows = owned.map((x) => propRow(st, x.i, me)).join('');
   const cr = me.credit;
   const cool = me.creditCool || 0;
+  const missions = me.missions || [];
+  const missionBox = missions.length ? `
+    <div class="mission-box">
+      <div class="mb-title">🎯 Місії <span>секретні</span></div>
+      ${missions.map((m) => `<div class="mb-item${m.done ? ' done' : ''}">
+        <span>${m.done ? '✅' : '⬜'}</span><b>${esc(m.text)}</b><i>+${m.reward} ₴</i>
+      </div>`).join('')}
+    </div>` : '';
   const creditBox = `
     <div class="credit-box${cr ? ' active' : ''}">
       <div class="cb-main">
@@ -1124,10 +1139,11 @@ function renderMine(st, body) {
       </div>
       <div class="row">
         ${me.cards ? `<span class="tag">🎟 ${me.cards}</span>` : ''}
-        <button class="btn tiny gold" id="tradeBtn">Обмін</button>
+        <button class="btn tiny gold" id="tradeBtn" ${typeof st.tradeLeft === 'number' && st.tradeLeft <= 0 ? 'disabled' : ''}>Обмін${typeof st.tradeLeft === 'number' ? ` (${st.tradeLeft}/3)` : ''}</button>
       </div>
     </div>
     ${creditBox}
+    ${missionBox}
     ${owned.length
     ? `<div class="prop-list">${rows}</div>`
     : `<div class="hand-empty"><div class="hand-empty-card">?</div><p>Рука порожня. Купуйте клітинки, на які потрапляєте, — і тут з’являться картки власності.</p></div>`}`;
@@ -1160,6 +1176,8 @@ function propRow(st, i, me) {
     : `<span>${tileIcon(t) || '🏠'}</span>`;
   const color = t.brandColor || groupColor(t) || '#2c5fa8';
   const acts = info.acts.map((a) => `<button class="pc-btn" data-pact="${a.pact}" data-i="${i}" ${a.disabled ? 'disabled' : ''}>${a.label}</button>`).join('');
+  const houses = info.ts.houses;
+  const hBadge = houses === 5 ? '🏨' : houses ? `🏠×${houses}` : '';
   return `<div class="prop-row${info.ts.mortgaged ? ' mortgaged' : ''}" data-open="${i}" style="--row-color:${color}" title="Відкрити картку">
       <div class="pr-line">
         <span class="pr-logo" style="border-color:${color}">${logo}</span>
@@ -1167,6 +1185,7 @@ function propRow(st, i, me) {
           <b>${esc(t.name)}</b>
           <i>${info.status}</i>
         </span>
+        ${hBadge ? `<span class="pr-houses">${hBadge}</span>` : ''}
         <span class="pr-val">${t.price ? money(t.price) : ''}</span>
       </div>
       ${acts ? `<div class="pr-acts">${acts}</div>` : ''}
@@ -1199,12 +1218,15 @@ function propState(st, i, me) {
 
   if (t.type === 'street' && full && !ts.mortgaged) {
     const evenOk = ts.houses === Math.min(...groupHouses);
-    const canBuild = ts.houses < 5 && evenOk && me.money >= t.house;
+    const buildCost = t.house * (ts.houses + 1);
+    const canBuild = ts.houses < 5 && evenOk && me.money >= buildCost;
     if (canBuild) {
-      acts.push({ pact: 'build', label: `+ ${ts.houses === 4 ? 'Готель' : 'Дім'} ${money(t.house)}` });
+      acts.push({ pact: 'build', label: `+ ${ts.houses === 4 ? 'Готель' : 'Дім'} ${money(buildCost)}` });
     }
     if (ts.houses > 0 && ts.houses === Math.max(...groupHouses)) {
-      acts.push({ pact: 'sell_house', label: `− Дім +${money(t.house / 2)}` });
+      const paid = t.house * ts.houses;
+      const back = st.options.mode === 'classic' ? paid / 2 : paid;
+      acts.push({ pact: 'sell_house', label: `− Дім +${money(back)}` });
     }
   }
   const groupHasHouses = t.group ? groupTiles(t.group).some((x) => st.tiles[x].houses > 0) : false;
@@ -1256,7 +1278,7 @@ function propCard(st, i, me) {
     : `<div class="pc-emoji">${tileIcon(t) || '🏠'}</div>`;
 
   const foot = t.type === 'street'
-    ? `<div class="pc-foot"><span>🏗 Ціна філії</span><b>${money(t.house)}</b></div>`
+    ? `<div class="pc-foot"><span>🏗 Наступна філія</span><b>${ts.houses >= 5 ? '—' : money(t.house * (ts.houses + 1))}</b></div>`
     : `<div class="pc-foot"><span>🏦 Залог</span><b>${money(Math.floor(t.price / 2))}</b></div>`;
 
   return `<div class="prop-card${ts.mortgaged ? ' mortgaged' : ''}">
@@ -1366,6 +1388,9 @@ function showGameOver(st) {
         <span class="prop-meta">${props(p)} кл.</span>
         <span class="val">${money(p.money)}</span>
       </div>`).join('')}
+    </div>
+    <div class="final-missions">
+      ${st.players.map((p) => `<div class="fm-row"><b>${esc(p.name)}</b><span>${(p.missions || []).map((m) => `${m.done ? '✅' : '⬜'} ${esc(m.text)}`).join(' · ') || '—'}</span></div>`).join('')}
     </div>
     <div class="modal-actions">
       ${st.host === S.pid ? '<button class="btn primary" id="restartBtn">Нова гра</button>' : ''}
