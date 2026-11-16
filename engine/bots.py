@@ -125,7 +125,7 @@ def choose_action(state, p):
     if t == "endturn":
         target = _pick_build(state, pid, 0)
         if target is not None:
-            cost = BOARD[target]["house"]
+            cost = BOARD[target]["house"] * (state["tiles"][target]["houses"] + 1)
             if p["money"] - cost >= 250:
                 return {"type": "build", "tile": target}
         return {"type": "end_turn"}
