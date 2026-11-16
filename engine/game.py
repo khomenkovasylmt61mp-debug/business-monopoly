@@ -6,7 +6,7 @@ import time
 import threading
 
 from .data import (BOARD, BOARD_BRANDS, BRAND_CARD_WORDS, GROUPS, GROUP_TILES,
-                   CHANCE, CHEST, PLAYER_COLORS, PIECES, scale_for)
+                   CHANCE, CHEST, MISSIONS, MISSION_BY_ID, PLAYER_COLORS, PIECES, scale_for)
 
 START_MONEY = 1500
 MAX_PLAYERS = 12
@@ -14,6 +14,7 @@ JAIL_FINE = 50
 AUCTION_STEP = 10
 AUCTION_TIMEOUT = 30.0
 TRADE_TIMEOUT = 90.0
+MAX_TRADES_TURN = 3
 
 
 class RulesError(Exception):
@@ -111,6 +112,9 @@ class Room:
                 "debt": None,
                 "credit": None,
                 "creditCool": 0,
+                "missions": [],
+                "trades": 0,
+                "casinoWins": 0,
                 "lastSeen": time.time(),
                 "joined": time.time(),
             })
@@ -288,6 +292,10 @@ class Room:
                 p["debt"] = None
                 p["credit"] = None
                 p["creditCool"] = 0
+                picks = self.rng.sample(MISSIONS, 2)
+                p["missions"] = [{"id": m["id"], "done": False} for m in picks]
+                p["trades"] = 0
+                p["casinoWins"] = 0
             st["decks"]["chance"] = self.rng.sample(CHANCE, len(CHANCE))
             st["decks"]["chest"] = self.rng.sample(CHEST, len(CHEST))
             st["tiles"] = [{"owner": None, "houses": 0, "mortgaged": False} for _ in BOARD]
@@ -768,6 +776,7 @@ class Room:
                 win = (n <= 18 and color == "red") or (n > 18 and color == "black")
                 if win:
                     p["money"] += bet
+                    p["casinoWins"] = p.get("casinoWins", 0) + 1
                     self._log(f"{p['name']} у казино: {n} {shown} — виграш +{fmt(bet)}", "money", p["id"])
                 else:
                     p["money"] -= bet
@@ -887,6 +896,9 @@ class Room:
                 p["debt"] = None
                 p["credit"] = None
                 p["creditCool"] = 0
+                p["missions"] = []
+                p["trades"] = 0
+                p["casinoWins"] = 0
             self._log("Нова гра — повертаємось у лобі", "start")
             return
 
@@ -1185,18 +1197,22 @@ class Room:
         else:
             if st["housesLeft"] < 1:
                 raise RulesError("У банку закінчилися будинки")
-        if p["money"] < tile["house"]:
+        if p["money"] < self._house_cost(tile, stt["houses"]):
             raise RulesError("Не вистачає грошей на стройку")
-        p["money"] -= tile["house"]
+        cost = self._house_cost(tile, stt["houses"])
+        p["money"] -= cost
         if stt["houses"] == 4:
             stt["houses"] = 5
             st["housesLeft"] += 4
             st["hotelsLeft"] -= 1
-            self._log(f"{p['name']} будує готель на «{tile['name']}» за {fmt(tile['house'])}", "build", p["id"])
+            self._log(f"{p['name']} будує готель на «{tile['name']}» за {fmt(cost)}", "build", p["id"])
         else:
             stt["houses"] += 1
             st["housesLeft"] -= 1
-            self._log(f"{p['name']} будує будинок на «{tile['name']}» за {fmt(tile['house'])}", "build", p["id"])
+            self._log(f"{p['name']} будує будинок на «{tile['name']}» за {fmt(cost)}", "build", p["id"])
+
+    def _house_cost(self, tile, houses):
+        return int(tile["house"]) * (int(houses) + 1)
 
     def _sell_house(self, p, idx):
         st = self.state
@@ -1208,7 +1224,9 @@ class Room:
         houses = [st["tiles"][i]["houses"] for i in GROUP_TILES[group]]
         if stt["houses"] < max(houses):
             raise RulesError("Спочатку продайте будинки там, де їх більше")
-        refund = tile["house"] if st["options"].get("mode") != "classic" else tile["house"] // 2
+        refund = self._house_cost(tile, stt["houses"] - 1)
+        if st["options"].get("mode") == "classic":
+            refund //= 2
         if stt["houses"] == 5:
             if st["housesLeft"] < 4:
                 raise RulesError("У банку не вистачає будинків для обміну готелю")
@@ -1271,7 +1289,8 @@ class Room:
                 continue
             if ts["houses"] > 0:
                 tile = self.board[i]
-                refund = (5 * tile["house"] // 2) if ts["houses"] == 5 else (ts["houses"] * tile["house"] // 2)
+                n = ts["houses"]
+                refund = tile["house"] * (n * (n + 1) // 2) // 2
                 p["money"] += refund
                 if ts["houses"] == 5:
                     st["hotelsLeft"] += 1
@@ -1316,6 +1335,11 @@ class Room:
             raise RulesError("Спочатку розрахуйтеся")
         if st["auction"]:
             raise RulesError("Триває аукціон")
+        if st.get("tradeKey") != st["turn"]:
+            st["tradeKey"] = st["turn"]
+            st["tradeCount"] = 0
+        if st.get("tradeCount", 0) >= MAX_TRADES_TURN:
+            raise RulesError(f"Не більше {MAX_TRADES_TURN} обмінів за хід")
         target = a.get("to")
         if not target or target == pid:
             raise RulesError("Виберіть гравця")
@@ -1351,6 +1375,7 @@ class Room:
             "deadline": time.time() + TRADE_TIMEOUT,
         }
         self.trade_seq += 1
+        st["tradeCount"] = st.get("tradeCount", 0) + 1
         self._log(f"{p['name']} пропонує обмін гравцю {tp['name']}", "trade", pid)
 
     def _check_tradeable(self, idx):
@@ -1422,6 +1447,8 @@ class Room:
                 frm["money"] -= fee_frm
                 self._log(f"{frm['name']} сплачує {fmt(fee_frm)} процентів за заставу", "mortgage", frm["id"])
             self._log(f"Обмін відбувся: {frm['name']} ↔ {to['name']}", "trade", pid)
+            frm["trades"] = frm.get("trades", 0) + 1
+            to["trades"] = to.get("trades", 0) + 1
             st["trade"] = None
         else:
             st["trade"] = None
@@ -1544,12 +1571,59 @@ class Room:
                             except Exception:
                                 traceback.print_exc()
                         changed = True
+
+                for pl in st["players"]:
+                    if not pl["bankrupt"] and self._check_missions(pl):
+                        changed = True
             if changed:
                 self._bump()
 
     def _bot_choice(self, p):
         from .bots import choose_action
         return choose_action(self.state, p)
+
+    # ---------- missions ----------
+
+    def _mission_done(self, p, mid):
+        st = self.state
+        mine = [i for i, t in enumerate(st["tiles"]) if t["owner"] == p["id"]]
+        if mid == "stations":
+            return sum(1 for i in mine if self.board[i]["type"] == "rr") >= 3
+        if mid == "monopoly":
+            for g, tiles in GROUP_TILES.items():
+                if len(tiles) < 2:
+                    continue
+                if any(self.board[i]["type"] != "street" for i in tiles):
+                    continue
+                if all(st["tiles"][i]["owner"] == p["id"] for i in tiles):
+                    return True
+            return False
+        if mid == "hotel":
+            return any(st["tiles"][i]["houses"] == 5 for i in mine)
+        if mid == "cash":
+            start = st["options"].get("startMoney") or START_MONEY
+            return p["money"] >= start * 2.5
+        if mid == "trades":
+            return p.get("trades", 0) >= 2
+        if mid == "casino":
+            return p.get("casinoWins", 0) >= 1
+        return False
+
+    def _check_missions(self, p):
+        changed = False
+        for m in p.get("missions") or []:
+            if m.get("done"):
+                continue
+            if not self._mission_done(p, m["id"]):
+                continue
+            info = MISSION_BY_ID.get(m["id"])
+            if not info:
+                continue
+            m["done"] = True
+            p["money"] += info["reward"]
+            self._log(f"{p['name']} виконав секретну місію (+{fmt(info['reward'])})", "mission", p["id"])
+            changed = True
+        return changed
 
     # ---------- snapshot ----------
 
@@ -1561,6 +1635,15 @@ class Room:
             for p in st["players"]:
                 q = {k: v for k, v in p.items() if k not in ("token", "lastSeen")}
                 q["afk"] = (not p["bot"]) and (now - p["lastSeen"] > 45)
+                if p["id"] == pid or st["phase"] == "ended":
+                    q["missions"] = [
+                        {"id": m["id"], "done": bool(m.get("done")),
+                         "text": MISSION_BY_ID.get(m["id"], {}).get("text", ""),
+                         "reward": MISSION_BY_ID.get(m["id"], {}).get("reward", 0)}
+                        for m in (p.get("missions") or [])
+                    ]
+                else:
+                    q["missions"] = []
                 players.append(q)
             data = {
                 "code": st["code"],
@@ -1594,5 +1677,9 @@ class Room:
                 act_t = st.get("turnActivity") or now
                 left = max(0, int(round(limit - (now - act_t))))
             data["turnLeft"] = left
+            tleft = MAX_TRADES_TURN
+            if st.get("tradeKey") == st.get("turn") and st.get("turn"):
+                tleft = max(0, MAX_TRADES_TURN - int(st.get("tradeCount") or 0))
+            data["tradeLeft"] = tleft
             data["you"] = pid
             return data
