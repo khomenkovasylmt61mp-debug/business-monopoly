@@ -356,7 +356,8 @@ function buildBoard() {
         <div class="tile-name${longest > 10 ? ' long' : ''}">${tileLabel(label)}</div>
         ${sub ? `<div class="tile-sub">${sub}</div>` : ''}
       </div>`;
-    el.innerHTML = `${bar}${body}${priceHtml}<div class="own-zone"${isProp ? '' : ' hidden'}><span class="owner-dot" hidden></span><div class="houses"></div><span class="own-free">вільна</span></div><div class="owner-edge" hidden></div>`;
+    const face = `<div class="tile-face">${bar}${body}${priceHtml}</div>`;
+    el.innerHTML = `${face}<div class="own-zone"${isProp ? '' : ' hidden'}><span class="owner-dot" hidden></span><div class="houses"></div><span class="own-free">вільна</span></div>`;
     el.addEventListener('click', () => openTileInfo(i));
     board.insertBefore(el, $('tokenLayer'));
     tileEls[i] = el;
@@ -399,13 +400,9 @@ function renderBoard(st) {
 
     const hEl = el.querySelector('.houses');
     if (ts.houses === 5) {
-      hEl.innerHTML = '<img class="hotel-img" src="/img/hotel.svg" alt="" draggable="false">';
+      hEl.innerHTML = '<img class="hotel-img" src="/buildings/hotel.webp" alt="" draggable="false">';
     } else if (ts.houses > 0) {
-      let imgs = '';
-      for (let k = 0; k < ts.houses; k += 1) {
-        imgs += '<img class="house-img" src="/img/house.svg" alt="" draggable="false">';
-      }
-      hEl.innerHTML = imgs;
+      hEl.innerHTML = `<img class="house-img" src="/buildings/house_${ts.houses}.webp" alt="" draggable="false">`;
     } else {
       hEl.innerHTML = '';
     }
