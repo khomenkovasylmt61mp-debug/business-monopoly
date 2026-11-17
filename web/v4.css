@@ -1203,7 +1203,6 @@ body.big-board #bigBoardBtn,
 
 /* final: decks as real tilted stacks of premium cards */
 .cp-decks { z-index: 3; }
-.cp-deck { background-clip: padding-box; }
 .cp-deck::before {
   content: ""; position: absolute; z-index: -1;
   inset: 2px -4px -6px 4px;
@@ -1245,4 +1244,59 @@ body.big-board #bigBoardBtn,
 .tile-price.is-high b { font-size: .58em; color: #fff3ca; text-shadow: 0 0 7px #ffd58a88, 0 1px 1px #00000088; }
 .tile-price.is-mortgage b { font-size: .60em; letter-spacing: .04em; }
 .tile-price.is-price b { opacity: .95; }
+
+/* ============================================================
+   V7.2 — ownership alignment: one centred composition on all
+   four sides, equal token/building sizes, no edge pinning.
+   ============================================================ */
+.board .tile.is-prop .own-zone {
+  justify-content: center;
+  gap: 3px;
+  padding: 2px 3px;
+}
+.board .tile.is-prop.left .own-zone,
+.board .tile.is-prop.right .own-zone {
+  width: 42%;
+  justify-content: center;
+  align-items: center;
+}
+.board .tile .owner-dot {
+  width: clamp(16px, 3.7cqw, 38px);
+  height: clamp(16px, 3.7cqw, 38px);
+  flex: none;
+  padding: 0 0 2px;
+}
+.board .tile.left .owner-dot,
+.board .tile.right .owner-dot {
+  width: clamp(16px, 3.7cqw, 38px);
+  height: clamp(16px, 3.7cqw, 38px);
+}
+.board .tile .houses {
+  flex: 0 0 auto;
+  width: clamp(12px, 2.8cqw, 29px);
+  height: clamp(12px, 2.8cqw, 29px);
+  padding: 0;
+  justify-content: center;
+}
+.board .tile.left .houses,
+.board .tile.right .houses {
+  width: clamp(12px, 2.8cqw, 29px);
+  height: clamp(12px, 2.8cqw, 29px);
+  padding: 0;
+}
+.board .tile .house-img,
+.board .tile .hotel-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* dynamic rent: larger, readable value */
+.tile-price i { font-size: .42em; }
+.tile-price b { font-size: .74em; }
+.tile-price.is-high b { font-size: .66em; }
+.tile.has-art.bottom .tile-price,
+.tile.has-art.top .tile-price { height: 20%; }
+.tile.has-art.left .tile-price,
+.tile.has-art.right .tile-price { height: 24%; }
 
