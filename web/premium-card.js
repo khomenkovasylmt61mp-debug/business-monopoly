@@ -69,7 +69,7 @@
     return { tone: 'free', text: 'Вільна' };
   }
 
-  function rentRows(state, t, ts, owner, displayFull) {
+  function rentRows(state, t, ts, owner, displayFull, tileIndex) {
     var rmRaw = Number(rentMult(state));
     var rm = Number.isFinite(rmRaw) ? rmRaw : 1;
     var rows = [];
@@ -126,6 +126,13 @@
     rows.forEach(function (row) {
       row.current = currentTier != null && row.tier === currentTier;
     });
+
+    /* the current value comes from the server's authoritative rent, not a UI formula */
+    var serverRent = state.rents && state.rents[tileIndex];
+    if (serverRent && serverRent.now != null && currentTier != null) {
+      var curRow = rows.filter(function (r) { return r.current; })[0];
+      if (curRow) curRow.value = money(serverRent.now);
+    }
 
     return { rows: rows, rm: rm };
   }
@@ -259,7 +266,7 @@
     var hint = isProp ? actionHint(t, ts, me, isMine, acts, myFull, groupHouses, groupHasHouses, owner) : '';
 
     var badge = isProp ? statusInfo(ts, displayFull, owner) : null;
-    var rent = isProp ? rentRows(state, t, ts, owner, displayFull) : { rows: [], rm: 1 };
+    var rent = isProp ? rentRows(state, t, ts, owner, displayFull, tileIndex) : { rows: [], rm: 1 };
     var rows = rent.rows;
 
     /* ---------- шапка ---------- */
