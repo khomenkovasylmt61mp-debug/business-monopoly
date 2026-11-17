@@ -7,7 +7,8 @@ import threading
 import traceback
 
 from .data import (BOARD, BOARD_BRANDS, BRAND_CARD_WORDS, GROUPS, GROUP_TILES,
-                   CHANCE, CHEST, MISSIONS, MISSION_BY_ID, PLAYER_COLORS, PIECES, scale_for)
+                   CHANCE, CHEST, MISSIONS, MISSION_BY_ID, PLAYER_COLORS, PIECES,
+                   ROULETTE_RED, scale_for)
 
 START_MONEY = 1500
 MAX_PLAYERS = 12
@@ -818,7 +819,7 @@ class Room:
                 raise RulesError("Оберіть ставку")
 
             n = self.rng.randint(0, 36)
-            red = 1 <= n <= 18
+            red = n in ROULETTE_RED
             shown = "зеро" if n == 0 else ("червоне" if red else "чорне")
 
             if kind == "number":
@@ -830,7 +831,7 @@ class Room:
                 net = bet if win else -bet
                 label = "червоне"
             elif kind == "black":
-                win = 19 <= n <= 36
+                win = n != 0 and n not in ROULETTE_RED
                 net = bet if win else -bet
                 label = "чорне"
             elif kind == "even":
@@ -1771,9 +1772,11 @@ class Room:
             }
             limit = int(st["options"].get("turnTimer") or 0)
             left = 0
-            if limit > 0 and st["phase"] == "playing" and st["turn"]:
+            if limit > 0 and st["phase"] == "playing" and st["turn"] and not st["auction"]:
                 act_t = st.get("turnActivity") or now
-                left = max(0, int(round(limit - (now - act_t))))
+                curp = self._cur()
+                eff = limit * 2 if (curp and curp.get("debt")) else limit
+                left = max(0, int(round(eff - (now - act_t))))
             data["turnLeft"] = left
             tleft = MAX_TRADES_TURN
             if st.get("tradeTurnKey") == st.get("turn") and st.get("turn"):
