@@ -1688,6 +1688,8 @@ input.code {
 .piece-btn .piece-img { width: 40px; height: 40px; object-fit: contain; filter: drop-shadow(0 2px 3px #00000066); }
 .lux-owner-avatar .lux-piece-img { width: 90%; height: 90%; object-fit: contain; }
 
+.lux-estate-img { height: 48px; width: auto; max-width: 180px; object-fit: contain; filter: drop-shadow(0 3px 4px #00000055); }
+
 /* ============ ліва навігація (desktop) ============ */
 .rail { display: none; }
 @media (min-width: 1101px) {
