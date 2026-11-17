@@ -513,6 +513,12 @@ input.code {
     0 0 10px #00000030;
 }
 .tile.owned.mortgaged { box-shadow: inset 0 0 0 3px #b9ab8c, inset 0 0 0 4px #ffffff44; }
+.tile.owned.hl {
+  box-shadow:
+    inset 0 0 0 2px #c0392b,
+    inset 0 0 0 4px var(--own, #c0392b),
+    0 0 10px #00000030;
+}
 
 /* смуга власника на внутрішньому краї клітинки */
 .tile .owner-edge {
@@ -908,6 +914,7 @@ input.code {
   gap: 2px; width: 96%; height: 96%;
   padding: 2%;
 }
+.token-stack[data-n="2"] { --tokscale: .92; }
 .token-stack[data-n="3"], .token-stack[data-n="4"] { --tokscale: .85; }
 .token-stack[data-n="5"], .token-stack[data-n="6"], .token-stack[data-n="7"] { --tokscale: .7; }
 .token-cell.tok-bottom .token-stack { padding-bottom: 13%; }
@@ -954,7 +961,7 @@ input.code {
   font-size: calc(var(--sz) * .42);
 }
 @media (max-width: 640px) {
-  .token { --tok: 22px; }
+  .token { --tok: 14px; }
 }
 .token-ghost {
   position: absolute;
@@ -1196,6 +1203,7 @@ input.code {
 .rt-num.black { background: linear-gradient(180deg, #26303f, #101722); }
 .rt-num.zero { grid-column: 1 / -1; background: linear-gradient(180deg, #1f7a41, #12542b); }
 .rt-num:active, .rt-out:active { transform: translateY(1px); }
+.rt-out:disabled, .rt-num:disabled, .rt-chip:disabled { opacity: .4; cursor: not-allowed; }
 .prop-card {
   flex: 0 0 244px;
   scroll-snap-align: start;
