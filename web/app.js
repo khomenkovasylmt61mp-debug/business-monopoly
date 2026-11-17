@@ -10,6 +10,7 @@ const S = {
   chatSeen: 0, chatUnread: 0, connected: true,
   clockOffset: 0, theme: null, tapped: false,
   turnLeft: 0, turnLeftAt: 0, prevPos: {}, casinoBet: 200,
+  casinoSeen: 0, casinoReady: false,
 };
 
 const LS_SESSION = 'mono.session.v1';
@@ -988,6 +989,7 @@ function renderGame(st) {
   renderHud(st);
   renderTab(st);
   if (S.mChat) renderMobileChat(st);
+  maybeCasinoSpin(st);
   maybeGameOver(st);
   maybeVibrate(st);
 }
@@ -1823,9 +1825,11 @@ function openCasinoTable() {
       <button class="btn ghost" id="rtSkip">Пропустити</button>
       <button class="btn ghost" id="rtClose">Закрити</button>
     </div>`);
-  const place = (kind, number) => {
+  const place = async (kind, number) => {
     closeModal();
-    act('casino_bet', number === undefined ? { bet, kind } : { bet, kind, number });
+    showRoulette(null, { bet, kind, number });
+    const ok = await act('casino_bet', number === undefined ? { bet, kind } : { bet, kind, number });
+    if (!ok) closeRoulette();
   };
   modal.querySelectorAll('[data-bet]').forEach((b) => {
     b.onclick = () => { S.casinoBet = Number(b.dataset.bet); openCasinoTable(); };
@@ -1838,6 +1842,146 @@ function openCasinoTable() {
   });
   modal.querySelector('#rtSkip').onclick = () => { closeModal(); act('casino_skip'); };
   modal.querySelector('#rtClose').onclick = closeModal;
+}
+
+/* ---------- рулетка: обертання колеса ---------- */
+const ROULETTE_ORDER = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5,
+  24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+const RL = { wheel: null, orbit: null, start: 0, guard: 0, spinning: false };
+
+function rouletteSvg() {
+  const cx = 200;
+  const cy = 200;
+  const rOut = 196;
+  const rIn = 150;
+  const step = 360 / ROULETTE_ORDER.length;
+  const pt = (r, deg) => {
+    const a = ((deg - 90) * Math.PI) / 180;
+    return `${(cx + r * Math.cos(a)).toFixed(2)} ${(cy + r * Math.sin(a)).toFixed(2)}`;
+  };
+  let out = '<svg viewBox="0 0 400 400" class="rl-svg" aria-hidden="true">';
+  ROULETTE_ORDER.forEach((n, i) => {
+    const a0 = i * step - step / 2;
+    const a1 = i * step + step / 2;
+    const fill = n === 0 ? '#1d7a4b' : (ROULETTE_RED.has(n) ? '#bf2f28' : '#111a26');
+    out += `<path class="rl-sector" data-n="${n}" d="M ${pt(rOut, a0)} A ${rOut} ${rOut} 0 0 1 ${pt(rOut, a1)} L ${pt(rIn, a1)} A ${rIn} ${rIn} 0 0 0 ${pt(rIn, a0)} Z" fill="${fill}" stroke="#08121e" stroke-width="1"/>`;
+    out += `<text class="rl-num" x="${cx}" y="${cy - 172}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${(i * step).toFixed(3)} ${cx} ${cy})">${n}</text>`;
+  });
+  out += '<circle cx="200" cy="200" r="150" fill="#0a1726" stroke="#d9b66b" stroke-width="3"/>';
+  out += '<circle cx="200" cy="200" r="132" fill="none" stroke="#d9b66b33" stroke-width="1"/>';
+  out += '</svg>';
+  return out;
+}
+
+function rouletteBetText(kind, number) {
+  if (kind === 'number') return `на число ${number}`;
+  const map = {
+    red: 'на червоне', black: 'на чорне', even: 'на парне', odd: 'на непарне',
+    low: 'на 1–18', high: 'на 19–36',
+    dozen1: 'на 1–12', dozen2: 'на 13–24', dozen3: 'на 25–36',
+  };
+  return map[kind] || '';
+}
+
+function showRoulette(spin, betInfo) {
+  const bet = (spin && spin.bet) || (betInfo && betInfo.bet) || S.casinoBet;
+  const kind = (spin && spin.kind) || (betInfo && betInfo.kind);
+  const number = spin && spin.number != null ? spin.number : (betInfo && betInfo.number);
+  openModal(`
+    <div class="rl-wrap">
+      <div class="rl-kicker">🎡 Рулетка</div>
+      <div class="rl-stage">
+        <div class="rl-pointer"></div>
+        <div class="rl-wheel" id="rlWheel">${rouletteSvg()}</div>
+        <div class="rl-hub"><span>БІЗНЕС</span><b>МОНОПОЛІЯ</b></div>
+        <div class="rl-orbit" id="rlOrbit"><i class="rl-ball"></i></div>
+      </div>
+      <div class="rl-line">Ставка <b>${money(bet)}</b> · ${rouletteBetText(kind, number)}</div>
+      <div class="rl-caption" id="rlCaption">Кулька крутиться…</div>
+      <div class="rl-out" id="rlOut"></div>
+      <button class="btn gold" id="rlDone" hidden>Продовжити</button>
+    </div>`, { cls: 'rl-modal', static: true });
+  RL.wheel = $('rlWheel');
+  RL.orbit = $('rlOrbit');
+  RL.start = performance.now();
+  RL.spinning = true;
+  if (RL.wheel) RL.wheel.style.animation = 'rlSpin 1.15s linear infinite';
+  if (RL.orbit) RL.orbit.style.animation = 'rlOrbit 1.6s linear infinite';
+  $('rlDone').onclick = closeRoulette;
+  clearTimeout(RL.guard);
+  RL.guard = setTimeout(() => {
+    if (!RL.spinning) return;
+    const cap = $('rlCaption');
+    if (cap) cap.textContent = 'Немає відповіді від сервера';
+    const done = $('rlDone');
+    if (done) { done.hidden = false; done.textContent = 'Закрити'; }
+    RL.spinning = false;
+  }, 12000);
+  if (spin) settleRoulette(spin);
+}
+
+function settleRoulette(spin) {
+  if (!RL.wheel || !RL.orbit) return;
+  const step = 360 / ROULETTE_ORDER.length;
+  const elapsed = Math.max(0, performance.now() - RL.start);
+  const curW = ((elapsed / 1150) * 360) % 360;
+  const curB = -(((elapsed / 1600) * 360) % 360);
+  const wheel = RL.wheel;
+  const orbit = RL.orbit;
+  wheel.style.animation = 'none';
+  orbit.style.animation = 'none';
+  wheel.style.transform = `rotate(${curW}deg)`;
+  orbit.style.transform = `rotate(${curB}deg)`;
+  void wheel.offsetWidth;
+  const idx = Math.max(0, ROULETTE_ORDER.indexOf(spin.n));
+  const delta = ((-idx * step - curW) % 360 + 360) % 360;
+  wheel.style.transition = 'transform 2.75s cubic-bezier(.12,.72,.16,1)';
+  wheel.style.transform = `rotate(${curW + 360 * 3 + delta}deg)`;
+  orbit.style.transition = 'transform 2.95s cubic-bezier(.14,.75,.14,1)';
+  orbit.style.transform = `rotate(${curB - 360 * 2 - (curB % 360)}deg)`;
+  clearTimeout(RL.guard);
+  setTimeout(() => finishRoulette(spin), 3000);
+}
+
+function finishRoulette(spin) {
+  RL.spinning = false;
+  const sector = RL.wheel && RL.wheel.querySelector(`.rl-sector[data-n="${spin.n}"]`);
+  if (sector) sector.classList.add('win');
+  const cap = $('rlCaption');
+  if (cap) {
+    const tone = spin.n === 0 ? 'zero' : (ROULETTE_RED.has(spin.n) ? 'red' : 'black');
+    const word = spin.n === 0 ? 'зеро' : (ROULETTE_RED.has(spin.n) ? 'червоне' : 'чорне');
+    cap.innerHTML = `Випало <b class="rl-hit ${tone}">${spin.n}</b> · ${word}`;
+  }
+  const out = $('rlOut');
+  if (out) {
+    out.className = 'rl-out ' + (spin.win ? 'win' : 'lose');
+    out.innerHTML = `<span>${spin.win ? 'Виграш' : 'Програш'}</span><b>${spin.win ? '+' : '−'}${money(Math.abs(spin.net))}</b>`;
+  }
+  const done = $('rlDone');
+  if (done) { done.hidden = false; done.textContent = 'Продовжити'; }
+}
+
+function closeRoulette() {
+  RL.spinning = false;
+  clearTimeout(RL.guard);
+  RL.wheel = null;
+  RL.orbit = null;
+  closeModal();
+}
+
+function maybeCasinoSpin(st) {
+  const spin = st.casinoSpin;
+  if (!S.casinoReady) {
+    S.casinoReady = true;
+    S.casinoSeen = (spin && spin.t) || 0;
+    return;
+  }
+  if (!spin || !spin.t || spin.t === S.casinoSeen) return;
+  S.casinoSeen = spin.t;
+  if (spin.pid !== S.pid) return;
+  if (RL.wheel) settleRoulette(spin);
+  else showRoulette(spin);
 }
 
 /* ---------- мобільний режим ---------- */
