@@ -1600,6 +1600,61 @@ function clampZoom() {
   MZ.y = Math.min(0, Math.max(-maxY, MZ.y));
 }
 
+function openRatingModal(st) {
+  const list = [...st.players].filter((p) => !p.bankrupt).sort((a, b) => b.money - a.money);
+  openModal(`
+    <h2>🏆 Рейтинг</h2>
+    <div class="sub">Капітал гравців</div>
+    <div class="m-players">
+      ${list.map((p, i) => `<div class="m-player${p.id === S.pid ? ' active' : ''}">
+        <span class="m-av" style="background:${p.hex}22;border-color:${p.hex}">${p.piece || ''}</span>
+        <span class="m-pname">${i + 1}. ${esc(p.name)}</span>
+        <span class="m-pmoney">${money(p.money)}</span>
+      </div>`).join('') || '<div class="empty-note">Немає гравців</div>'}
+    </div>
+    <div class="modal-actions"><button class="btn ghost" onclick="window.__closeModal()">Закрити</button></div>`);
+}
+
+function wireRail() {
+  const rail = $('rail');
+  if (!rail) return;
+  const toggle = $('railToggle');
+  if (toggle) {
+    toggle.onclick = () => {
+      rail.classList.toggle('collapsed');
+      $('screen-game').classList.toggle('rail-collapsed');
+      toggle.textContent = rail.classList.contains('collapsed') ? '»' : '«';
+    };
+  }
+  rail.querySelectorAll('[data-rail]').forEach((b) => {
+    b.onclick = () => {
+      rail.querySelectorAll('[data-rail]').forEach((x) => x.classList.toggle('on', x === b));
+      const k = b.dataset.rail;
+      if (k === 'game') {
+        closeModal();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (S.state) renderGame(S.state);
+      } else if (k === 'mine') {
+        switchTab('mine');
+        document.querySelector('.panel').scrollIntoView({ behavior: 'smooth' });
+      } else if (k === 'missions') {
+        openMissionsModal(S.state);
+      } else if (k === 'trade') {
+        openTrade();
+      } else if (k === 'credit') {
+        openCreditModal(S.state);
+      } else if (k === 'rating') {
+        openRatingModal(S.state);
+      } else if (k === 'chat') {
+        switchTab('chat');
+        document.querySelector('.panel').scrollIntoView({ behavior: 'smooth' });
+      } else if (k === 'rules') {
+        showRules();
+      }
+    };
+  });
+}
+
 function wireZoom() {
   const wrap = $('boardWrap');
   if (!wrap || wrap.dataset.zoom) return;
@@ -2034,6 +2089,7 @@ async function boot() {
   }
   buildBoard();
   wire();
+  wireRail();
   wireZoom();
   fitBoard();
   setInterval(clockTick, 250);
