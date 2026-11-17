@@ -1107,7 +1107,7 @@ class Room:
             p = self._require_turn(pid)
             aw = self._aw("buy")
             idx = aw["tile"]
-            self._log(f"{p['name']} відмовляється від купівлі «{self.board[idx]['name']}» — аукціон", "prop", p["id"])
+            self._log(f"{p['name']} відмовляється від купівлі «{self.board[idx]['name']}»", "prop", p["id"])
             self._start_auction(p, idx)
             return
 
