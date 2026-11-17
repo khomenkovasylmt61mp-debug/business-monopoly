@@ -1088,11 +1088,41 @@
 .lux-actions .lux-btn.is-ghost { background: #10294a; color: #dbe6f4; }
 .lux-title { font-family: Georgia, serif; }
 
+/* compact secondary blocks so the hero stays dominant */
+.lux-owner {
+  position: relative; z-index: 3;
+  margin: -36px 16px 8px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid #d9b66b55;
+  background: linear-gradient(180deg, rgba(12, 32, 55, .96), rgba(7, 21, 40, .96));
+  color: #f4f8ff;
+  box-shadow: 0 12px 26px #000000aa, inset 0 1px 0 #ffffff14;
+  backdrop-filter: blur(4px);
+}
+.lux-owner-label { color: #9fb4cf; }
+.lux-owner-name { color: #ffffff; }
+.lux-owner-balance span { color: #9fb4cf; }
+.lux-owner-balance b { color: #f0cf8b; }
+.lux-owner-avatar {
+  width: 36px; height: 36px; font-size: 18px;
+  background: #fffdf7;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, .18), inset 0 0 0 1px rgba(24, 36, 58, .09);
+}
+.lux-owner-balance b { font-size: 15px; }
+.lux-owner-tags { margin-top: 1px; }
+.lux-facts { margin: 6px 0; }
+.lux-fact { padding: 6px 10px; }
+.lux-estate { padding: 8px 10px; }
+.lux-section { margin-bottom: 6px; }
+.lux-rent-list { margin-top: 4px; }
+.lux-rent-list li { font-size: 13px; }
+
 /* hero: shared podium scene */
 .lux-hero {
   position: relative;
-  height: 150px;
-  margin: 4px 0 10px;
+  height: 224px;
+  margin: 0 0 0;
   border-radius: 10px;
   background:
     radial-gradient(80% 70% at 32% 108%, #d9b66b55 0%, transparent 62%),
@@ -1102,23 +1132,23 @@
   overflow: hidden;
 }
 .lux-hero::after {
-  content: ""; position: absolute; left: 8%; right: 8%; bottom: 3px; height: 15px;
+  content: ""; position: absolute; left: 6%; right: 6%; bottom: 34px; height: 22px;
   background:
-    radial-gradient(38% 100% at 30% 50%, #e3bd6bcc, transparent 74%),
-    radial-gradient(36% 100% at 72% 50%, #e3bd6b99, transparent 74%);
+    radial-gradient(40% 100% at 29% 50%, #e3bd6bdd, transparent 74%),
+    radial-gradient(38% 100% at 73% 50%, #e3bd6baa, transparent 74%);
   filter: blur(1.5px);
 }
 .lux-hero-stage {
-  position: absolute; left: 6%; bottom: 4px;
-  width: 42%; height: 140px;
+  position: absolute; left: 3%; bottom: 38px;
+  width: 48%; height: 180px;
   display: flex; align-items: flex-end; justify-content: center;
   z-index: 1;
 }
-.lux-hero-token { width: auto; height: 136px; object-fit: contain; filter: drop-shadow(0 10px 12px #000a); }
+.lux-hero-token { width: auto; height: 176px; object-fit: contain; filter: drop-shadow(0 12px 14px #000a); }
 .lux-hero-estate {
-  position: absolute; right: 4%; bottom: 4px; width: 48%;
+  position: absolute; right: 2%; bottom: 38px; width: 50%;
   display: flex; align-items: flex-end; justify-content: center;
   z-index: 1;
 }
-.lux-hero-bld { max-height: 130px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 10px 12px #000a); }
+.lux-hero-bld { max-height: 170px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 12px 14px #000a); }
 .lux-estate-visual { display: none; }
