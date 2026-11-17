@@ -256,4 +256,7 @@ MISSIONS = [
     {"id": "casino", "text": "Виграти в казино", "reward": 300},
 ]
 MISSION_BY_ID = {m["id"]: m for m in MISSIONS}
+
+# Європейська рулетка: червоні числа
+ROULETTE_RED = {1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36}
  
