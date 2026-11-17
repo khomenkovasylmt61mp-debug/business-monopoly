@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """Classic Monopoly engine. No external dependencies."""
 import random
 import secrets
@@ -165,12 +165,15 @@ class Room:
                     for pl in st["players"]:
                         if pl.get("debt") and pl["debt"].get("to") == pid:
                             pl["debt"]["to"] = None
-                    if st["turn"] == pid or self._find(st["turn"]) is None:
+                if st["turn"] == pid or self._find(st["turn"]) is None:
+                    if st["phase"] == "playing":
                         nxt = self._next_alive(pid)
                         if nxt:
                             st["turn"] = nxt
                             np = self._player(nxt)
                             st["awaiting"] = {"type": "jail"} if np["jail"] else {"type": "roll"}
+                    else:
+                        st["turn"] = None
             self._bump()
 
     # ---------- utils ----------
@@ -320,13 +323,14 @@ class Room:
             st["startedAt"] = time.time()
             st["log"] = []
             order = [p["id"] for p in st["players"]]
-            st["turn"] = order[0]
+            start_pid = order[self.rng.randrange(len(order))]
+            st["turn"] = start_pid
             st["doubles"] = 0
             st["dice"] = None
             st["winner"] = None
             st["auction"] = None
             st["trade"] = None
-            st["awaiting"] = {"type": "jail"} if self._player(order[0])["jail"] else {"type": "roll"}
+            st["awaiting"] = {"type": "jail"} if self._player(start_pid)["jail"] else {"type": "roll"}
             st["turnActivity"] = time.time()
             st["turnEndKey"] = None
             st["autoKey"] = None
@@ -688,6 +692,8 @@ class Room:
                 self._apply(pid, action)
             except RulesError:
                 raise
+            except (ValueError, TypeError, IndexError, OverflowError, AttributeError):
+                raise RulesError("Некоректна дія")
             cur = self._cur()
             if (cur and cur["id"] == pid and self.state["phase"] == "playing"
                     and (action or {}).get("type") != "chat"):
@@ -798,7 +804,7 @@ class Room:
                 raise RulesError("Лише власник кімнати")
             if st["phase"] != "lobby":
                 raise RulesError("Пізно змінювати")
-            st["options"]["parkingPot"] = bool(a.get("value"))
+            st["options"]["parkingPot"] = (a.get("value") is True)
             return
 
         if t == "set_timer":
@@ -972,12 +978,16 @@ class Room:
                 raise RulesError("Немає активного гравця")
             if cur["id"] == pid:
                 raise RulesError("Це ваш хід — грайте")
-            st["trade"] = None
             if cur["debt"]:
-                self._bankrupt(cur, cur["debt"].get("to"))
-            else:
-                self._log(f"Власник пропустив хід {cur['name']}", "turn", cur["id"])
-                self._end_turn(cur)
+                raise RulesError("Гравець має борг — дочекайтеся розрахунку")
+            limit = int(st["options"].get("turnTimer") or 0)
+            idle = time.time() - (cur.get("lastSeen") or time.time())
+            timed_out = bool(limit) and time.time() - (st.get("turnActivity") or time.time()) > limit
+            if not cur["bot"] and idle <= 45 and not timed_out:
+                raise RulesError("Гравець ще грає — пропуск лише для AFK або таймера")
+            st["trade"] = None
+            self._log(f"Власник пропустив хід {cur['name']}", "turn", cur["id"])
+            self._end_turn(cur)
             return
 
         if t == "restart":
@@ -1151,7 +1161,7 @@ class Room:
         if t == "trade_propose":
             return self._trade_propose(pid, a)
         if t == "trade_respond":
-            return self._trade_respond(pid, bool(a.get("accept")), a.get("trade_id"))
+            return self._trade_respond(pid, (a.get("accept") is True), a.get("trade_id"))
         if t == "trade_cancel":
             return self._trade_cancel(pid)
 
@@ -1278,9 +1288,10 @@ class Room:
         if auc["turn"] != pid:
             raise RulesError("Зараз не ваша ставка")
         p = self._player(pid)
-        min_bid = (auc["bid"] + AUCTION_STEP) if auc["bid"] > 0 else AUCTION_STEP
+        price = int(self.board[auc["tile"]].get("price") or 0)
+        min_bid = (auc["bid"] + AUCTION_STEP) if auc["bid"] > 0 else max(price, AUCTION_STEP)
         if amount < min_bid:
-            raise RulesError(f"Мінімальна ставка {min_bid} ₴")
+            raise RulesError(f"Мінімальна ставка {fmt(min_bid)}")
         if amount > p["money"]:
             raise RulesError("Не вистачає грошей")
         auc["bid"] = amount
@@ -1354,6 +1365,8 @@ class Room:
         return int(tile["house"]) * (int(houses) + 1)
 
     def _sell_house(self, p, idx):
+        if not (0 <= idx < len(self.board)):
+            raise RulesError("Невірна клітинка")
         st = self.state
         tile = self.board[idx]
         stt = st["tiles"][idx]
@@ -1384,6 +1397,8 @@ class Room:
                 self._after_resolution(p)
 
     def _mortgage(self, p, idx):
+        if not (0 <= idx < len(self.board)):
+            raise RulesError("Невірна клітинка")
         st = self.state
         tile = self.board[idx]
         stt = st["tiles"][idx]
@@ -1404,6 +1419,8 @@ class Room:
                 self._after_resolution(p)
 
     def _unmortgage(self, p, idx):
+        if not (0 <= idx < len(self.board)):
+            raise RulesError("Невірна клітинка")
         st = self.state
         tile = self.board[idx]
         stt = st["tiles"][idx]
@@ -1467,8 +1484,25 @@ class Room:
 
     # ---------- trade ----------
 
+    def _tiles_arg(self, raw):
+        if raw is None:
+            return []
+        if not isinstance(raw, (list, tuple)):
+            raise RulesError("Некоректний список клітинок")
+        out = []
+        for x in raw:
+            try:
+                i = int(x)
+            except (TypeError, ValueError):
+                raise RulesError("Некоректна клітинка")
+            if not (0 <= i < len(self.board)):
+                raise RulesError("Невірна клітинка")
+            out.append(i)
+        return out
+
     def _trade_propose(self, pid, a):
         st = self.state
+
         p = self._require(pid)
         if p["debt"]:
             raise RulesError("Спочатку розрахуйтеся")
@@ -1488,8 +1522,10 @@ class Room:
             raise RulesError("Цей гравець вибув")
         give = a.get("give") or {}
         want = a.get("want") or {}
-        g_tiles = [int(x) for x in give.get("tiles", [])]
-        w_tiles = [int(x) for x in want.get("tiles", [])]
+        if not isinstance(give, dict) or not isinstance(want, dict):
+            raise RulesError("Некоректний обмін")
+        g_tiles = self._tiles_arg(give.get("tiles", []))
+        w_tiles = self._tiles_arg(want.get("tiles", []))
         g_money = int(give.get("money", 0) or 0)
         w_money = int(want.get("money", 0) or 0)
         if g_money < 0 or w_money < 0:
@@ -1808,6 +1844,7 @@ class Room:
                 "winner": st["winner"],
                 "pot": st.get("pot", 0),
                 "round": st.get("round", 1),
+                "turns": st.get("turns", 0),
                 "rentBoost": st.get("rentBoost", 1.0),
                 "updated": st["updated"],
                 "startedAt": st["startedAt"],
@@ -1841,3 +1878,5 @@ class Room:
             data["tradeLeft"] = tleft
             data["you"] = pid
             return data
+
+
