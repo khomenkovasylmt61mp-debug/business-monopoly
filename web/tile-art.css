@@ -1,0 +1,37 @@
+/* ============================================================
+   TileArt — арт-фон клеток (тема «Бренди»)
+   Арт — ТОЛЬКО фон клетки через CSS-переменную --tile-img.
+   Цена, лого, название, дома, владельцы и фишки остаются
+   реальными DOM-слоями поверх арта (их этот файл НЕ скрывает).
+   Подключать ПОСЛЕ style.css.
+   ============================================================ */
+
+.tile.has-art {
+  background-image: var(--tile-img);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  /* арт заменяет собственный фон/рамку клетки, но не меняет геометрию */
+  background-color: transparent;
+  border-color: transparent;
+}
+
+/* Страховка видимости DOM-слоёв поверх арта:
+   тело клетки и плашка цены всегда видимы (в арте под них
+   оставлены пустые плашки — цена лежит сверху). */
+.tile.has-art .tile-body,
+.tile.has-art .tile-price {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Цена — верхний слой внутри клетки, над фоновым арт-слоем. */
+.tile.has-art .tile-price {
+  z-index: 4;
+}
+
+/* В арті вже намальовані лого, назва і смуга групи — ховаємо дублі DOM. */
+.tile.has-art .tile-body,
+.tile.has-art .bar { display: none; }
+.tile.has-art .houses { z-index: 6; }
+.tile.has-art .owner-dot { z-index: 7; }
