@@ -426,7 +426,7 @@ function renderTokens(st) {
     });
     const maxShow = window.innerWidth <= 640 ? 4 : 7;
     const shown = ordered.slice(0, maxShow);
-    stack.dataset.n = String(shown.length);
+    stack.dataset.n = String(shown.length + (list.length > shown.length ? 1 : 0));
     shown.forEach((p) => {
       const t = document.createElement('div');
       t.className = 'token' + (p.id === S.pid ? ' me' : '') + (st.turn === p.id ? ' active' : '');
@@ -758,6 +758,21 @@ function renderLobby(st) {
       act('set_timer', { value: Number(b.dataset.timer) });
     };
   });
+
+  const pieces = S.boardData.pieces || [];
+  const grid = $('pieceGrid');
+  if (grid) {
+    grid.innerHTML = pieces.map((pc) => {
+      const holder = st.players.find((p) => p.piece === pc.icon);
+      const mine = holder && holder.id === S.pid;
+      const taken = holder && !mine;
+      const label = mine ? '✓ Ваша' : (taken ? `${holder.bot ? '🤖 ' : ''}${esc(holder.name)}` : pc.name);
+      return `<button class="piece-btn${mine ? ' active' : ''}${taken ? ' taken' : ''}" data-piece="${pc.icon}" title="${pc.name}${holder ? ' · ' + esc(holder.name) : ''}" ${taken ? 'disabled' : ''}>${pc.icon}<small>${label}</small></button>`;
+    }).join('');
+    grid.querySelectorAll('[data-piece]').forEach((b) => {
+      b.onclick = () => act('set_piece', { piece: b.dataset.piece });
+    });
+  }
   $('rulesPreview').innerHTML = `
     <div class="rv"><span>Гравців</span><b>${n}</b></div>
     <div class="rv"><span>Стартовий капітал</span><b>${money(sc.startMoney)}</b></div>
