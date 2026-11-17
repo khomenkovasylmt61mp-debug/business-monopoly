@@ -703,6 +703,14 @@ class Room:
             p = self._player(pid)
             text = str(a.get("text", ""))[:300].strip()
             if text:
+                now = time.time()
+                hist = [x for x in (p.get("chatTs") or []) if now - x < 10]
+                if len(hist) >= 5:
+                    raise RulesError("Занадто швидко — зачекайте кілька секунд")
+                if hist and now - hist[-1] < 0.4:
+                    raise RulesError("Зачекайте мить")
+                hist.append(now)
+                p["chatTs"] = hist
                 st["chatSeq"] += 1
                 st["chat"].append({"id": st["chatSeq"], "pid": pid, "name": p["name"],
                                    "color": p["hex"], "text": text, "t": time.time()})
@@ -1747,7 +1755,7 @@ class Room:
             players = []
             now = time.time()
             for p in st["players"]:
-                q = {k: v for k, v in p.items() if k not in ("token", "lastSeen")}
+                q = {k: v for k, v in p.items() if k not in ("token", "lastSeen", "chatTs")}
                 q["afk"] = (not p["bot"]) and (now - p["lastSeen"] > 45)
                 if p["id"] == pid or st["phase"] == "ended":
                     q["missions"] = [
