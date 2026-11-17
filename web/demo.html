@@ -208,6 +208,14 @@ window.addEventListener('load', async () => {
     }
     const tab = q.get('tab');
     if (tab) setTimeout(() => switchTab(tab), 300);
+    if (q.get('unread')) setTimeout(() => {
+      const list = document.getElementById('chatList');
+      if (!list || !S.state.chat) return;
+      list.scrollTop = 0;
+      S.state.chat.push({ id: 9999, pid: S.pid, name: 'QA', color: '#e3bd6b', text: 'Нове повідомлення, поки ви читаєте старі', t: Date.now() / 1000 });
+      renderTab(S.state);
+    }, 1200);
+    if (q.get('mchat')) setTimeout(() => openMobileChat(), 600);
   } catch (e) { document.title = 'ERR ' + e.message; }
 });
 </script>
