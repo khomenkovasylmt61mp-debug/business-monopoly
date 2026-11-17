@@ -1,0 +1,1482 @@
+[
+  {
+    "position": 0,
+    "id_hint": "start",
+    "label_uk": "СТАРТ",
+    "group_hint": "start",
+    "reference_price": "+200 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/00_start.png",
+        "mobile": "tiles/mobile/portrait/00_start.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/00_start.png",
+        "mobile": "tiles/mobile/landscape/00_start.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/00_start.png",
+        "mobile": "tiles/mobile/square/00_start.webp"
+      }
+    },
+    "icon": "tiles/icons/00_start.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.89
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 1,
+    "id_hint": "silpo",
+    "label_uk": "Сільпо",
+    "group_hint": "brown",
+    "reference_price": "60 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/01_silpo.png",
+        "mobile": "tiles/mobile/portrait/01_silpo.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/01_silpo.png",
+        "mobile": "tiles/mobile/landscape/01_silpo.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/01_silpo.png",
+        "mobile": "tiles/mobile/square/01_silpo.webp"
+      }
+    },
+    "icon": "tiles/icons/01_silpo.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 2,
+    "id_hint": "treasury",
+    "label_uk": "Скарбниця",
+    "group_hint": "special",
+    "reference_price": null,
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/02_treasury.png",
+        "mobile": "tiles/mobile/portrait/02_treasury.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/02_treasury.png",
+        "mobile": "tiles/mobile/landscape/02_treasury.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/02_treasury.png",
+        "mobile": "tiles/mobile/square/02_treasury.webp"
+      }
+    },
+    "icon": "tiles/icons/02_treasury.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 3,
+    "id_hint": "atb",
+    "label_uk": "АТБ",
+    "group_hint": "brown",
+    "reference_price": "60 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/03_atb.png",
+        "mobile": "tiles/mobile/portrait/03_atb.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/03_atb.png",
+        "mobile": "tiles/mobile/landscape/03_atb.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/03_atb.png",
+        "mobile": "tiles/mobile/square/03_atb.webp"
+      }
+    },
+    "icon": "tiles/icons/03_atb.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 4,
+    "id_hint": "tax",
+    "label_uk": "Податок",
+    "group_hint": "tax",
+    "reference_price": "−200 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/04_tax.png",
+        "mobile": "tiles/mobile/portrait/04_tax.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/04_tax.png",
+        "mobile": "tiles/mobile/landscape/04_tax.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/04_tax.png",
+        "mobile": "tiles/mobile/square/04_tax.webp"
+      }
+    },
+    "icon": "tiles/icons/04_tax.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 5,
+    "id_hint": "ukrzaliznytsia",
+    "label_uk": "Укрзалізниця",
+    "group_hint": "transit",
+    "reference_price": "200 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/05_ukrzaliznytsia.png",
+        "mobile": "tiles/mobile/portrait/05_ukrzaliznytsia.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/05_ukrzaliznytsia.png",
+        "mobile": "tiles/mobile/landscape/05_ukrzaliznytsia.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/05_ukrzaliznytsia.png",
+        "mobile": "tiles/mobile/square/05_ukrzaliznytsia.webp"
+      }
+    },
+    "icon": "tiles/icons/05_ukrzaliznytsia.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 6,
+    "id_hint": "rozetka",
+    "label_uk": "Rozetka",
+    "group_hint": "cyan",
+    "reference_price": "100 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/06_rozetka.png",
+        "mobile": "tiles/mobile/portrait/06_rozetka.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/06_rozetka.png",
+        "mobile": "tiles/mobile/landscape/06_rozetka.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/06_rozetka.png",
+        "mobile": "tiles/mobile/square/06_rozetka.webp"
+      }
+    },
+    "icon": "tiles/icons/06_rozetka.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 7,
+    "id_hint": "chance",
+    "label_uk": "Шанс",
+    "group_hint": "special",
+    "reference_price": null,
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/07_chance.png",
+        "mobile": "tiles/mobile/portrait/07_chance.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/07_chance.png",
+        "mobile": "tiles/mobile/landscape/07_chance.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/07_chance.png",
+        "mobile": "tiles/mobile/square/07_chance.webp"
+      }
+    },
+    "icon": "tiles/icons/07_chance.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 8,
+    "id_hint": "prom",
+    "label_uk": "Prom.ua",
+    "group_hint": "cyan",
+    "reference_price": "100 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/08_prom.png",
+        "mobile": "tiles/mobile/portrait/08_prom.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/08_prom.png",
+        "mobile": "tiles/mobile/landscape/08_prom.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/08_prom.png",
+        "mobile": "tiles/mobile/square/08_prom.webp"
+      }
+    },
+    "icon": "tiles/icons/08_prom.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 9,
+    "id_hint": "olx",
+    "label_uk": "OLX",
+    "group_hint": "cyan",
+    "reference_price": "120 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/09_olx.png",
+        "mobile": "tiles/mobile/portrait/09_olx.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/09_olx.png",
+        "mobile": "tiles/mobile/landscape/09_olx.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/09_olx.png",
+        "mobile": "tiles/mobile/square/09_olx.webp"
+      }
+    },
+    "icon": "tiles/icons/09_olx.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 10,
+    "id_hint": "jail",
+    "label_uk": "Тюрма",
+    "group_hint": "jail",
+    "reference_price": null,
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/10_jail.png",
+        "mobile": "tiles/mobile/portrait/10_jail.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/10_jail.png",
+        "mobile": "tiles/mobile/landscape/10_jail.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/10_jail.png",
+        "mobile": "tiles/mobile/square/10_jail.webp"
+      }
+    },
+    "icon": "tiles/icons/10_jail.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 11,
+    "id_hint": "monobank",
+    "label_uk": "monobank",
+    "group_hint": "pink",
+    "reference_price": "140 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/11_monobank.png",
+        "mobile": "tiles/mobile/portrait/11_monobank.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/11_monobank.png",
+        "mobile": "tiles/mobile/landscape/11_monobank.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/11_monobank.png",
+        "mobile": "tiles/mobile/square/11_monobank.webp"
+      }
+    },
+    "icon": "tiles/icons/11_monobank.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 12,
+    "id_hint": "dtek",
+    "label_uk": "ДТЕК",
+    "group_hint": "utility",
+    "reference_price": "150 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/12_dtek.png",
+        "mobile": "tiles/mobile/portrait/12_dtek.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/12_dtek.png",
+        "mobile": "tiles/mobile/landscape/12_dtek.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/12_dtek.png",
+        "mobile": "tiles/mobile/square/12_dtek.webp"
+      }
+    },
+    "icon": "tiles/icons/12_dtek.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 13,
+    "id_hint": "privatbank",
+    "label_uk": "ПриватБанк",
+    "group_hint": "pink",
+    "reference_price": "140 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/13_privatbank.png",
+        "mobile": "tiles/mobile/portrait/13_privatbank.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/13_privatbank.png",
+        "mobile": "tiles/mobile/landscape/13_privatbank.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/13_privatbank.png",
+        "mobile": "tiles/mobile/square/13_privatbank.webp"
+      }
+    },
+    "icon": "tiles/icons/13_privatbank.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 14,
+    "id_hint": "oschadbank",
+    "label_uk": "Ощадбанк",
+    "group_hint": "pink",
+    "reference_price": "160 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/14_oschadbank.png",
+        "mobile": "tiles/mobile/portrait/14_oschadbank.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/14_oschadbank.png",
+        "mobile": "tiles/mobile/landscape/14_oschadbank.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/14_oschadbank.png",
+        "mobile": "tiles/mobile/square/14_oschadbank.webp"
+      }
+    },
+    "icon": "tiles/icons/14_oschadbank.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 15,
+    "id_hint": "nova_poshta",
+    "label_uk": "Нова пошта",
+    "group_hint": "transit",
+    "reference_price": "200 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/15_nova_poshta.png",
+        "mobile": "tiles/mobile/portrait/15_nova_poshta.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/15_nova_poshta.png",
+        "mobile": "tiles/mobile/landscape/15_nova_poshta.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/15_nova_poshta.png",
+        "mobile": "tiles/mobile/square/15_nova_poshta.webp"
+      }
+    },
+    "icon": "tiles/icons/15_nova_poshta.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 16,
+    "id_hint": "kyivstar",
+    "label_uk": "Київстар",
+    "group_hint": "orange",
+    "reference_price": "180 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/16_kyivstar.png",
+        "mobile": "tiles/mobile/portrait/16_kyivstar.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/16_kyivstar.png",
+        "mobile": "tiles/mobile/landscape/16_kyivstar.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/16_kyivstar.png",
+        "mobile": "tiles/mobile/square/16_kyivstar.webp"
+      }
+    },
+    "icon": "tiles/icons/16_kyivstar.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 17,
+    "id_hint": "treasury",
+    "label_uk": "Скарбниця",
+    "group_hint": "special",
+    "reference_price": null,
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/17_treasury.png",
+        "mobile": "tiles/mobile/portrait/17_treasury.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/17_treasury.png",
+        "mobile": "tiles/mobile/landscape/17_treasury.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/17_treasury.png",
+        "mobile": "tiles/mobile/square/17_treasury.webp"
+      }
+    },
+    "icon": "tiles/icons/17_treasury.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 18,
+    "id_hint": "vodafone",
+    "label_uk": "Vodafone",
+    "group_hint": "orange",
+    "reference_price": "180 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/18_vodafone.png",
+        "mobile": "tiles/mobile/portrait/18_vodafone.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/18_vodafone.png",
+        "mobile": "tiles/mobile/landscape/18_vodafone.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/18_vodafone.png",
+        "mobile": "tiles/mobile/square/18_vodafone.webp"
+      }
+    },
+    "icon": "tiles/icons/18_vodafone.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 19,
+    "id_hint": "lifecell",
+    "label_uk": "lifecell",
+    "group_hint": "orange",
+    "reference_price": "200 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/19_lifecell.png",
+        "mobile": "tiles/mobile/portrait/19_lifecell.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/19_lifecell.png",
+        "mobile": "tiles/mobile/landscape/19_lifecell.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/19_lifecell.png",
+        "mobile": "tiles/mobile/square/19_lifecell.webp"
+      }
+    },
+    "icon": "tiles/icons/19_lifecell.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 20,
+    "id_hint": "parking",
+    "label_uk": "Парковка",
+    "group_hint": "parking",
+    "reference_price": null,
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/20_parking.png",
+        "mobile": "tiles/mobile/portrait/20_parking.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/20_parking.png",
+        "mobile": "tiles/mobile/landscape/20_parking.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/20_parking.png",
+        "mobile": "tiles/mobile/square/20_parking.webp"
+      }
+    },
+    "icon": "tiles/icons/20_parking.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 21,
+    "id_hint": "mcdonalds",
+    "label_uk": "McDonald’s",
+    "group_hint": "red",
+    "reference_price": "220 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/21_mcdonalds.png",
+        "mobile": "tiles/mobile/portrait/21_mcdonalds.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/21_mcdonalds.png",
+        "mobile": "tiles/mobile/landscape/21_mcdonalds.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/21_mcdonalds.png",
+        "mobile": "tiles/mobile/square/21_mcdonalds.webp"
+      }
+    },
+    "icon": "tiles/icons/21_mcdonalds.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 22,
+    "id_hint": "casino",
+    "label_uk": "Казино",
+    "group_hint": "casino",
+    "reference_price": null,
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/22_casino.png",
+        "mobile": "tiles/mobile/portrait/22_casino.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/22_casino.png",
+        "mobile": "tiles/mobile/landscape/22_casino.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/22_casino.png",
+        "mobile": "tiles/mobile/square/22_casino.webp"
+      }
+    },
+    "icon": "tiles/icons/22_casino.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 23,
+    "id_hint": "kfc",
+    "label_uk": "KFC",
+    "group_hint": "red",
+    "reference_price": "220 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/23_kfc.png",
+        "mobile": "tiles/mobile/portrait/23_kfc.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/23_kfc.png",
+        "mobile": "tiles/mobile/landscape/23_kfc.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/23_kfc.png",
+        "mobile": "tiles/mobile/square/23_kfc.webp"
+      }
+    },
+    "icon": "tiles/icons/23_kfc.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 24,
+    "id_hint": "puzata_hata",
+    "label_uk": "Пузата Хата",
+    "group_hint": "red",
+    "reference_price": "240 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/24_puzata_hata.png",
+        "mobile": "tiles/mobile/portrait/24_puzata_hata.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/24_puzata_hata.png",
+        "mobile": "tiles/mobile/landscape/24_puzata_hata.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/24_puzata_hata.png",
+        "mobile": "tiles/mobile/square/24_puzata_hata.webp"
+      }
+    },
+    "icon": "tiles/icons/24_puzata_hata.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 25,
+    "id_hint": "ukrposhta",
+    "label_uk": "Укрпошта",
+    "group_hint": "transit",
+    "reference_price": "200 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/25_ukrposhta.png",
+        "mobile": "tiles/mobile/portrait/25_ukrposhta.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/25_ukrposhta.png",
+        "mobile": "tiles/mobile/landscape/25_ukrposhta.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/25_ukrposhta.png",
+        "mobile": "tiles/mobile/square/25_ukrposhta.webp"
+      }
+    },
+    "icon": "tiles/icons/25_ukrposhta.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 26,
+    "id_hint": "bolt",
+    "label_uk": "Bolt",
+    "group_hint": "yellow",
+    "reference_price": "260 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/26_bolt.png",
+        "mobile": "tiles/mobile/portrait/26_bolt.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/26_bolt.png",
+        "mobile": "tiles/mobile/landscape/26_bolt.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/26_bolt.png",
+        "mobile": "tiles/mobile/square/26_bolt.webp"
+      }
+    },
+    "icon": "tiles/icons/26_bolt.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 27,
+    "id_hint": "uber",
+    "label_uk": "Uber",
+    "group_hint": "yellow",
+    "reference_price": "260 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/27_uber.png",
+        "mobile": "tiles/mobile/portrait/27_uber.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/27_uber.png",
+        "mobile": "tiles/mobile/landscape/27_uber.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/27_uber.png",
+        "mobile": "tiles/mobile/square/27_uber.webp"
+      }
+    },
+    "icon": "tiles/icons/27_uber.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 28,
+    "id_hint": "kyivvodokanal",
+    "label_uk": "Київводоканал",
+    "group_hint": "utility",
+    "reference_price": "150 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/28_kyivvodokanal.png",
+        "mobile": "tiles/mobile/portrait/28_kyivvodokanal.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/28_kyivvodokanal.png",
+        "mobile": "tiles/mobile/landscape/28_kyivvodokanal.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/28_kyivvodokanal.png",
+        "mobile": "tiles/mobile/square/28_kyivvodokanal.webp"
+      }
+    },
+    "icon": "tiles/icons/28_kyivvodokanal.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 29,
+    "id_hint": "glovo",
+    "label_uk": "Glovo",
+    "group_hint": "yellow",
+    "reference_price": "280 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/29_glovo.png",
+        "mobile": "tiles/mobile/portrait/29_glovo.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/29_glovo.png",
+        "mobile": "tiles/mobile/landscape/29_glovo.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/29_glovo.png",
+        "mobile": "tiles/mobile/square/29_glovo.webp"
+      }
+    },
+    "icon": "tiles/icons/29_glovo.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 30,
+    "id_hint": "go_to_jail",
+    "label_uk": "До тюрми",
+    "group_hint": "jailgo",
+    "reference_price": null,
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/30_go_to_jail.png",
+        "mobile": "tiles/mobile/portrait/30_go_to_jail.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/30_go_to_jail.png",
+        "mobile": "tiles/mobile/landscape/30_go_to_jail.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/30_go_to_jail.png",
+        "mobile": "tiles/mobile/square/30_go_to_jail.webp"
+      }
+    },
+    "icon": "tiles/icons/30_go_to_jail.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 31,
+    "id_hint": "apple",
+    "label_uk": "Apple",
+    "group_hint": "green",
+    "reference_price": "300 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/31_apple.png",
+        "mobile": "tiles/mobile/portrait/31_apple.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/31_apple.png",
+        "mobile": "tiles/mobile/landscape/31_apple.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/31_apple.png",
+        "mobile": "tiles/mobile/square/31_apple.webp"
+      }
+    },
+    "icon": "tiles/icons/31_apple.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 32,
+    "id_hint": "samsung",
+    "label_uk": "Samsung",
+    "group_hint": "green",
+    "reference_price": "300 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/32_samsung.png",
+        "mobile": "tiles/mobile/portrait/32_samsung.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/32_samsung.png",
+        "mobile": "tiles/mobile/landscape/32_samsung.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/32_samsung.png",
+        "mobile": "tiles/mobile/square/32_samsung.webp"
+      }
+    },
+    "icon": "tiles/icons/32_samsung.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 33,
+    "id_hint": "treasury",
+    "label_uk": "Скарбниця",
+    "group_hint": "special",
+    "reference_price": null,
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/33_treasury.png",
+        "mobile": "tiles/mobile/portrait/33_treasury.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/33_treasury.png",
+        "mobile": "tiles/mobile/landscape/33_treasury.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/33_treasury.png",
+        "mobile": "tiles/mobile/square/33_treasury.webp"
+      }
+    },
+    "icon": "tiles/icons/33_treasury.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 34,
+    "id_hint": "comfy",
+    "label_uk": "Comfy",
+    "group_hint": "green",
+    "reference_price": "320 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/34_comfy.png",
+        "mobile": "tiles/mobile/portrait/34_comfy.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/34_comfy.png",
+        "mobile": "tiles/mobile/landscape/34_comfy.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/34_comfy.png",
+        "mobile": "tiles/mobile/square/34_comfy.webp"
+      }
+    },
+    "icon": "tiles/icons/34_comfy.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 35,
+    "id_hint": "meest",
+    "label_uk": "Meest",
+    "group_hint": "transit",
+    "reference_price": "200 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/35_meest.png",
+        "mobile": "tiles/mobile/portrait/35_meest.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/35_meest.png",
+        "mobile": "tiles/mobile/landscape/35_meest.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/35_meest.png",
+        "mobile": "tiles/mobile/square/35_meest.webp"
+      }
+    },
+    "icon": "tiles/icons/35_meest.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 36,
+    "id_hint": "chance",
+    "label_uk": "Шанс",
+    "group_hint": "special",
+    "reference_price": null,
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/36_chance.png",
+        "mobile": "tiles/mobile/portrait/36_chance.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/36_chance.png",
+        "mobile": "tiles/mobile/landscape/36_chance.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/36_chance.png",
+        "mobile": "tiles/mobile/square/36_chance.webp"
+      }
+    },
+    "icon": "tiles/icons/36_chance.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 37,
+    "id_hint": "tesla",
+    "label_uk": "Tesla",
+    "group_hint": "blue",
+    "reference_price": "350 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/37_tesla.png",
+        "mobile": "tiles/mobile/portrait/37_tesla.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/37_tesla.png",
+        "mobile": "tiles/mobile/landscape/37_tesla.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/37_tesla.png",
+        "mobile": "tiles/mobile/square/37_tesla.webp"
+      }
+    },
+    "icon": "tiles/icons/37_tesla.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 38,
+    "id_hint": "luxury",
+    "label_uk": "Розкіш",
+    "group_hint": "tax",
+    "reference_price": "−100 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/38_luxury.png",
+        "mobile": "tiles/mobile/portrait/38_luxury.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/38_luxury.png",
+        "mobile": "tiles/mobile/landscape/38_luxury.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/38_luxury.png",
+        "mobile": "tiles/mobile/square/38_luxury.webp"
+      }
+    },
+    "icon": "tiles/icons/38_luxury.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  },
+  {
+    "position": 39,
+    "id_hint": "tsum",
+    "label_uk": "ЦУМ",
+    "group_hint": "blue",
+    "reference_price": "400 ₴",
+    "files": {
+      "portrait": {
+        "desktop": "tiles/desktop/portrait/39_tsum.png",
+        "mobile": "tiles/mobile/portrait/39_tsum.webp"
+      },
+      "landscape": {
+        "desktop": "tiles/desktop/landscape/39_tsum.png",
+        "mobile": "tiles/mobile/landscape/39_tsum.webp"
+      },
+      "square": {
+        "desktop": "tiles/desktop/square/39_tsum.png",
+        "mobile": "tiles/mobile/square/39_tsum.webp"
+      }
+    },
+    "icon": "tiles/icons/39_tsum.png",
+    "price_anchor": {
+      "portrait": [
+        0.5,
+        0.108
+      ],
+      "landscape": [
+        0.119,
+        0.49
+      ],
+      "square": [
+        0.5,
+        0.1
+      ]
+    },
+    "price_is_runtime": true
+  }
+]
