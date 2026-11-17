@@ -440,7 +440,7 @@ function renderTokens(st) {
       const pb = (b.id === st.turn ? 2 : 0) + (b.id === S.pid ? 1 : 0);
       return pb - pa;
     });
-    const maxShow = window.innerHeight < 560 ? 3 : (window.innerWidth <= 640 ? 4 : 6);
+    const maxShow = window.innerWidth < 560 ? 3 : (window.innerWidth <= 640 ? 4 : 12);
     const shown = ordered.slice(0, maxShow);
     stack.dataset.n = String(shown.length + (list.length > shown.length ? 1 : 0));
     shown.forEach((p) => {
@@ -2051,6 +2051,22 @@ function wire() {
   });
 
   $('menuBtn').onclick = openMenu;
+
+  const bb = $('bigBoardBtn');
+  if (bb) {
+    const applyBig = (on) => {
+      document.body.classList.toggle('big-board', on);
+      bb.setAttribute('aria-pressed', on ? 'true' : 'false');
+      bb.classList.toggle('on', on);
+      try { localStorage.setItem('bm_big', on ? '1' : '0'); } catch (e) { /* ignore */ }
+      setTimeout(() => {
+        fitBoard();
+        if (window.TileArt && S.state) window.TileArt.apply(S.state, S.boardData);
+      }, 80);
+    };
+    bb.onclick = () => applyBig(!document.body.classList.contains('big-board'));
+    try { if (localStorage.getItem('bm_big') === '1') applyBig(true); } catch (e) { /* ignore */ }
+  }
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && S.code && !S.connected) {
