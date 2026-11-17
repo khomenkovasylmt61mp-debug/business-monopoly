@@ -399,7 +399,10 @@ function renderBoard(st) {
     el.classList.toggle('hl', !!(cur && cur.pos === i));
 
     const hEl = el.querySelector('.houses');
-    if (ts.houses === 5) {
+    const canBuild = t.type === 'street';
+    if (!canBuild) {
+      hEl.innerHTML = '';
+    } else if (ts.houses === 5) {
       hEl.innerHTML = '<img class="hotel-img" src="/buildings/hotel.webp" alt="" draggable="false">';
     } else if (ts.houses > 0) {
       hEl.innerHTML = `<img class="house-img" src="/buildings/house_${ts.houses}.webp" alt="" draggable="false">`;
@@ -447,7 +450,7 @@ function renderTokens(st) {
       const pb = (b.id === st.turn ? 2 : 0) + (b.id === S.pid ? 1 : 0);
       return pb - pa;
     });
-    const maxShow = window.innerWidth <= 640 ? 4 : 6;
+    const maxShow = window.innerWidth <= 640 ? 3 : 4;
     const shown = ordered.slice(0, maxShow);
     stack.dataset.n = String(shown.length + (list.length > shown.length ? 1 : 0));
     shown.forEach((p) => {
