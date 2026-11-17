@@ -419,7 +419,8 @@ function renderTokens(st) {
       const pb = (b.id === st.turn ? 2 : 0) + (b.id === S.pid ? 1 : 0);
       return pb - pa;
     });
-    const shown = ordered.slice(0, 7);
+    const maxShow = window.innerWidth <= 640 ? 4 : 7;
+    const shown = ordered.slice(0, maxShow);
     stack.dataset.n = String(shown.length);
     shown.forEach((p) => {
       const t = document.createElement('div');
@@ -760,6 +761,12 @@ function renderLobby(st) {
     <div class="rv"><span>Динамічна рента</span><b>${mode === 'classic' ? 'вимкнена' : '+10% кожні 5 кіл'}</b></div>
     <div class="rv"><span>Таймер хода</span><b>${timer ? timer + ' с · штраф 100 ₴' : 'вимкнено'}</b></div>
     <div class="rv"><span>Аукціон при відмові</span><b>так</b></div>`;
+  const note = $('timerNote');
+  if (note) {
+    note.textContent = timer
+      ? `Кожна дія дає нові ${timer} с. Якщо нічого не робиш — автохід і штраф 100 ₴.`
+      : 'Таймер вимкнено — хід не обмежений.';
+  }
 
   const park = !!(st.options && st.options.parkingPot);
   const pt = $('parkingToggle');
@@ -1182,7 +1189,7 @@ function renderMine(st, body) {
   const order = Object.keys(S.boardData.groups);
   const owned = st.tiles.map((t, i) => ({ t, i }))
     .filter((x) => x.t.owner === S.pid)
-    .sort((a, b) => order.indexOf(a.t.group) - order.indexOf(b.t.group));
+    .sort((a, b) => order.indexOf(S.boardData.board[a.i].group) - order.indexOf(S.boardData.board[b.i].group));
 
   const rows = owned.map((x) => propRow(st, x.i, me)).join('');
   const cr = me.credit;
@@ -1307,7 +1314,7 @@ function propState(st, i, me) {
   if (!ts.mortgaged && !groupHasHouses) {
     acts.push({ pact: 'mortgage', label: `Залог +${money(Math.floor(t.price / 2))}` });
   } else if (ts.mortgaged) {
-    const cost = Math.round(t.price * 0.55);
+    const cost = Math.round(t.price * 0.6);
     acts.push({ pact: 'unmortgage', label: `Викуп ${money(cost)}`, disabled: me.money < cost });
   }
 
@@ -1492,30 +1499,34 @@ function openCasinoTable() {
   const me = meP(st);
   if (!st || !me) return;
   if (![100, 200, 500].includes(S.casinoBet)) S.casinoBet = 200;
+  if (me.money < S.casinoBet) {
+    S.casinoBet = [500, 200, 100].find((v) => me.money >= v) || 100;
+  }
   const bet = S.casinoBet;
+  const dis = me.money >= bet ? '' : 'disabled';
   const chips = [100, 200, 500].map((v) => `<button class="rt-chip${v === bet ? ' active' : ''}" data-bet="${v}" ${me.money < v ? 'disabled' : ''}>${money(v)}</button>`).join('');
   const nums = Array.from({ length: 36 }, (_, i) => i + 1).map((n) => {
     const red = ROULETTE_RED.has(n);
-    return `<button class="rt-num ${red ? 'red' : 'black'}" data-num="${n}">${n}</button>`;
+    return `<button class="rt-num ${red ? 'red' : 'black'}" data-num="${n}" ${dis}>${n}</button>`;
   }).join('');
   const modal = openModal(`
     <h2>🎡 Рулетка</h2>
     <div class="sub">Ставка <b>${money(bet)}</b> · баланс ${money(me.money)} · зеро забирає все</div>
     <div class="rt-chips">${chips}</div>
     <div class="rt-outs">
-      <button class="rt-out red" data-kind="red">♥ Червоне · 1:1</button>
-      <button class="rt-out black" data-kind="black">♠ Чорне · 1:1</button>
-      <button class="rt-out" data-kind="even">Парне · 1:1</button>
-      <button class="rt-out" data-kind="odd">Непарне · 1:1</button>
-      <button class="rt-out" data-kind="low">1–18 · 1:1</button>
-      <button class="rt-out" data-kind="high">19–36 · 1:1</button>
-      <button class="rt-out gold" data-kind="dozen1">1–12 · 2:1</button>
-      <button class="rt-out gold" data-kind="dozen2">13–24 · 2:1</button>
-      <button class="rt-out gold" data-kind="dozen3">25–36 · 2:1</button>
+      <button class="rt-out red" data-kind="red" ${dis}>♥ Червоне · 1:1</button>
+      <button class="rt-out black" data-kind="black" ${dis}>♠ Чорне · 1:1</button>
+      <button class="rt-out" data-kind="even" ${dis}>Парне · 1:1</button>
+      <button class="rt-out" data-kind="odd" ${dis}>Непарне · 1:1</button>
+      <button class="rt-out" data-kind="low" ${dis}>1–18 · 1:1</button>
+      <button class="rt-out" data-kind="high" ${dis}>19–36 · 1:1</button>
+      <button class="rt-out gold" data-kind="dozen1" ${dis}>1–12 · 2:1</button>
+      <button class="rt-out gold" data-kind="dozen2" ${dis}>13–24 · 2:1</button>
+      <button class="rt-out gold" data-kind="dozen3" ${dis}>25–36 · 2:1</button>
     </div>
     <div class="rt-label">На число — 35:1</div>
     <div class="rt-grid">
-      <button class="rt-num zero" data-num="0">0 — зеро</button>
+      <button class="rt-num zero" data-num="0" ${dis}>0 — зеро</button>
       ${nums}
     </div>
     <div class="modal-actions">
@@ -1554,9 +1565,10 @@ function openCasinoTable() {
 async function act(type, extra) {
   try {
     await api('/api/action', { code: S.code, token: S.token, action: Object.assign({ type }, extra || {}) });
+    return true;
   } catch (e) {
     toast(e.message, true);
-    throw e;
+    return false;
   }
 }
 
@@ -1609,6 +1621,7 @@ function applyState(st) {
 function useSession(code, token, pid, name) {
   S.code = code; S.token = token; S.pid = pid; S.name = name;
   S.lastVersion = -1; S.state = null; S.overShown = null;
+  S.prevPos = {}; S.diceKey = ''; S.chatSeen = 0; S.chatUnread = 0;
   saveSession();
   startPolling();
 }
@@ -1757,7 +1770,7 @@ function showRules() {
     <div class="kv"><span>Купівля</span><span>відмова — аукціон серед усіх</span></div>
     <div class="kv"><span>Монополія</span><span>уся кольорова група — подвійна рента, можна будувати</span></div>
     <div class="kv"><span>Будинки</span><span>будуються рівномірно, 4 будинки → готель</span></div>
-    <div class="kv"><span>Застава</span><span>50% ціни, викуп 55%, рента не сплачується</span></div>
+    <div class="kv"><span>Застава</span><span>50% ціни, викуп 60%, 10 ходів на викуп, рента не сплачується</span></div>
     <div class="kv"><span>Тюрма</span><span>застава 50 ₴, картка або дубль</span></div>
     <div class="kv"><span>Кінець</span><span>коли залишився один гравець</span></div>
     <div class="kv"><span>Під компанію</span><span>старт ${money(sc.startMoney)}, банк ${sc.houses}/${sc.hotels}, рента ×${sc.rent}</span></div>
