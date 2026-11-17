@@ -114,18 +114,18 @@ PLAYER_COLORS = [
 
 # фігурки як у справжній Монополії
 PIECES = [
-    {"icon": "🚗", "name": "Машинка"},
-    {"icon": "🚢", "name": "Кораблик"},
-    {"icon": "🎩", "name": "Циліндр"},
-    {"icon": "✈️", "name": "Літак"},
-    {"icon": "🐕", "name": "Собака"},
-    {"icon": "🐈", "name": "Кіт"},
-    {"icon": "👑", "name": "Корона"},
-    {"icon": "🚀", "name": "Ракета"},
-    {"icon": "🐴", "name": "Кінь"},
-    {"icon": "💎", "name": "Бриліант"},
-    {"icon": "🤖", "name": "Робот"},
-    {"icon": "⚓", "name": "Якір"},
+    {"icon": "🚗", "name": "Машинка", "img": "car.png"},
+    {"icon": "🚢", "name": "Кораблик", "img": "ship.png"},
+    {"icon": "🎩", "name": "Циліндр", "img": "hat.png"},
+    {"icon": "✈️", "name": "Літак", "img": "plane.png"},
+    {"icon": "🐕", "name": "Собака", "img": "dog.png"},
+    {"icon": "🐈", "name": "Кіт", "img": "cat.png"},
+    {"icon": "👑", "name": "Корона", "img": "crown.png"},
+    {"icon": "🚀", "name": "Ракета", "img": "rocket.png"},
+    {"icon": "🐴", "name": "Кінь", "img": "horse.png"},
+    {"icon": "💎", "name": "Бриліант", "img": "diamond.png"},
+    {"icon": "🤖", "name": "Робот", "img": "robot.png"},
+    {"icon": "⚓", "name": "Якір", "img": "anchor.png"},
 ]
 
 # ---------- масштабування правил під кількість гравців ----------
