@@ -1793,6 +1793,20 @@ class Room:
                 eff = limit * 2 if (curp and curp.get("debt")) else limit
                 left = max(0, int(round(eff - (now - act_t))))
             data["turnLeft"] = left
+            # authoritative current rent per tile (same function the server charges with)
+            rents = []
+            for i, tile in enumerate(self.board):
+                ts = st["tiles"][i]
+                owner = ts.get("owner")
+                if owner is None or ts.get("mortgaged") or tile.get("type") not in ("street", "rr", "util"):
+                    rents.append(None)
+                    continue
+                if tile["type"] == "util":
+                    n = sum(1 for j in GROUP_TILES["util"] if st["tiles"][j].get("owner") == owner)
+                    rents.append({"kind": "util", "mult": 10 if n == 2 else 4})
+                else:
+                    rents.append({"kind": tile["type"], "now": self._rent_for(tile, i)})
+            data["rents"] = rents
             tleft = MAX_TRADES_TURN
             if st.get("tradeTurnKey") == st.get("turn") and st.get("turn"):
                 used = int((st.get("tradeCounts") or {}).get(pid, 0))
