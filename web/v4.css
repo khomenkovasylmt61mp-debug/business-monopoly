@@ -462,6 +462,18 @@
 /* modal entrance must never leave the card invisible */
 .lux-card { animation: none !important; opacity: 1; max-height: 96dvh; }
 .lux-note { display: none; }
+
+/* touch: no sticky hover states (mobile-native baseline) */
+@media (hover: none) {
+  .rail button:hover { background: transparent; border-color: transparent; color: #9fb4cf; }
+  .rail button.on:hover {
+    background: linear-gradient(180deg, #f6d488, #cf9f3c);
+    border-color: #ffe7ad; color: #241a06;
+  }
+  .actions .btn.gold:hover, .actions .btn.primary:hover { filter: none; }
+  .hud-sel2-btn:hover { border-color: #d9b66b66; background: linear-gradient(180deg, #14294a, #0d2038); }
+  .piece-btn:hover { border-color: #ffffff14; }
+}
 .lux-rent-list li { padding-top: 3px !important; padding-bottom: 3px !important; }
 .lux-section { margin-bottom: 6px; }
 
