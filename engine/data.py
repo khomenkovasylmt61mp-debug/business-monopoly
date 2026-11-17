@@ -132,11 +132,11 @@ PIECES = [
 # Чим більше гравців — тим більше стартових грошей, більше будинків у банку
 # і трохи вища рента, щоб партія не тягнулася на весь вечір.
 SCALES = [
-    {"max": 3,  "startMoney": 1200, "houses": 32, "hotels": 12, "rent": 1.0,  "label": "2–3 гравці"},
-    {"max": 5,  "startMoney": 1500, "houses": 32, "hotels": 12, "rent": 1.0,  "label": "4–5 гравців"},
-    {"max": 7,  "startMoney": 1800, "houses": 40, "hotels": 16, "rent": 1.15, "label": "6–7 гравців"},
-    {"max": 9,  "startMoney": 2200, "houses": 48, "hotels": 20, "rent": 1.3,  "label": "8–9 гравців"},
-    {"max": 12, "startMoney": 2600, "houses": 60, "hotels": 26, "rent": 1.4,  "label": "10–12 гравців"},
+    {"max": 3,  "startMoney": 1200, "houses": 32, "hotels": 12, "rent": 1.5,  "label": "2-3 гравці"},
+    {"max": 5,  "startMoney": 1500, "houses": 32, "hotels": 12, "rent": 1.5,  "label": "4-5 гравців"},
+    {"max": 7,  "startMoney": 1800, "houses": 40, "hotels": 16, "rent": 1.725, "label": "6-7 гравців"},
+    {"max": 9,  "startMoney": 2200, "houses": 48, "hotels": 20, "rent": 1.95, "label": "8-9 гравців"},
+    {"max": 12, "startMoney": 2600, "houses": 60, "hotels": 26, "rent": 2.1,  "label": "10-12 гравців"},
 ]
 
 
