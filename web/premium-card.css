@@ -41,7 +41,7 @@
   background:
     radial-gradient(85% 70% at 100% 0%, rgba(217, 182, 107, .13), transparent 58%),
     linear-gradient(158deg, #0D2748 0%, #08172B 54%, #061223 100%);
-  border: 1px solid rgba(217, 182, 107, .92);
+  border: 1px solid #D9B66B;
   border-radius: 22px;
   box-shadow:
     0 0 0 1px rgba(217, 182, 107, .16),
@@ -844,7 +844,13 @@
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
-  transition: background-color .15s ease, color .15s ease, border-color .15s ease, transform .15s ease;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease, transform .15s ease,
+    opacity .18s ease, visibility .18s ease;
+}
+.lux-card.is-scrolled .lux-x {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 .lux-x:focus-visible { outline-color: #F0D79B; }
 
