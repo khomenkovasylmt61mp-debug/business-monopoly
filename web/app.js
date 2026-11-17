@@ -110,6 +110,17 @@ function closeModal() {
 
 /* ---------- хелпери ---------- */
 function meP(st) { return (st || S.state).players.find((p) => p.id === S.pid) || null; }
+
+function pieceSrc(icon) {
+  const list = (S.boardData && S.boardData.pieces) || [];
+  const found = list.find((x) => x.icon === icon);
+  return found && found.img ? '/tokens/' + found.img : '';
+}
+function pieceHTML(icon, cls) {
+  const src = pieceSrc(icon);
+  if (!src) return icon || '';
+  return `<img class="${cls || ''}" src="${src}" alt="" draggable="false">`;
+}
 function curP(st) { return (st || S.state).players.find((p) => p.id === (st || S.state).turn) || null; }
 function playerById(st, id) { return st.players.find((p) => p.id === id) || null; }
 function groupOf(tile) { return tile.group ? S.boardData.groups[tile.group] : null; }
@@ -365,7 +376,7 @@ function renderBoard(st) {
     if (owner) {
       el.style.setProperty('--own', owner.hex);
       dot.hidden = false;
-      dot.textContent = owner.piece || '';
+      dot.innerHTML = pieceHTML(owner.piece, 'dot-img');
       dot.style.borderColor = owner.hex;
       dot.title = owner.name + (owner.pieceName ? ' · ' + owner.pieceName : '');
       if (edge) edge.hidden = false;
@@ -431,7 +442,8 @@ function renderTokens(st) {
       const t = document.createElement('div');
       t.className = 'token' + (p.id === S.pid ? ' me' : '') + (st.turn === p.id ? ' active' : '');
       t.dataset.pid = p.id;
-      t.textContent = p.piece || '';
+      t.innerHTML = pieceHTML(p.piece, 'tok-img');
+      t.classList.toggle('has-img', !!pieceSrc(p.piece));
       t.style.borderColor = p.hex;
       t.title = p.name + (p.pieceName ? ' · ' + p.pieceName : '');
       stack.appendChild(t);
@@ -469,7 +481,8 @@ function animateMoves(st, prevPos) {
     if (!real || !from) return;
     const ghost = document.createElement('div');
     ghost.className = 'token token-ghost';
-    ghost.textContent = p.piece || '';
+    ghost.innerHTML = pieceHTML(p.piece, 'tok-img');
+    ghost.classList.toggle('has-img', !!pieceSrc(p.piece));
     ghost.style.borderColor = p.hex;
     const place = (idx) => {
       const r = tileEls[idx].getBoundingClientRect();
@@ -713,7 +726,7 @@ function renderLobby(st) {
   const wrap = $('lobbyPlayers');
   wrap.innerHTML = st.players.map((p) => `
     <div class="lobby-player">
-      <span class="piece" style="background:${p.hex}22;border-color:${p.hex}">${p.piece || '•'}</span>
+      <span class="piece" style="background:${p.hex}22;border-color:${p.hex}">${pieceHTML(p.piece) || '•'}</span>
       <span class="nm">${esc(p.name)}</span>
       <span class="tag">${p.pieceName ? esc(p.pieceName) : 'гравець'}</span>
       ${p.bot ? '<span class="tag">бот</span>' : ''}
@@ -772,7 +785,7 @@ function renderLobby(st) {
       const mine = holder && holder.id === S.pid;
       const taken = holder && !mine;
       const label = mine ? '✓ Ваша' : (taken ? `${holder.bot ? '🤖 ' : ''}${esc(holder.name)}` : pc.name);
-      return `<button class="piece-btn${mine ? ' active' : ''}${taken ? ' taken' : ''}" data-piece="${pc.icon}" title="${pc.name}${holder ? ' · ' + esc(holder.name) : ''}" ${taken ? 'disabled' : ''}>${pc.icon}<small>${label}</small></button>`;
+      return `<button class="piece-btn${mine ? ' active' : ''}${taken ? ' taken' : ''}" data-piece="${pc.icon}" title="${pc.name}${holder ? ' · ' + esc(holder.name) : ''}" ${taken ? 'disabled' : ''}>${pieceHTML(pc.icon, 'piece-img')}<small>${label}</small></button>`;
     }).join('');
     grid.querySelectorAll('[data-piece]').forEach((b) => {
       b.onclick = () => act('set_piece', { piece: b.dataset.piece });
@@ -835,7 +848,7 @@ function renderStrip(st) {
   const strip = $('playersStrip');
   strip.innerHTML = st.players.map((p) => `
     <div class="pcard ${st.turn === p.id ? 'active' : ''} ${p.bankrupt ? 'off' : ''} ${p.afk ? 'afk' : ''}" title="${esc(p.name)}">
-      <div class="pav" style="background:${p.hex}22;border-color:${p.hex}">${p.piece || initials(p.name)}</div>
+      <div class="pav" style="background:${p.hex}22;border-color:${p.hex}">${pieceHTML(p.piece) || initials(p.name)}</div>
       <div class="pmeta">
         <div class="pname">${esc(p.name)}</div>
         <div class="pmoney${p.money < 0 ? ' neg' : ''}">${money(p.money)}</div>
@@ -1490,7 +1503,7 @@ function showGameOver(st) {
     <div>
       ${list.map((p, n) => `<div class="winner-row">
         <span class="place">${n + 1}</span>
-        <span class="piece small" style="background:${p.hex}22;border-color:${p.hex}">${p.piece || ''}</span>
+        <span class="piece small" style="background:${p.hex}22;border-color:${p.hex}">${pieceHTML(p.piece)}</span>
         <span class="nm">${esc(p.name)}${p.id === S.pid ? ' <span class="badge-me">(ви)</span>' : ''}</span>
         <span class="prop-meta">${props(p)} кл.</span>
         <span class="val">${money(p.money)}</span>
@@ -1607,7 +1620,7 @@ function openRatingModal(st) {
     <div class="sub">Капітал гравців</div>
     <div class="m-players">
       ${list.map((p, i) => `<div class="m-player${p.id === S.pid ? ' active' : ''}">
-        <span class="m-av" style="background:${p.hex}22;border-color:${p.hex}">${p.piece || ''}</span>
+        <span class="m-av" style="background:${p.hex}22;border-color:${p.hex}">${pieceHTML(p.piece)}</span>
         <span class="m-pname">${i + 1}. ${esc(p.name)}</span>
         <span class="m-pmoney">${money(p.money)}</span>
       </div>`).join('') || '<div class="empty-note">Немає гравців</div>'}
@@ -1731,7 +1744,7 @@ function openTilePlayers(idx) {
     <div class="m-players">
       ${list.length ? list.map((p) => `
         <div class="m-player${p.id === S.pid ? ' active' : ''}">
-          <span class="m-av" style="background:${p.hex}22;border-color:${p.hex}">${p.piece || ''}</span>
+          <span class="m-av" style="background:${p.hex}22;border-color:${p.hex}">${pieceHTML(p.piece)}</span>
           <span class="m-pname">${esc(p.name)}</span>
           <span class="m-pmoney">${money(p.money)}</span>
         </div>`).join('') : '<div class="empty-note">Нікого</div>'}
@@ -1750,7 +1763,7 @@ function openPlayersList(st) {
     <div class="m-players">
       ${list.map((p) => `
         <div class="m-player${p.id === st.turn ? ' active' : ''}${p.bankrupt ? ' off' : ''}">
-          <span class="m-av" style="background:${p.hex}22;border-color:${p.hex}">${p.piece || ''}</span>
+          <span class="m-av" style="background:${p.hex}22;border-color:${p.hex}">${pieceHTML(p.piece)}</span>
           <span class="m-pname">${esc(p.name)}${p.id === S.pid ? ' <i>(ви)</i>' : ''}</span>
           <span class="m-pmoney">${money(p.money)}</span>
           <span class="m-ptags">
