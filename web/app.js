@@ -393,7 +393,7 @@ function renderBoard(st) {
     if (ts.houses === 5) {
       hEl.innerHTML = '<img class="hotel-img" src="/buildings/hotel.webp" alt="" draggable="false">';
     } else if (ts.houses > 0) {
-      hEl.innerHTML = `<img class="house-img" src="/buildings/house_${ts.houses}.webp" alt="" draggable="false">`;
+      hEl.innerHTML = new Array(ts.houses).fill('<img class="house-img" src="/buildings/house.webp" alt="" draggable="false">').join('');
     } else {
       hEl.innerHTML = '';
     }
@@ -618,6 +618,8 @@ function clockTick() {
 function openTileInfo(i) {
   const st = S.state;
   if (!st) return;
+  S.selectedTile = i;
+  if (S.state) renderHud(S.state);
   const tileType = (S.boardData.board[i] || {}).type;
   if (window.PremiumCard && ['street', 'rr', 'util'].includes(tileType)) {
     window.PremiumCard.open(st, i);
@@ -828,6 +830,48 @@ function renderLobby(st) {
 }
 
 /* ================= ГРА ================= */
+function renderHud(st) {
+  const info = $('roundInfo');
+  if (info) {
+    const alive = st.players.filter((p) => !p.bankrupt).length;
+    info.textContent = `Коло ${st.round || 1} · ${alive}/${st.players.length}`;
+  }
+  const box = $('hudPlayers');
+  if (box) {
+    const rank = [...st.players].sort((a, b) => (a.bankrupt ? 1 : 0) - (b.bankrupt ? 1 : 0) || b.money - a.money);
+    box.innerHTML = `<div class="hud-title">Гравці (${st.players.length}) <span>капітал</span></div>
+      <div class="hud-list">${rank.map((p, i) => `<div class="hud-row${p.id === st.turn ? ' on' : ''}${p.bankrupt ? ' off' : ''}">
+        <span class="hud-rank">${i + 1}</span>
+        <span class="hud-av" style="border-color:${p.hex}">${pieceHTML(p.piece)}</span>
+        <span class="hud-name">${esc(p.name)}</span>
+        <span class="hud-money">${money(p.money)}</span>
+      </div>`).join('')}</div>`;
+  }
+  const sel = $('hudSelected');
+  if (sel) {
+    const i = S.selectedTile;
+    if (i == null || !S.boardData.board[i]) {
+      sel.style.display = 'none';
+      sel.innerHTML = '';
+    } else {
+      sel.style.display = '';
+      const t = S.boardData.board[i];
+      const ts = st.tiles[i];
+      const owner = ts.owner ? playerById(st, ts.owner) : null;
+      const status = ts.mortgaged ? 'застава' : ts.houses === 5 ? 'готель'
+        : ts.houses ? `${ts.houses} буд.` : (owner ? 'у власності' : 'вільна');
+      sel.innerHTML = `<div class="hud-title">Обраний об'єкт</div>
+        <div class="hud-sel">
+          <span class="hud-sel-logo">${t.logo ? `<img src="/logos/${t.logo}" alt="">` : (tileIcon(t) || '🏠')}</span>
+          <span class="hud-sel-main"><b>${esc(t.name)}</b><i>${owner ? esc(owner.name) : 'Банк'} · ${status}</i></span>
+          <span class="hud-sel-price">${t.price ? money(t.price) : ''}</span>
+        </div>
+        <button class="hud-btn" data-sel="${i}">Деталі власності</button>`;
+      sel.querySelector('[data-sel]').onclick = () => openTileInfo(i);
+    }
+  }
+}
+
 function renderGame(st) {
   const lastChatId = st.chat.length ? st.chat[st.chat.length - 1].id : 0;
   if (S.tab !== 'chat' && lastChatId > S.chatSeen) {
@@ -839,6 +883,7 @@ function renderGame(st) {
   renderStatus(st);
   renderActions(st);
   renderMobile(st);
+  renderHud(st);
   renderTab(st);
   maybeGameOver(st);
   maybeVibrate(st);
