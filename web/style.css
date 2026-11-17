@@ -1690,6 +1690,83 @@ input.code {
 
 .lux-estate-img { height: 48px; width: auto; max-width: 180px; object-fit: contain; filter: drop-shadow(0 3px 4px #00000055); }
 
+/* HUD: рейтинг гравців і обраний об'єкт */
+.round-info {
+  font-size: 11px; color: #9fb4cf; white-space: nowrap;
+  padding: 4px 10px; border: 1px solid #ffffff14; border-radius: 99px;
+  background: #0c2038;
+}
+.hud-block {
+  background: linear-gradient(180deg, #0d2240, #0a1a30);
+  border: 1px solid #ffffff12; border-radius: 12px;
+  padding: 8px 9px;
+}
+.hud-title {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  color: #9fb4cf; margin-bottom: 6px;
+}
+.hud-title span { color: #6f87a6; letter-spacing: 0; text-transform: none; }
+.hud-list { display: flex; flex-direction: column; gap: 2px; max-height: 320px; overflow-y: auto; scrollbar-width: thin; }
+.hud-row { display: flex; align-items: center; gap: 6px; padding: 2px 4px; border-radius: 7px; }
+.hud-row.on { background: #17335a; box-shadow: inset 0 0 0 1px #d9b66b55; }
+.hud-row.off { opacity: .45; }
+.hud-rank { width: 14px; text-align: center; font-size: 10px; color: #8ba0bd; }
+.hud-av {
+  width: 22px; height: 22px; border-radius: 50%; flex: none;
+  border: 1.5px solid #ffffff33; background: #ffffff10;
+  display: flex; align-items: center; justify-content: center;
+}
+.hud-av img { width: 84%; height: 84%; object-fit: contain; }
+.hud-name { flex: 1; min-width: 0; font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud-money { font-size: 11.5px; font-weight: 800; color: #ffd477; font-variant-numeric: tabular-nums; }
+.hud-sel { display: flex; align-items: center; gap: 8px; }
+.hud-sel-logo {
+  width: 34px; height: 34px; flex: none; border-radius: 8px;
+  background: #fffdf6; display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.hud-sel-logo img { max-width: 90%; max-height: 90%; object-fit: contain; }
+.hud-sel-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.hud-sel-main b { font-size: 12px; }
+.hud-sel-main i { font-style: normal; font-size: 10px; color: #93a9c6; }
+.hud-sel-price { font-weight: 800; color: #ffd477; font-size: 11.5px; }
+.hud-btn {
+  width: 100%; margin-top: 7px; min-height: 32px;
+  border-radius: 8px; border: 1px solid #d9b66b55;
+  background: #10294a; color: #ffe6ae; font-weight: 700; font-size: 11px;
+}
+.hud-btn:active { transform: translateY(1px); }
+
+/* преміум-розкладка клітинки: доми — до центру, власник — біля ціни */
+.tile.bottom .houses { top: 13%; bottom: auto; }
+.tile.top .houses { bottom: 13%; top: auto; }
+.tile.left .houses { right: 9%; left: auto; bottom: 9%; }
+.tile.right .houses { left: 9%; right: auto; bottom: 9%; }
+.tile .houses { justify-content: center; gap: .12em; }
+.house-img { max-height: .8em; width: auto; object-fit: contain; filter: drop-shadow(0 1px 1px #00000066); }
+.hotel-img { max-height: 1em; width: auto; object-fit: contain; filter: drop-shadow(0 1.5px 1.5px #00000066); }
+
+.tile.bottom .owner-dot { top: auto; bottom: 6%; right: 6%; }
+.tile.top .owner-dot { bottom: auto; top: 6%; right: 6%; }
+.tile.left .owner-dot { top: auto; bottom: 6%; right: auto; left: 6%; }
+.tile.right .owner-dot { top: auto; bottom: 6%; left: auto; right: 6%; }
+.tile .owner-dot { min-width: 1.55em; height: 1.55em; border-radius: .38em; font-size: .85em; }
+
+.tile.owned {
+  box-shadow:
+    inset 0 0 0 2px var(--own, #c0392b),
+    0 0 10px #00000033;
+}
+.tile .owner-edge { background: var(--own, #c0392b); }
+.tile.bottom .owner-edge { height: 4px; }
+.tile.top .owner-edge { height: 4px; }
+.tile.left .owner-edge { width: 4px; }
+.tile.right .owner-edge { width: 4px; }
+.tile.corner .owner-edge { box-shadow: inset 0 0 0 4px var(--own, #c0392b); }
+
+.tile.hl { box-shadow: inset 0 0 0 2px #e3bd6b, 0 0 14px #e3bd6b66; z-index: 2; }
+.tile.owned.hl { box-shadow: inset 0 0 0 2px #e3bd6b, inset 0 0 0 4px var(--own), 0 0 14px #e3bd6b66; }
+
 /* ============ ліва навігація (desktop) ============ */
 .rail { display: none; }
 @media (min-width: 1101px) {
@@ -1759,6 +1836,7 @@ input.code {
 
   .layout { padding-bottom: 0; }
   .panel .status { display: none; }
+  .hud-block, .round-info { display: none; }
   .panel { padding-bottom: 150px; }
   /* на мобільному головна дія — тільки в нижній панелі */
   #actions > .btn.primary.big { display: none; }
