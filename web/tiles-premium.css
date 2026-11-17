@@ -1,0 +1,136 @@
+/* ============================================================
+   tiles-premium.css — оверрайди клітинок поля (пізня партія)
+   Підключати ПІСЛЯ style.css:
+   <link rel="stylesheet" href="/style.css">
+   <link rel="stylesheet" href="/tiles-premium.css">
+   Всі селектори мають префікс .board (специфічність 0,3,0+),
+   тому переважають базові .tile… (0,2,0) незалежно від порядку.
+   ============================================================ */
+
+/* ---------- 1. Будинки/готелі: у ВНУТРІШНЬОГО краю (до центру) ---------- */
+
+.board .tile .houses {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: .1em;
+  pointer-events: none;
+}
+
+/* bottom-ряд: внутрішній край — зверху (під смугою бар) */
+.board .tile.bottom .houses {
+  top: 12.5%; bottom: auto; left: 6%; right: 6%;
+}
+/* top-ряд: внутрішній край — знизу */
+.board .tile.top .houses {
+  bottom: 12.5%; top: auto; left: 6%; right: 6%;
+}
+/* left-колонка: внутрішній край — справа; вузька колонка з переносом */
+.board .tile.left .houses {
+  left: auto; right: 12.5%;
+  top: 12%; bottom: 12%;
+  width: 1.4em;
+  flex-wrap: wrap;
+  align-content: center;
+}
+/* right-колонка: внутрішній край — зліва */
+.board .tile.right .houses {
+  right: auto; left: 12.5%;
+  top: 12%; bottom: 12%;
+  width: 1.4em;
+  flex-wrap: wrap;
+  align-content: center;
+}
+
+.board .tile .house-img {
+  height: .78em; max-height: .78em;
+  width: auto; max-width: none;
+}
+.board .tile .hotel-img {
+  height: .95em; max-height: .95em;
+  width: auto; max-width: none;
+}
+
+/* reserves місця під смугу будинків, щоб не перекривати назву/лого */
+.board .tile.bottom .tile-body { padding-top: 1.05em; }
+.board .tile.top .tile-body { padding-bottom: 1.05em; }
+.board .tile.left .tile-body { padding-right: 1.6em; }
+.board .tile.right .tile-body { padding-left: 1.6em; }
+
+/* ---------- 2. Фішка власника: зовнішній кут біля цінника ---------- */
+
+.board .tile .owner-dot {
+  min-width: 1.55em; width: 1.55em;
+  height: 1.55em;
+  padding: 0;
+  border-radius: .38em;
+  border-width: 1.5px;
+  /* золота окантовка кільцем: переживає inline border-color від app.js */
+  box-shadow:
+    0 0 0 1.5px var(--gold, #e3bd6b),
+    inset 0 1px 1px #ffffff55,
+    0 2px 3px #00000055;
+}
+
+/* bottom-ряд → знизу-справа (цiнник знизу) */
+.board .tile.bottom .owner-dot { top: auto; bottom: 2.5%; right: 3%; left: auto; }
+/* top-ряд → зверху-справа */
+.board .tile.top .owner-dot { bottom: auto; top: 2.5%; right: 3%; left: auto; }
+/* left-колонка → знизу-зліва */
+.board .tile.left .owner-dot { right: auto; left: 3%; bottom: 3%; top: auto; }
+/* right-колонка → знизу-справа */
+.board .tile.right .owner-dot { left: auto; right: 3%; bottom: 3%; top: auto; }
+
+/* ---------- 3. Захоплена клітинка ---------- */
+
+.board .tile.owned {
+  box-shadow:
+    inset 0 0 0 2px var(--own, #c0392b),
+    0 0 10px #00000033;
+}
+.board .tile.owned.mortgaged {
+  box-shadow:
+    inset 0 0 0 2px #b9ab8c,
+    0 0 10px #00000033;
+}
+
+/* смуга власника: 4px замість 6px */
+.board .tile.bottom .owner-edge { height: 4px; }
+.board .tile.top .owner-edge { height: 4px; }
+.board .tile.left .owner-edge { width: 4px; }
+.board .tile.right .owner-edge { width: 4px; }
+.board .tile.corner .owner-edge { box-shadow: inset 0 0 0 4px var(--own, #c0392b); }
+
+/* ---------- 4. Активна клітинка: золота, не червона ---------- */
+
+.board .tile.hl {
+  box-shadow:
+    inset 0 0 0 2px #e3bd6b,
+    0 0 12px #e3bd6b80;
+}
+.board .tile.owned.hl {
+  box-shadow:
+    inset 0 0 0 2px #e3bd6b,
+    inset 0 0 0 4px var(--own, #c0392b),
+    0 0 10px #e3bd6b66;
+}
+
+/* ---------- 5. Мобільні розміри ---------- */
+
+@media (max-width: 640px) {
+  .board .tile .house-img { height: .6em; max-height: .6em; }
+  .board .tile .hotel-img { height: .73em; max-height: .73em; }
+
+  .board .tile .owner-dot {
+    min-width: 1.35em; width: 1.35em;
+    height: 1.35em;
+  }
+
+  .board .tile.bottom .tile-body { padding-top: .8em; }
+  .board .tile.top .tile-body { padding-bottom: .8em; }
+  .board .tile.left .tile-body { padding-right: 1.2em; }
+  .board .tile.right .tile-body { padding-left: 1.2em; }
+
+  .board .tile.left .houses,
+  .board .tile.right .houses { width: 1.15em; }
+}
