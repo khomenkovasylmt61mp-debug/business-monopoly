@@ -114,18 +114,18 @@ PLAYER_COLORS = [
 
 # фігурки як у справжній Монополії
 PIECES = [
-    {"icon": "🚗", "name": "Машинка", "img": "car.png"},
-    {"icon": "🚢", "name": "Кораблик", "img": "ship.png"},
-    {"icon": "🎩", "name": "Циліндр", "img": "hat.png"},
-    {"icon": "✈️", "name": "Літак", "img": "plane.png"},
-    {"icon": "🐕", "name": "Собака", "img": "dog.png"},
-    {"icon": "🐈", "name": "Кіт", "img": "cat.png"},
-    {"icon": "👑", "name": "Корона", "img": "crown.png"},
-    {"icon": "🚀", "name": "Ракета", "img": "rocket.png"},
-    {"icon": "🐴", "name": "Кінь", "img": "horse.png"},
-    {"icon": "💎", "name": "Бриліант", "img": "diamond.png"},
-    {"icon": "🤖", "name": "Робот", "img": "robot.png"},
-    {"icon": "⚓", "name": "Якір", "img": "anchor.png"},
+    {"icon": "🚗", "name": "Машинка", "img": "car.webp"},
+    {"icon": "🚢", "name": "Кораблик", "img": "ship.webp"},
+    {"icon": "🎩", "name": "Циліндр", "img": "hat.webp"},
+    {"icon": "✈️", "name": "Літак", "img": "plane.webp"},
+    {"icon": "🐕", "name": "Собака", "img": "dog.webp"},
+    {"icon": "🐈", "name": "Кіт", "img": "cat.webp"},
+    {"icon": "👑", "name": "Корона", "img": "crown.webp"},
+    {"icon": "🚀", "name": "Ракета", "img": "rocket.webp"},
+    {"icon": "🐴", "name": "Кінь", "img": "horse.webp"},
+    {"icon": "💎", "name": "Бриліант", "img": "diamond.webp"},
+    {"icon": "🤖", "name": "Робот", "img": "robot.webp"},
+    {"icon": "⚓", "name": "Якір", "img": "anchor.webp"},
 ]
 
 # ---------- масштабування правил під кількість гравців ----------
