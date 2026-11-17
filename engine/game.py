@@ -4,6 +4,7 @@ import random
 import secrets
 import time
 import threading
+import traceback
 
 from .data import (BOARD, BOARD_BRANDS, BRAND_CARD_WORDS, GROUPS, GROUP_TILES,
                    CHANCE, CHEST, MISSIONS, MISSION_BY_ID, PLAYER_COLORS, PIECES, scale_for)
@@ -156,6 +157,18 @@ class Room:
                             pass
                 if st["trade"] and pid in (st["trade"].get("from"), st["trade"].get("to")):
                     st["trade"] = None
+                if st["phase"] == "playing":
+                    if st["awaiting"] and st["awaiting"].get("to") == pid:
+                        st["awaiting"] = {"type": "endturn"}
+                    for pl in st["players"]:
+                        if pl.get("debt") and pl["debt"].get("to") == pid:
+                            pl["debt"]["to"] = None
+                    if st["turn"] == pid or self._find(st["turn"]) is None:
+                        nxt = self._next_alive(pid)
+                        if nxt:
+                            st["turn"] = nxt
+                            np = self._player(nxt)
+                            st["awaiting"] = {"type": "jail"} if np["jail"] else {"type": "roll"}
             self._bump()
 
     # ---------- utils ----------
@@ -313,35 +326,48 @@ class Room:
             st["trade"] = None
             st["awaiting"] = {"type": "jail"} if self._player(order[0])["jail"] else {"type": "roll"}
             st["turnActivity"] = time.time()
+            st["turnEndKey"] = None
+            st["autoKey"] = None
+            st["tradeTurnKey"] = None
+            st["tradeCounts"] = {}
             self._log("Гра почалася! Стартовий капітал " + fmt(money), "start")
             self._log(f"Першим ходить {self._player(order[0])['name']}", "turn")
             self._bump()
 
     # ---------- money ----------
 
+    def _find(self, pid):
+        for pl in self.state["players"]:
+            if pl["id"] == pid:
+                return pl
+        return None
+
     def _charge(self, p, amount, to=None, reason="", split=None):
         st = self.state
         amount = int(amount)
         if amount <= 0:
             return True
+        creditor = self._find(to) if to else None
+        if creditor and creditor["bankrupt"]:
+            creditor = None
         if p["money"] >= amount:
             p["money"] -= amount
-            if to:
-                creditor = self._player(to)
+            if creditor:
                 creditor["money"] += amount
                 self._log(f"{p['name']} платить {fmt(amount)} гравцю {creditor['name']} ({reason})", "money", p["id"])
             elif split:
                 share = amount // max(1, len(split))
                 for sid in split:
-                    if sid != p["id"]:
-                        self._player(sid)["money"] += share
+                    s = self._find(sid)
+                    if s and sid != p["id"]:
+                        s["money"] += share
                 self._log(f"{p['name']} платить {fmt(amount)} гравцям ({reason})", "money", p["id"])
             else:
                 self._log(f"{p['name']} платить у банк {fmt(amount)} ({reason})", "money", p["id"])
                 if st["options"].get("parkingPot"):
                     st["pot"] = st.get("pot", 0) + amount
             return True
-        p["debt"] = {"amount": amount, "to": to, "reason": reason, "split": split}
+        p["debt"] = {"amount": amount, "to": creditor["id"] if creditor else None, "reason": reason, "split": split}
         self._log(f"{p['name']} винен {fmt(amount)} ({reason}) — треба продати/заставити майно", "debt", p["id"])
         st["awaiting"] = {"type": "debt"}
         return False
@@ -352,14 +378,18 @@ class Room:
         if not d or p["money"] < d["amount"]:
             return False
         p["money"] -= d["amount"]
-        if d.get("to"):
-            self._player(d["to"])["money"] += d["amount"]
+        creditor = self._find(d.get("to")) if d.get("to") else None
+        if creditor and creditor["bankrupt"]:
+            creditor = None
+        if creditor:
+            creditor["money"] += d["amount"]
             self._log(f"{p['name']} розрахувався: {fmt(d['amount'])}", "money", p["id"])
         elif d.get("split"):
             share = d["amount"] // max(1, len(d["split"]))
             for sid in d["split"]:
-                if sid != p["id"]:
-                    self._player(sid)["money"] += share
+                s = self._find(sid)
+                if s and sid != p["id"]:
+                    s["money"] += share
             self._log(f"{p['name']} розрахувався: {fmt(d['amount'])}", "money", p["id"])
         else:
             self._log(f"{p['name']} розрахувався з банком: {fmt(d['amount'])}", "money", p["id"])
@@ -569,7 +599,7 @@ class Room:
     def _after_resolution(self, p):
         st = self.state
         aw = st["awaiting"]
-        if aw and aw.get("type") in ("buy", "pay_rent"):
+        if aw and aw.get("type") in ("buy", "pay_rent", "casino"):
             return
         if p["debt"]:
             st["awaiting"] = {"type": "debt"}
@@ -597,6 +627,8 @@ class Room:
                 else:
                     p["debt"] = {"amount": due, "to": None}
                     st["awaiting"] = {"type": "debt"}
+                    st["dice"] = None
+                    st["doubles"] = 0
                     self._log(f"{p['name']} не зміг погасити кредит {fmt(due)} — борг банку", "debt", p["id"])
         if p.get("creditCool", 0) > 0:
             p["creditCool"] -= 1
@@ -620,8 +652,14 @@ class Room:
 
     def _end_turn(self, p):
         st = self.state
-        if self._on_turn_end(p):
-            return
+        if not p.get("bankrupt"):
+            key = (st["turn"], st["turns"])
+            if st.get("turnEndKey") != key:
+                st["turnEndKey"] = key
+                if self._on_turn_end(p):
+                    return
+            elif p.get("debt"):
+                return
         st["doubles"] = 0
         st["dice"] = None
         st["noExtra"] = False
@@ -644,13 +682,14 @@ class Room:
 
     def act(self, pid, action):
         with self.cond:
-            cur = self._cur()
-            if cur and cur["id"] == pid and self.state["phase"] == "playing":
-                self.state["turnActivity"] = time.time()
             try:
                 self._apply(pid, action)
             except RulesError:
                 raise
+            cur = self._cur()
+            if (cur and cur["id"] == pid and self.state["phase"] == "playing"
+                    and (action or {}).get("type") != "chat"):
+                self.state["turnActivity"] = time.time()
             cur = self._cur()
             if cur and cur["debt"] and self.state["phase"] == "playing":
                 self.state["awaiting"] = {"type": "debt"}
@@ -843,8 +882,15 @@ class Room:
             idx = aw.get("tile")
             to = aw.get("to")
             amount = int(aw.get("amount") or 0)
-            owner = self._player(to) if to else None
             name = self.board[idx]["name"] if idx is not None else ""
+            ts = st["tiles"][idx] if idx is not None else None
+            owner = self._find(to) if to else None
+            if (not ts or ts.get("owner") != to or not owner
+                    or owner["bankrupt"] or ts.get("mortgaged")):
+                self._log(f"Ренту за «{name}» скасовано — власник змінився", "info", p["id"])
+                st["awaiting"] = {"type": "endturn"}
+                self._after_resolution(p)
+                return
             self._charge(p, amount, to=to, reason=f"рента «{name}»")
             self._log(
                 f"{p['name']} сплачує ренту {fmt(amount)} за «{name}»"
@@ -928,6 +974,10 @@ class Room:
             st["rentBoost"] = 1.0
             st["log"] = []
             st["turnActivity"] = None
+            st["turnEndKey"] = None
+            st["autoKey"] = None
+            st["tradeTurnKey"] = None
+            st["tradeCounts"] = {}
             for p in st["players"]:
                 p["money"] = 0
                 p["pos"] = 0
@@ -1131,8 +1181,10 @@ class Room:
         st = self.state
         auc = st["auction"]
         idx = auc["tile"]
+        w = self._find(winner) if winner else None
+        if not w or w["bankrupt"]:
+            winner = None
         if winner and auc["bid"] > 0:
-            w = self._player(winner)
             if w["money"] < auc["bid"]:
                 self._log(f"{w['name']} не має достатньо коштів — лот не продано", "auction", winner)
                 winner = None
@@ -1153,6 +1205,9 @@ class Room:
         alive_ids = {p["id"] for p in st["players"] if not p["bankrupt"]}
         active = [x for x in auc["active"] if x in alive_ids]
         auc["active"] = active
+        if auc.get("leader") and auc["leader"] not in alive_ids:
+            auc["leader"] = None
+            auc["bid"] = 0
         if not active:
             return self._auction_finish(None)
         if len(active) == 1:
@@ -1377,10 +1432,11 @@ class Room:
             raise RulesError("Спочатку розрахуйтеся")
         if st["auction"]:
             raise RulesError("Триває аукціон")
-        if st.get("tradeKey") != st["turn"]:
-            st["tradeKey"] = st["turn"]
-            st["tradeCount"] = 0
-        if st.get("tradeCount", 0) >= MAX_TRADES_TURN:
+        if st.get("tradeTurnKey") != st["turn"]:
+            st["tradeTurnKey"] = st["turn"]
+            st["tradeCounts"] = {}
+        counts = st.setdefault("tradeCounts", {})
+        if counts.get(pid, 0) >= MAX_TRADES_TURN:
             raise RulesError(f"Не більше {MAX_TRADES_TURN} обмінів за хід")
         target = a.get("to")
         if not target or target == pid:
@@ -1417,7 +1473,7 @@ class Room:
             "deadline": time.time() + TRADE_TIMEOUT,
         }
         self.trade_seq += 1
-        st["tradeCount"] = st.get("tradeCount", 0) + 1
+        counts[pid] = counts.get(pid, 0) + 1
         self._log(f"{p['name']} пропонує обмін гравцю {tp['name']}", "trade", pid)
 
     def _check_tradeable(self, idx):
@@ -1720,8 +1776,9 @@ class Room:
                 left = max(0, int(round(limit - (now - act_t))))
             data["turnLeft"] = left
             tleft = MAX_TRADES_TURN
-            if st.get("tradeKey") == st.get("turn") and st.get("turn"):
-                tleft = max(0, MAX_TRADES_TURN - int(st.get("tradeCount") or 0))
+            if st.get("tradeTurnKey") == st.get("turn") and st.get("turn"):
+                used = int((st.get("tradeCounts") or {}).get(pid, 0))
+                tleft = max(0, MAX_TRADES_TURN - used)
             data["tradeLeft"] = tleft
             data["you"] = pid
             return data
