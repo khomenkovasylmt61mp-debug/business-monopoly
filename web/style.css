@@ -935,6 +935,7 @@ input.code {
 .token-stack[data-n="2"] { --tokscale: .92; }
 .token-stack[data-n="3"], .token-stack[data-n="4"] { --tokscale: .85; }
 .token-stack[data-n="5"], .token-stack[data-n="6"], .token-stack[data-n="7"] { --tokscale: .7; }
+.token-stack[data-n="8"] { --tokscale: .62; }
 .token-cell.tok-bottom .token-stack { padding-bottom: 13%; }
 .token-cell.tok-top .token-stack { padding-top: 13%; }
 .token-cell.tok-left .token-stack { padding-left: 13%; }
@@ -1683,6 +1684,18 @@ input.code {
     border: 1px solid #d9b66b55; color: #f8f1e5; font-weight: 800; font-size: 13px;
   }
   .m-pill b { color: #ffd477; }
+  .m-hud { display: flex; align-items: center; gap: 8px; }
+  .m-balance {
+    min-height: 40px; display: flex; align-items: center; padding: 0 12px;
+    border-radius: 99px; background: #0c2038; border: 1px solid #d9b66b33;
+    color: #ffd477; font-weight: 800; font-size: 13px;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .m-menu {
+    width: 44px; height: 44px; border-radius: 12px;
+    border: 1px solid #d9b66b55; background: #102d4c;
+    color: #f8f1e5; font-size: 20px; line-height: 1;
+  }
 
   .layout { padding-bottom: 0; }
   .panel .status { display: none; }
