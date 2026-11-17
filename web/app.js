@@ -329,6 +329,8 @@ function buildBoard() {
     el.className = 'tile ' + sideClass(i) + ' t-' + t.type;
     el.style.gridArea = `${row} / ${col}`;
     el.dataset.i = i;
+    const isProp = ['street', 'rr', 'util'].includes(t.type);
+    if (isProp) el.classList.add('is-prop');
     const col2 = groupColor(t);
     let bar = '';
     if (col2) bar = `<div class="bar" style="background:${col2}"></div>`;
@@ -354,7 +356,7 @@ function buildBoard() {
         <div class="tile-name${longest > 10 ? ' long' : ''}">${tileLabel(label)}</div>
         ${sub ? `<div class="tile-sub">${sub}</div>` : ''}
       </div>`;
-    el.innerHTML = `${bar}${body}${priceHtml}<div class="own-zone" hidden><span class="owner-dot" hidden></span><div class="houses"></div></div><div class="owner-edge" hidden></div>`;
+    el.innerHTML = `${bar}${body}${priceHtml}<div class="own-zone"${isProp ? '' : ' hidden'}><span class="owner-dot" hidden></span><div class="houses"></div><span class="own-free">вільна</span></div><div class="owner-edge" hidden></div>`;
     el.addEventListener('click', () => openTileInfo(i));
     board.insertBefore(el, $('tokenLayer'));
     tileEls[i] = el;
@@ -377,7 +379,7 @@ function renderBoard(st) {
     if (owner) {
       el.style.setProperty('--own', owner.hex);
       dot.hidden = false;
-      if (zone) zone.hidden = false;
+      if (zone) { zone.hidden = false; zone.classList.remove('is-free'); }
       dot.innerHTML = pieceHTML(owner.piece, 'dot-img');
       dot.style.borderColor = owner.hex;
       dot.title = owner.name + (owner.pieceName ? ' · ' + owner.pieceName : '');
@@ -385,8 +387,11 @@ function renderBoard(st) {
     } else {
       el.style.removeProperty('--own');
       dot.hidden = true;
-      if (zone) zone.hidden = true;
       dot.textContent = '';
+      if (zone) {
+        zone.hidden = !el.classList.contains('is-prop');
+        zone.classList.toggle('is-free', el.classList.contains('is-prop'));
+      }
       if (edge) edge.hidden = true;
     }
     el.classList.toggle('mortgaged', !!ts.mortgaged);
@@ -394,12 +399,17 @@ function renderBoard(st) {
 
     const hEl = el.querySelector('.houses');
     if (ts.houses === 5) {
-      hEl.innerHTML = '<img class="hotel-img" src="/buildings/hotel.webp" alt="" draggable="false">';
+      hEl.innerHTML = '<img class="hotel-img" src="/img/hotel.svg" alt="" draggable="false">';
     } else if (ts.houses > 0) {
-      hEl.innerHTML = `<img class="house-img" src="/buildings/house_${ts.houses}.webp" alt="" draggable="false"><span class="bld-count">${ts.houses}</span>`;
+      let imgs = '';
+      for (let k = 0; k < ts.houses; k += 1) {
+        imgs += '<img class="house-img" src="/img/house.svg" alt="" draggable="false">';
+      }
+      hEl.innerHTML = imgs;
     } else {
       hEl.innerHTML = '';
     }
+    if (hEl) hEl.dataset.bld = String(ts.houses || 0);
     if (zone) zone.classList.toggle('no-bld', !(ts.houses > 0));
     const bar = el.querySelector('.bar');
     if (bar && t.type === 'street') {
@@ -843,9 +853,10 @@ function renderHud(st) {
     const counters = $('topCounters');
     if (counters) {
       const owned = st.tiles.filter((t) => t.owner).length;
+      const buyable = S.boardData.board.filter((t) => ['street', 'rr', 'util'].includes(t.type)).length;
       counters.innerHTML = `<span><b>${alive}</b> / ${st.players.length} гравців</span>` +
         `<span>Коло <b>${st.round || 1}</b></span>` +
-        `<span><b>${owned}</b> / 40 активів</span>`;
+        `<span><b>${owned}</b> / ${buyable} активів</span>`;
       const stage = $('stageLabel');
       if (stage) stage.textContent = owned < 10 ? 'Початок партії' : owned < 26 ? 'Середина партії' : 'Пізня стадія партії';
     }
