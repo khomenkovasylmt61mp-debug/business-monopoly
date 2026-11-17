@@ -96,6 +96,17 @@
 
   <!-- ================= ГРА ================= -->
   <section id="screen-game" class="screen">
+    <nav class="rail" id="rail" aria-label="Розділи">
+      <button data-rail="game" title="Гра">🎲<span>Гра</span></button>
+      <button data-rail="mine" title="Мої активи">🏛<span>Мої</span></button>
+      <button data-rail="missions" title="Місії">🎯<span>Місії</span></button>
+      <button data-rail="trade" title="Обмін">🔄<span>Обмін</span></button>
+      <button data-rail="credit" title="Кредити">💰<span>Кредити</span></button>
+      <button data-rail="rating" title="Рейтинг">🏆<span>Рейтинг</span></button>
+      <button data-rail="chat" title="Чат">💬<span>Чат</span></button>
+      <button data-rail="rules" title="Правила">📖<span>Правила</span></button>
+      <button class="rail-toggle" id="railToggle" title="Згорнути панель">«</button>
+    </nav>
     <header class="topbar">
       <div class="brand"><svg class="brand-crown" viewBox="0 0 72 46" aria-hidden="true"><defs><linearGradient id="bcg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3ca"/><stop offset=".55" stop-color="#e3bd6b"/><stop offset="1" stop-color="#b8872e"/></linearGradient></defs><path d="M6 36 L10 12 L24 22 L36 5 L48 22 L62 12 L66 36 Z" fill="url(#bcg)" stroke="#8a6318" stroke-width="1.5" stroke-linejoin="round"/><rect x="6" y="36" width="60" height="6" rx="2.5" fill="#d6a64d" stroke="#8a6318"/></svg><span>БІЗНЕС-МОНОПОЛІЯ</span></div>
       <div class="players-strip" id="playersStrip"></div>
