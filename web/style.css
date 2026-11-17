@@ -1007,6 +1007,30 @@ input.code {
 .action-card.auction { border-color: #e3bd6b66; }
 .action-card.debt { border-color: #c0392b88; background: linear-gradient(180deg, #3a1f1a, #241512); }
 
+/* розрахунок боргу */
+.debt-calc {
+  margin: 8px 0; padding: 9px 10px;
+  border-radius: 10px;
+  background: #0b1a2e;
+  border: 1px solid #ffffff14;
+  font-size: 12px;
+}
+.debt-calc.good { border-color: #3f8f5a; box-shadow: inset 0 0 0 1px #35a86533; }
+.debt-calc.bad { border-color: #a8412f; box-shadow: inset 0 0 0 1px #e7474733; }
+.dc-row { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; color: #c9d6e6; }
+.dc-row b { color: #fff; font-variant-numeric: tabular-nums; }
+.dc-bar { height: 6px; border-radius: 99px; background: #1b2c44; margin: 6px 0; overflow: hidden; }
+.dc-bar i { display: block; height: 100%; background: linear-gradient(90deg, #e3bd6b, #f6d488); }
+.dc-total {
+  display: flex; justify-content: space-between; gap: 8px;
+  border-top: 1px solid #ffffff14; margin-top: 4px; padding-top: 5px;
+  font-weight: 800; color: #fff;
+}
+.dc-verdict { margin-top: 6px; font-weight: 700; line-height: 1.3; }
+.debt-calc.good .dc-verdict { color: #8fe0a6; }
+.debt-calc.bad .dc-verdict { color: #ff9c8c; }
+.dc-hint { margin-top: 3px; font-size: 11px; color: #b9c8dc; }
+
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid #1b3150; padding-bottom: 4px; flex: none; }
 .tabs button {
   flex: 1; background: transparent; border: 0; color: var(--muted);
