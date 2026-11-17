@@ -1876,10 +1876,11 @@ input.code {
     box-shadow: 0 -8px 24px #00000066;
   }
   .m-nav button {
-    min-height: 56px; display: flex; align-items: center; justify-content: center;
+    min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
     background: transparent; border: 0; color: #cfd9e8;
-    font-weight: 700; font-size: 11px; letter-spacing: .02em;
+    font-weight: 700; font-size: 10px; letter-spacing: .02em;
   }
+  .m-nav button svg { width: 21px; height: 21px; }
   .m-nav button.on, .m-nav button:active { color: #ffd477; }
 }
 
