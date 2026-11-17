@@ -568,8 +568,8 @@ function renderCenter(st) {
       </div>
       <div class="cp-dice-stage">
         <div class="cp-dice">
-          ${dieHTML(dice ? dice[0] : 0, anim)}
-          ${dieHTML(dice ? dice[1] : 0, anim)}
+          ${dieHTML(dice ? dice[0] : 5, anim)}
+          ${dieHTML(dice ? dice[1] : 3, anim)}
         </div>
         ${dice ? `<div class="cp-sum"><span>${dice[0]} + ${dice[1]} =</span><b>${dice[0] + dice[1]}</b></div>` : '<div class="cp-sum"><span>кидок</span></div>'}
       </div>
@@ -839,16 +839,20 @@ function renderHud(st) {
     const counters = $('topCounters');
     if (counters) {
       const owned = st.tiles.filter((t) => t.owner).length;
-      counters.innerHTML = `<span>${alive}/${st.players.length} гравців</span><span>${owned}/40 активів</span>`;
+      counters.innerHTML = `<span><b>${alive}</b> / ${st.players.length} гравців</span>` +
+        `<span>Коло <b>${st.round || 1}</b></span>` +
+        `<span><b>${owned}</b> / 40 активів</span>`;
+      const stage = $('stageLabel');
+      if (stage) stage.textContent = owned < 10 ? 'Початок партії' : owned < 26 ? 'Середина партії' : 'Пізня стадія партії';
     }
   }
   const box = $('hudPlayers');
   if (box) {
     const rank = [...st.players].sort((a, b) => (a.bankrupt ? 1 : 0) - (b.bankrupt ? 1 : 0) || b.money - a.money);
-    box.innerHTML = `<div class="hud-title">Гравці (${st.players.length}) <span>капітал</span></div>
+    box.innerHTML = `<div class="hud-title">Гравці <span class="hud-count">(${st.players.length})</span><i>капітал</i></div>
       <div class="hud-list">${rank.map((p, i) => `<div class="hud-row${p.id === st.turn ? ' on' : ''}${p.bankrupt ? ' off' : ''}">
-        <span class="hud-rank">${i + 1}</span>
-        <span class="hud-av" style="border-color:${p.hex}">${pieceHTML(p.piece)}</span>
+        <span class="hud-rank" style="--rc:${p.hex}">${i + 1}</span>
+        <span class="hud-av">${pieceHTML(p.piece)}</span>
         <span class="hud-name">${esc(p.name)}</span>
         <span class="hud-money">${money(p.money)}</span>
       </div>`).join('')}</div>`;
@@ -864,15 +868,30 @@ function renderHud(st) {
       const t = S.boardData.board[i];
       const ts = st.tiles[i];
       const owner = ts.owner ? playerById(st, ts.owner) : null;
-      const status = ts.mortgaged ? 'застава' : ts.houses === 5 ? 'готель'
-        : ts.houses ? `${ts.houses} буд.` : (owner ? 'у власності' : 'вільна');
+      const status = ts.mortgaged ? 'Застава' : ts.houses === 5 ? 'Готель'
+        : ts.houses ? `${ts.houses} будинки` : (owner ? 'У власності' : 'Вільна');
+      const priceLine = ts.houses === 5 ? `Готель · ${money(t.house * 5 || t.price)}`
+        : ts.houses ? `${ts.houses} буд. · ${money(t.house * ts.houses || t.price)}`
+          : t.price ? `Оренда · ${money(t.rent ? t.rent[0] : t.price)}` : '';
+      const stage = owner && window.pieceHTML ? pieceHTML(owner.piece, 'hud-podium-token') : '';
+      const bld = ts.houses === 5
+        ? '<img class="hud-podium-bld" src="/buildings/hotel.webp" alt="" draggable="false">'
+        : ts.houses > 0
+          ? `<img class="hud-podium-bld" src="/buildings/house_${ts.houses}.webp" alt="" draggable="false">`
+          : '';
       sel.innerHTML = `<div class="hud-title">Обраний об'єкт</div>
-        <div class="hud-sel">
-          <span class="hud-sel-logo">${t.logo ? `<img src="/logos/${t.logo}" alt="">` : (tileIcon(t) || '🏠')}</span>
-          <span class="hud-sel-main"><b>${esc(t.name)}</b><i>${owner ? esc(owner.name) : 'Банк'} · ${status}</i></span>
-          <span class="hud-sel-price">${t.price ? money(t.price) : ''}</span>
-        </div>
-        <button class="hud-btn" data-sel="${i}">Деталі власності</button>`;
+        <div class="hud-sel2" style="--sc:${(owner && owner.hex) || (groupColor(t) || '#d9b66b')}">
+          <div class="hud-sel2-head">
+            <span class="hud-sel2-logo">${t.logo ? `<img src="/logos/${t.logo}" alt="" draggable="false">` : (tileIcon(t) || '🏛')}</span>
+            <span class="hud-sel2-id"><b>${esc(t.name)}</b><i>${owner ? 'Власник: ' + esc(owner.name) : 'Банк'}</i></span>
+          </div>
+          <div class="hud-sel2-scene">
+            <span class="hud-podium">${stage}</span>
+            ${bld ? `<span class="hud-podium is-bld">${bld}</span>` : ''}
+          </div>
+          <div class="hud-sel2-meta"><b>${status}</b><span>${priceLine}</span></div>
+          <button class="hud-sel2-btn" data-sel="${i}">Деталі власності</button>
+        </div>`;
       sel.querySelector('[data-sel]').onclick = () => openTileInfo(i);
     }
   }
@@ -935,11 +954,12 @@ function renderStatus(st) {
   const total = st.players.filter((p) => !p.bankrupt).reduce((s, p) => s + p.money, 0);
   el.className = 'status' + (mine && st.phase === 'playing' ? ' mine' : '');
   el.innerHTML = `
-    <div class="avatar" style="background:${cur.hex}22;border-color:${cur.hex}">${cur.piece || initials(cur.name)}</div>
-    <div class="txt">
-      <div class="t1">${mine ? 'Ваш хід' : 'Хід ' + esc(cur.name)}</div>
-      <div class="t2">${esc(sub)} · на столі ${money(total)}</div>
-    </div>`;
+    <div class="st-kicker">${mine ? 'Ваш хід' : 'Хід гравця'}</div>
+    <div class="st-main">
+      <span class="st-token">${pieceHTML(cur.piece)}</span>
+      <span class="st-who"><b>${esc(cur.name)}</b><i>${money(cur.money)}</i></span>
+    </div>
+    <div class="st-sub">${esc(sub)}<span> · на столі ${money(total)}</span></div>`;
 }
 
 function liquidation(st, me) {
@@ -1109,7 +1129,7 @@ function renderActions(st) {
       c.innerHTML = '<div class="ac-sub">Дубль — кидайте ще раз!</div>';
       el.appendChild(c);
     }
-    el.appendChild(btn('🎲 Кинути кубики', 'primary big', () => act('roll')));
+    el.appendChild(btn('Кинути кубики', 'gold big', () => act('roll')));
   } else if (aw.type === 'jail') {
     const card = document.createElement('div');
     card.className = 'action-card';
@@ -1875,7 +1895,7 @@ function mobilePrimary(st) {
     const cur = curP(st);
     return { label: `Чекаємо ${cur ? cur.name : '…'}`, run: null };
   }
-  if (aw.type === 'roll') return { label: '🎲 Кинути кубики', run: () => act('roll') };
+  if (aw.type === 'roll') return { label: 'Кинути кубики', run: () => act('roll') };
   if (aw.type === 'buy') return { label: `Купити ${money(S.boardData.board[aw.tile].price)}`, run: () => act('buy') };
   if (aw.type === 'pay_rent') return { label: `Сплатити ${money(aw.amount)}`, run: () => act('pay_rent') };
   if (aw.type === 'casino') return { label: '🎰 Казино', run: () => openCasinoTable() };
