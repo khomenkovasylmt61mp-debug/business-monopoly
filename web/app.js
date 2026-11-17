@@ -835,7 +835,12 @@ function renderHud(st) {
   const info = $('roundInfo');
   if (info) {
     const alive = st.players.filter((p) => !p.bankrupt).length;
-    info.textContent = `Коло ${st.round || 1} · ${alive}/${st.players.length}`;
+    info.textContent = `Коло ${st.round || 1}`;
+    const counters = $('topCounters');
+    if (counters) {
+      const owned = st.tiles.filter((t) => t.owner).length;
+      counters.innerHTML = `<span>${alive}/${st.players.length} гравців</span><span>${owned}/40 активів</span>`;
+    }
   }
   const box = $('hudPlayers');
   if (box) {
