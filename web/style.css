@@ -1035,6 +1035,38 @@ input.code {
 .casino-row { gap: 8px; }
 .btn.dark { background: linear-gradient(180deg, #2a3446, #171f2c); border-color: #46536b; color: #e8eef8; }
 .btn.danger { background: linear-gradient(180deg, #c0392b, #8e2418); border-color: #e06655; color: #fff; }
+
+/* стіл рулетки */
+.rt-chips { display: flex; gap: 6px; margin: 8px 0; }
+.rt-chip {
+  flex: 1; padding: 9px 6px; border-radius: 8px;
+  background: #16263d; color: #dbe6f5;
+  border: 1px solid #3b5578; font-weight: 700; font-size: 13px;
+}
+.rt-chip.active {
+  background: linear-gradient(180deg, #f6d488, #cf9f3c);
+  color: #241a06; border-color: #ffe7ad;
+  box-shadow: 0 2px 0 #8a6620;
+}
+.rt-outs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+.rt-out {
+  padding: 9px 4px; font-size: 11px; border-radius: 8px; font-weight: 700;
+  background: #16263d; color: #dbe6f5; border: 1px solid #3b5578;
+}
+.rt-out.red { background: linear-gradient(180deg, #b03527, #7e1a12); border-color: #d94b3f; }
+.rt-out.black { background: linear-gradient(180deg, #242c3a, #0f1620); border-color: #4b5563; }
+.rt-out.gold { background: linear-gradient(180deg, #4a3a16, #2a2009); border-color: #a98a45; color: #ffe6ae; }
+.rt-label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: #93a9c6; margin: 2px 0 6px; }
+.rt-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.rt-num {
+  padding: 9px 0; border-radius: 6px; font-weight: 800; font-size: 12.5px;
+  color: #fff; border: 1px solid #ffffff22;
+  text-shadow: 0 1px 1px #00000066;
+}
+.rt-num.red { background: linear-gradient(180deg, #c0392b, #8a1d15); }
+.rt-num.black { background: linear-gradient(180deg, #26303f, #101722); }
+.rt-num.zero { grid-column: 1 / -1; background: linear-gradient(180deg, #1f7a41, #12542b); }
+.rt-num:active, .rt-out:active { transform: translateY(1px); }
 .prop-card {
   flex: 0 0 244px;
   scroll-snap-align: start;
