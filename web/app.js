@@ -424,7 +424,7 @@ function renderTokens(st) {
       const pb = (b.id === st.turn ? 2 : 0) + (b.id === S.pid ? 1 : 0);
       return pb - pa;
     });
-    const maxShow = window.innerWidth <= 640 ? 4 : 6;
+    const maxShow = window.innerHeight < 560 ? 3 : (window.innerWidth <= 640 ? 4 : 6);
     const shown = ordered.slice(0, maxShow);
     stack.dataset.n = String(shown.length + (list.length > shown.length ? 1 : 0));
     shown.forEach((p) => {
