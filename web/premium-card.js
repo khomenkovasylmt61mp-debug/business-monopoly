@@ -203,10 +203,10 @@
         ? 'Керування доступне лише власнику.'
         : 'Банк — придбати можна під час свого ходу.';
     }
-    if (acts.length) return '';
 
     var houses = Number(ts.houses) || 0;
-    if (t.type === 'street' && myFull && !ts.mortgaged && houses < 5) {
+    if (t.type === 'street' && !ts.mortgaged && houses < 5) {
+      if (!myFull) return 'Для будівництва потрібна повна група.';
       var evenOk = houses === Math.min.apply(null, groupHouses);
       if (!evenOk) return 'Щоб будувати, вирівняйте кількість будинків у групі.';
       var cost = Number(t.house) * (houses + 1);
@@ -214,8 +214,11 @@
         return 'Недостатньо коштів на наступну філію: ' + money(cost) + '.';
       }
     }
+    if (acts.length) return '';
     if (groupHasHouses) {
-      return 'Спочатку продайте будинки в цій групі — тоді відкриється застава.';
+      return myFull
+        ? 'Спочатку продайте будинки в цій групі — тоді відкриється застава.'
+        : 'Застава недоступна, поки в групі є будинки.';
     }
     return 'Зараз доступних дій немає.';
   }
@@ -247,7 +250,7 @@
     if (!groupHouses.length) groupHouses = [0];
 
     var myFull = !!(isMine && t.group && ownsGroup(state, S.pid, t.group));
-    var displayFull = !!(owner && t.type === 'street' && t.group && ownsGroup(state, owner.id, t.group));
+    var displayFull = !!(owner && t.group && ownsGroup(state, owner.id, t.group));
     var groupHasHouses = !!(t.group && groupTiles(t.group).some(function (i) {
       return state.tiles[i] && (Number(state.tiles[i].houses) || 0) > 0;
     }));
@@ -273,7 +276,8 @@
       ? '<img class="lux-logo-img" src="/logos/' + encodeURIComponent(t.logo) +
         '" alt="" draggable="false" decoding="async">'
       : '';
-    var fallbackIcon = tileIcon(t) || '◆';
+    var fallbackIcon = tileIcon(t) ||
+      (t.name ? String(t.name).trim().charAt(0).toUpperCase() : '◆');
 
     var priceValue = t.price != null ? t.price : (t.amount != null ? t.amount : null);
     var priceLabel = t.price != null ? 'Ціна об\'єкта' : 'До сплати';
@@ -506,15 +510,21 @@
     }
 
     var overlay = document.getElementById('overlay');
+    var scroller = modal.querySelector('.lux-scroll');
     var previousFocus = document.activeElement;
     var observer = null;
     var closed = false;
+
+    function onScroll() {
+      if (scroller) card.classList.toggle('is-scrolled', scroller.scrollTop > 24);
+    }
 
     function shutdown() {
       if (closed) return;
       closed = true;
       document.removeEventListener('keydown', onKey);
       if (overlay) overlay.removeEventListener('click', onOverlayClick);
+      if (scroller) scroller.removeEventListener('scroll', onScroll);
       if (observer) observer.disconnect();
       if (previousFocus && previousFocus !== document.body && document.contains(previousFocus) &&
           typeof previousFocus.focus === 'function') {
@@ -536,6 +546,7 @@
     }
 
     document.addEventListener('keydown', onKey);
+    if (scroller) scroller.addEventListener('scroll', onScroll, { passive: true });
     if (overlay) {
       overlay.addEventListener('click', onOverlayClick);
       if (typeof MutationObserver === 'function') {
