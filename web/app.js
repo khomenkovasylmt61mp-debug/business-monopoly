@@ -391,9 +391,9 @@ function renderBoard(st) {
 
     const hEl = el.querySelector('.houses');
     if (ts.houses === 5) {
-      hEl.innerHTML = '<div class="hotel"></div>';
+      hEl.innerHTML = '<img class="hotel-img" src="/buildings/hotel.webp" alt="" draggable="false">';
     } else if (ts.houses > 0) {
-      hEl.innerHTML = new Array(ts.houses).fill('<div class="house"></div>').join('');
+      hEl.innerHTML = `<img class="house-img" src="/buildings/house_${ts.houses}.webp" alt="" draggable="false">`;
     } else {
       hEl.innerHTML = '';
     }
