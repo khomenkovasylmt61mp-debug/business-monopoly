@@ -1191,3 +1191,34 @@ body.big-board #bigBoardBtn,
   max-width: 100% !important;
 }
 
+/* final: owner colour reads on the whole card (thin frame, no neon) */
+.board .tile.owned {
+  outline: 2.5px solid var(--own, #c0392b);
+  outline-offset: -2.5px;
+  box-shadow: 0 2px 7px #00000055, inset 0 0 0 1px #ffffff55;
+}
+.board .tile.owned .own-zone {
+  border-color: var(--own, #c0392b) !important;
+}
+
+/* final: decks as real tilted stacks of premium cards */
+.cp-decks { z-index: 3; }
+.cp-deck { background-clip: padding-box; }
+.cp-deck::before {
+  content: ""; position: absolute; z-index: -1;
+  inset: 2px -4px -6px 4px;
+  border-radius: 7px;
+  border: 1px solid #8a6a2f;
+  background: linear-gradient(180deg, #2b1d0d, #150e05);
+  transform: rotate(-2.4deg);
+  box-shadow: 0 7px 16px #000000aa;
+}
+.cp-deck::after {
+  content: ""; position: absolute; z-index: -2;
+  inset: 5px -8px -11px 8px;
+  border-radius: 7px;
+  border: 1px solid #6b4d18;
+  background: #0f0903;
+  transform: rotate(1.9deg);
+}
+
