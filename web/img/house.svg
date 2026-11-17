@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 32">
+  <defs>
+    <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff8a72"/>
+      <stop offset=".45" stop-color="#e4482f"/>
+      <stop offset="1" stop-color="#a8271a"/>
+    </linearGradient>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffaf0"/>
+      <stop offset="1" stop-color="#e2d3b2"/>
+    </linearGradient>
+    <linearGradient id="base" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe6a8"/>
+      <stop offset=".5" stop-color="#d9b66b"/>
+      <stop offset="1" stop-color="#8a6a2f"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="10" cy="29.4" rx="8.4" ry="2.6" fill="url(#base)"/>
+  <rect x="3.4" y="13" width="13.2" height="15.6" rx=".7" fill="url(#wall)"/>
+  <path d="M1.6 13.4 10 3.4l8.4 10z" fill="url(#roof)"/>
+  <path d="M10 3.4v10H1.6z" fill="#00000012"/>
+  <rect x="8.1" y="21" width="3.8" height="7.6" rx=".4" fill="#7a4520"/>
+  <rect x="5" y="16.2" width="2.6" height="3" rx=".3" fill="#ffd98a"/>
+  <rect x="12.4" y="16.2" width="2.6" height="3" rx=".3" fill="#ffd98a"/>
+  <rect x="8.6" y="8.4" width="2.8" height="4.4" rx=".4" fill="#b23b2b"/>
+</svg>
