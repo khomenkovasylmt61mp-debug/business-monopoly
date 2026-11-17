@@ -333,7 +333,7 @@
         ownerHtml =
           '<div class="lux-owner">' +
             '<span class="lux-owner-avatar" style="--lux-owner:' + esc(ownerHex) + '">' +
-              esc(owner.piece || '•') +
+              (window.pieceHTML ? window.pieceHTML(owner.piece, 'lux-piece-img') : esc(owner.piece || '•')) +
             '</span>' +
             '<span class="lux-owner-text">' +
               '<span class="lux-owner-label">Власник</span>' +
