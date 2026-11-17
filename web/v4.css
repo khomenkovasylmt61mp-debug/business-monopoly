@@ -317,20 +317,20 @@
   color: #2a1f08;
 }
 
-/* exact building count — stays readable at small cell sizes */
+/* exact count chip — supplementary to the 3D buildings */
 .bld-count {
-  position: absolute; right: 1px; bottom: 50%;
-  transform: translateY(50%);
-  min-width: 1.35em; height: 1.35em; padding: 0 .12em;
+  position: absolute; right: 0; bottom: 6%;
+  min-width: 1.3em; height: 1.3em; padding: 0 .1em;
   display: flex; align-items: center; justify-content: center;
   border-radius: 99px;
   background: linear-gradient(180deg, #ffe9b8, #d9b66b);
   border: 1px solid #fff6da;
   color: #2a1f08; font-weight: 900; line-height: 1;
-  font-size: clamp(7px, 1.02cqw, 11px);
-  box-shadow: 0 1px 3px #000000aa, inset 0 1px 0 #ffffffaa;
-  z-index: 2;
+  font-size: clamp(7px, .92cqw, 10px);
+  box-shadow: 0 1px 2px #000000aa, inset 0 1px 0 #ffffffaa;
+  z-index: 3;
 }
+.bld-count.is-hotel { letter-spacing: 0; }
 .board .tile.left .bld-count, .board .tile.right .bld-count {
   display: flex;
   right: auto; left: 50%; bottom: 1px;
@@ -806,31 +806,31 @@ body.big-board #bigBoardBtn,
 .board .tile.is-prop.right { flex-direction: row-reverse; }
 .board .tile.is-prop.right .tile-face { background-position: right center; }
 
-/* ownership strip sits in the card flow */
+/* ownership strip sits in the card flow — one card, no attached panel */
 .board .tile.is-prop .own-zone {
   position: static;
   left: auto; right: auto; top: auto; bottom: auto;
   width: auto; height: auto;
   flex: 1 1 auto;
-  margin: 2px;
+  margin: 0;
   display: flex; align-items: center; justify-content: space-between;
-  gap: 2px; padding: 2px 3px;
-  border-radius: 5px;
-  border: 1px solid #c9a55e77;
-  background: linear-gradient(180deg, #fdf8ec, #f1e5cb);
-  box-shadow: inset 0 1px 0 #fffdf6;
+  gap: 2px; padding: 2px 4px;
+  border-radius: 0 0 3px 3px;
+  border: 0;
+  border-top: 1px solid #d9b66b66;
+  background: linear-gradient(180deg, #fbf5e6, #f0e4c9);
+  box-shadow: none;
 }
 .board .tile.is-prop.left .own-zone,
 .board .tile.is-prop.right .own-zone {
   flex-direction: column; align-items: center; justify-content: center;
 }
 .board .tile.owned .own-zone {
-  border-color: color-mix(in srgb, var(--own, #c0392b) 55%, #8a6a2f);
+  border-top-color: color-mix(in srgb, var(--own, #c0392b) 55%, #8a6a2f);
   background:
     linear-gradient(180deg,
-      color-mix(in srgb, var(--own, #c0392b) 22%, #fbf5e6) 0%,
-      color-mix(in srgb, var(--own, #c0392b) 10%, #efe2c4) 100%);
-  box-shadow: inset 0 1px 0 #ffffffcc;
+      color-mix(in srgb, var(--own, #c0392b) 20%, #fbf5e6) 0%,
+      color-mix(in srgb, var(--own, #c0392b) 9%, #f0e4c9) 100%);
 }
 .board .tile.is-prop .own-zone.is-free {
   align-items: center; justify-content: center;
