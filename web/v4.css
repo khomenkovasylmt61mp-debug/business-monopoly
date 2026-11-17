@@ -912,6 +912,38 @@ body.big-board #bigBoardBtn,
   box-shadow: 0 2px 8px #00000066, 0 0 0 1px #ffd58a;
 }
 
+/* ============================================================
+   V6.1 — one alignment rule: the ownership band always faces
+   the board centre (bottom row flips to the top of the cell).
+   ============================================================ */
+.board .tile.is-prop.bottom { flex-direction: column-reverse; }
+.board .tile.is-prop.bottom .own-zone {
+  border-top: 0;
+  border-bottom: 1px solid #d9b66b66;
+  border-radius: 4px 4px 0 0;
+}
+.board .tile.is-prop.bottom.owned .own-zone {
+  border-bottom-color: color-mix(in srgb, var(--own, #c0392b) 55%, #8a6a2f);
+}
+.board .tile.is-prop.left .own-zone {
+  border-top: 0;
+  border-left: 1px solid #d9b66b66;
+  border-radius: 0 4px 4px 0;
+}
+.board .tile.is-prop.left.owned .own-zone {
+  border-left-color: color-mix(in srgb, var(--own, #c0392b) 55%, #8a6a2f);
+}
+.board .tile.is-prop.right .own-zone {
+  border-top: 0;
+  border-right: 1px solid #d9b66b66;
+  border-radius: 4px 0 0 4px;
+}
+.board .tile.is-prop.right.owned .own-zone {
+  border-right-color: color-mix(in srgb, var(--own, #c0392b) 55%, #8a6a2f);
+}
+.token-cell.tok-bottom .token-stack { padding-top: 42%; padding-bottom: 0; }
+.token-cell.tok-top .token-stack { padding-top: 0; padding-bottom: 42%; }
+
 /* touch: no sticky hover states (mobile-native baseline) */
 @media (hover: none) {
   .rail button:hover { background: transparent; border-color: transparent; color: #9fb4cf; }
