@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#07172b">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#07172b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Бізнес-Монополія — на всю компанію</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/tile-art.css">
+<link rel="stylesheet" href="/premium-card.css">
+<link rel="stylesheet" href="/v4.css">
+<link rel="stylesheet" href="/v8.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23c0392b'/%3E%3Ctext x='50' y='72' font-size='64' text-anchor='middle' fill='%23fff' font-family='Georgia'%3EМ%3C/text%3E%3C/svg%3E">
+<style>html,body{width:844px!important}#app{width:844px}</style></head>
+<body>
+<div id="app">
+
+  <!-- ================= ГОЛОВНА ================= -->
+  <section id="screen-home" class="screen active">
+    <div class="home">
+      <div class="hero">
+        <div class="hero-kicker">БРЕНДИ · УГОДИ · ВЕЛИКІ ГРОШІ</div>
+        <div class="hero-title"><span>БІЗНЕС</span><b>МОНОПОЛІЯ</b></div>
+        <div class="hero-line"></div>
+        <p class="tagline">Класичні правила · до 12 гравців · без ліміту в 5</p>
+      </div>
+      <div class="home-card">
+        <label class="field">
+          <span>Ваше ім'я</span>
+          <input id="nameInput" maxlength="16" placeholder="Наприклад, Діма" autocomplete="nickname">
+        </label>
+        <button id="createBtn" class="btn primary big">Створити гру</button>
+        <div class="divider"><span>або увійти за кодом</span></div>
+        <div class="join-row">
+          <input id="codeInput" class="code" maxlength="5" placeholder="КОД" autocomplete="off" spellcheck="false">
+          <button id="joinBtn" class="btn">Увійти</button>
+        </div>
+      </div>
+      <p class="foot">Один телефон — одне місце. Посилання кидайте в чат, код вставляти не доведеться.</p>
+    </div>
+  </section>
+
+  <!-- ================= ЛОБІ ================= -->
+  <section id="screen-lobby" class="screen">
+    <div class="lobby">
+      <div class="lobby-head">
+        <div class="lobby-brand">
+          <svg class="lobby-crown" viewBox="0 0 72 46" aria-hidden="true"><defs><linearGradient id="lcg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3ca"/><stop offset=".55" stop-color="#e3bd6b"/><stop offset="1" stop-color="#b8872e"/></linearGradient></defs><path d="M6 36 L10 12 L24 22 L36 5 L48 22 L62 12 L66 36 Z" fill="url(#lcg)" stroke="#8a6318" stroke-width="1.5" stroke-linejoin="round"/><rect x="6" y="36" width="60" height="6" rx="2.5" fill="#d6a64d" stroke="#8a6318"/></svg>
+          <div><b>БІЗНЕС-МОНОПОЛІЯ</b><i>Лобі · до 12 гравців</i></div>
+        </div>
+        <div class="lobby-code">
+          <span>Код кімнати</span>
+          <b id="lobbyCode">-----</b>
+        </div>
+        <div class="row">
+          <button id="copyCodeBtn" class="btn tiny">Скопіювати посилання</button>
+          <button id="leaveLobbyBtn" class="btn tiny ghost">Вийти</button>
+        </div>
+      </div>
+
+      <div class="lobby-grid">
+        <div class="lobby-players" id="lobbyPlayers"></div>
+        <div class="lobby-side">
+          <div class="panel-box">
+            <h3>Поле</h3>
+            <div class="chips" id="themeChips"></div>
+            <h3>Правила</h3>
+            <div class="chips" id="modeChips"></div>
+            <div class="rules-preview" id="rulesPreview"></div>
+            <h3>Ваша фішка</h3>
+            <div class="piece-grid" id="pieceGrid"></div>
+            <label class="switch-row">
+              <input type="checkbox" id="parkingToggle">
+              <span>Банк на парковці <i>— усі штрафи й податки збираються в центрі, хто став на «Парковку», забирає банк</i></span>
+            </label>
+            <h3>Таймер хода</h3>
+            <div class="chips" id="timerChips"></div>
+            <p class="timer-note" id="timerNote">Кожна дія дає нові 60 с. Якщо нічого не робиш — автохід і штраф 100 ₴.</p>
+          </div>
+          <div class="panel-box">
+            <h3>Боти</h3>
+            <div class="row">
+              <button id="addBotBtn" class="btn tiny">+ бот</button>
+              <button id="delBotBtn" class="btn tiny ghost">− бот</button>
+            </div>
+          </div>
+          <div class="panel-box">
+            <h3>Запрошення</h3>
+            <input id="shareLink" class="share-input" readonly>
+            <button id="copyLinkBtn" class="btn ghost wide">Скопіювати посилання</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="lobby-bottom">
+        <p id="lobbyHint" class="hint"></p>
+        <button id="startBtn" class="btn primary big">Почати гру</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ГРА ================= -->
+  <section id="screen-game" class="screen">
+    <nav class="rail" id="rail" aria-label="Розділи">
+      <button data-rail="game" class="on" title="Гра"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4.2"/><circle cx="8.6" cy="8.6" r="1.15" fill="currentColor" stroke="none"/><circle cx="15.4" cy="15.4" r="1.15" fill="currentColor" stroke="none"/><circle cx="15.4" cy="8.6" r="1.15" fill="currentColor" stroke="none"/><circle cx="8.6" cy="15.4" r="1.15" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.15" fill="currentColor" stroke="none"/></svg><span>Гра</span></button>
+      <button data-rail="mine" title="Мої активи"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 4l9 5.5"/><path d="M5 10v9h14v-9"/><path d="M9.5 19v-5h5v5"/></svg><span>Активи</span></button>
+      <button data-rail="missions" title="Місії"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.6"/><path d="M12 2.2v3M12 18.8v3M2.2 12h3M18.8 12h3"/></svg><span>Місії</span></button>
+      <button data-rail="trade" title="Обмін"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3.2-3.2M20 16H7l3.2 3.2"/></svg><span>Обмін</span></button>
+      <button data-rail="credit" title="Кредити"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.8" y="6.2" width="18.4" height="11.6" rx="2.6"/><path d="M2.8 10h18.4"/><path d="M6.4 14.6h3.4"/></svg><span>Кредити</span></button>
+      <button data-rail="rating" title="Рейтинг"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 5.5H4.6V7a3 3 0 0 0 3 3M17 5.5h2.4V7a3 3 0 0 1-3 3"/><path d="M12 14v4M8.5 20h7"/></svg><span>Рейтинг</span></button>
+      <button data-rail="chat" title="Чат"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 12.2c0 3.9-3.8 7-8.4 7-1 0-2-.14-2.9-.4L4 20.4l1.3-3.4a6.6 6.6 0 0 1-1.7-4.4c0-3.9 3.8-7 8.4-7s8.4 3.1 8.4 6.6z"/></svg><span>Чат</span></button>
+      <button data-rail="rules" title="Правила"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2 2 0 0 1 6 3.5h5v16.8H6a2 2 0 0 0-2 2z"/><path d="M20 5.5a2 2 0 0 0-2-2h-5v16.8h5a2 2 0 0 1 2 2z"/></svg><span>Правила</span></button>
+      <button class="rail-toggle" id="railToggle" title="Згорнути панель">«</button>
+    </nav>
+    <header class="topbar">
+      <div class="brand"><svg class="brand-crown" viewBox="0 0 72 46" aria-hidden="true"><defs><linearGradient id="bcg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3ca"/><stop offset=".55" stop-color="#e3bd6b"/><stop offset="1" stop-color="#b8872e"/></linearGradient></defs><path d="M6 36 L10 12 L24 22 L36 5 L48 22 L62 12 L66 36 Z" fill="url(#bcg)" stroke="#8a6318" stroke-width="1.5" stroke-linejoin="round"/><rect x="6" y="36" width="60" height="6" rx="2.5" fill="#d6a64d" stroke="#8a6318"/></svg><span class="brand-text"><b>БІЗНЕС-МОНОПОЛІЯ</b><i id="stageLabel">Пізня стадія партії</i></span></div>
+      <div class="round-info" id="roundInfo"></div>
+      <div class="top-counters" id="topCounters"></div>
+      <div class="players-strip" id="playersStrip"></div>
+      <button id="menuBtn" class="icon-btn" title="Меню">⋯</button>
+      <button id="bigBoardBtn" class="icon-btn" title="Велике поле" aria-pressed="false">⤢</button>
+    </header>
+
+    <header class="m-topbar">
+      <div class="m-brand"><span>БІЗНЕС-МОНОПОЛІЯ</span></div>
+      <div class="m-hud">
+        <span class="m-balance" id="mBalance">0 ₴</span>
+        <button class="m-pill" id="mPlayersBtn" title="Гравці">👥 <b id="mPlayersCount">0</b></button>
+        <button class="m-menu" id="mMenuBtn" title="Меню">⋯</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <div class="board-wrap" id="boardWrap">
+        <div class="board-zoom" id="boardZoom">
+          <div class="board" id="board">
+            <div class="board-center" id="boardCenter"></div>
+            <div class="token-layer" id="tokenLayer"></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="panel">
+        <div id="status" class="status"></div>
+        <div id="actions" class="actions"></div>
+        <div class="hud-block" id="hudPlayers"></div>
+        <div class="hud-block" id="hudSelected"></div>
+        <div class="tabs" id="tabs">
+          <button data-tab="mine" class="active">Мої</button>
+          <button data-tab="log">Лог</button>
+          <button data-tab="chat">Чат <i id="chatDot" class="dot"></i></button>
+        </div>
+        <div class="tab-body" id="tabBody"></div>
+      </aside>
+    </main>
+
+    <div class="m-actions" id="mActions">
+      <button class="m-primary" id="mPrimary">Кинути кубики</button>
+      <button class="m-icon" id="mZoomReset" title="Скинути масштаб">⤢</button>
+    </div>
+    <nav class="m-nav">
+      <button data-mact="events"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Події</span></button>
+      <button data-mact="mine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 4l9 5.5"/><path d="M5 10v9h14v-9"/><path d="M9.5 19v-5h5v5"/></svg><span>Мої</span></button>
+      <button data-mact="trade"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3.2-3.2M20 16H7l3.2 3.2"/></svg><span>Обмін</span></button>
+      <button data-mact="credit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.8" y="6.2" width="18.4" height="11.6" rx="2.6"/><path d="M2.8 10h18.4"/></svg><span>Кредити</span></button>
+      <button data-mact="missions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.6"/></svg><span>Місії</span></button>
+    </nav>
+  </section>
+</div>
+
+<div id="overlay" class="overlay hidden"></div>
+<div id="toasts" class="toasts"></div>
+
+<script src="/v8/manifest.js"></script>
+<script src="/app.js"></script>
+<script src="/tile-art.js" defer></script>
+<script src="/premium-card.js"></script>
+
+<script>
+window.addEventListener('load', async () => {
+  try {
+    const q = new URLSearchParams(location.search);
+    const file = q.get('demo') || 'demo-game.json';
+    const data = await fetch('/' + file).then(r => r.json());
+    S.code = null; S.token = null; S.pollGen += 1;
+    S.state = data; S.pid = data.you; S.lastVersion = data.version; S.prevPos = {};
+    S.turnLeft = Number(data.turnLeft || 0); S.turnLeftAt = Date.now();
+    if (data.options && data.options.theme) { S.theme = null; applyTheme(data.options.theme); }
+    if (data.phase === 'lobby') { showScreen('lobby'); renderLobby(data); }
+    else { showScreen('game'); renderGame(data); }
+    const card = q.get('card');
+    if (card) setTimeout(() => openTileInfo(Number(card)), 400);
+    const sel = q.get('sel');
+    if (sel) setTimeout(() => { S.selectedTile = Number(sel); renderHud(S.state); }, 500);
+    if (q.get('rects')) {
+      const r = {};
+      [1, 3, 6, 8, 9].forEach((i) => {
+        const el = document.querySelector('#board .tile[data-i="' + i + '"]');
+        if (!el) return;
+        const b = el.getBoundingClientRect();
+        r[i] = [Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height)];
+      });
+      document.title = 'RECTS ' + JSON.stringify(r);
+    }
+    if (q.get('big')) {
+      document.body.classList.add('big-board');
+      setTimeout(fitBoard, 100);
+    }
+    const tab = q.get('tab');
+    if (tab) setTimeout(() => switchTab(tab), 300);
+    if (q.get('unread')) setTimeout(() => {
+      const list = document.getElementById('chatList');
+      if (!list || !S.state.chat) return;
+      list.scrollTop = 0;
+      S.state.chat.push({ id: 9999, pid: S.pid, name: 'QA', color: '#e3bd6b', text: 'Нове повідомлення, поки ви читаєте старі', t: Date.now() / 1000 });
+      renderTab(S.state);
+    }, 1200);
+    if (q.get('spread')) {
+      S.state.players.forEach((p, i) => { p.pos = [1, 3, 6, 8, 9, 11, 13, 16, 18, 21, 24, 26][i % 12]; });
+      renderTokens(S.state);
+    }
+    if (q.get('pair')) {
+      S.state.players.forEach((p, i) => { p.pos = i < 2 ? 6 : [1, 3, 8, 9, 11, 13, 16, 18, 21, 24][i - 2]; });
+      renderTokens(S.state);
+    }
+    if (q.get('diag')) setTimeout(() => {
+      const b = document.getElementById('board');
+      const r = b.getBoundingClientRect();
+      document.title = 'DIAG ' + JSON.stringify({
+        iw: innerWidth, sw: document.documentElement.scrollWidth,
+        bw: Math.round(r.width), bx: Math.round(r.x), br: Math.round(r.right),
+      });
+    }, 1500);
+    const spin = q.get('spin');
+    if (spin) setTimeout(() => {
+      const info = { bet: 200, kind: 'number', number: 9 };
+      if (spin === 'win') showRoulette({ pid: S.pid, n: 9, red: true, bet: 200, kind: 'number', number: 9, label: 'число 9', win: true, net: 7000, t: Date.now() / 1000 }, info);
+      else if (spin === 'lose') showRoulette({ pid: S.pid, n: 5, red: true, bet: 200, kind: 'number', number: 9, label: 'число 9', win: false, net: -200, t: Date.now() / 1000 }, info);
+      else showRoulette(null, info);
+    }, 900);
+    if (q.get('mchat')) setTimeout(() => openMobileChat(), 600);
+  } catch (e) { document.title = 'ERR ' + e.message; }
+});
+</script>
+</body>
+
+</html>
