@@ -323,6 +323,25 @@
         '</div>' +
       '</header>';
 
+    var heroHtml = '';
+    if (isProp) {
+      var heroToken = owner && window.pieceHTML
+        ? window.pieceHTML(owner.piece, 'lux-hero-token')
+        : '';
+      var heroBld = '';
+      if (houses >= 5) {
+        heroBld = '<img class="lux-hero-bld" src="/buildings/hotel.webp" alt="" draggable="false">';
+      } else if (houses > 0) {
+        heroBld = '<img class="lux-hero-bld" src="/buildings/house_' + houses + '.webp" alt="" draggable="false">';
+      }
+      heroHtml =
+        '<div class="lux-hero" style="--lux-hero:' + esc(ownerHex || accent) + '">' +
+          '<div class="lux-hero-glow" aria-hidden="true"></div>' +
+          (heroToken ? '<div class="lux-hero-stage">' + heroToken + '</div>' : '') +
+          (heroBld ? '<div class="lux-hero-estate">' + heroBld + '</div>' : '') +
+        '</div>';
+    }
+
     /* ---------- власник ---------- */
     var ownerHtml = '';
     if (isProp) {
@@ -481,6 +500,7 @@
         '<div class="lux-scroll">' +
           headerHtml +
           '<div class="lux-body">' +
+            heroHtml +
             ownerHtml +
             factsHtml +
             estateHtml +
