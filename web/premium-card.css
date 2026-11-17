@@ -1013,3 +1013,112 @@
 .lux-hero-bld { max-height: 118px; max-width: 160px; object-fit: contain; filter: drop-shadow(0 10px 12px #00000088); }
 .lux-card { border: 2px solid var(--lux-accent, #d9b66b); box-shadow: 0 0 0 1px #00000055, 0 0 28px #00000088, inset 0 0 0 1px #ffffff22; }
 .lux-title { font-size: clamp(24px, 3.2vw, 34px); }
+
+/* ==== v4: compact card + sticky action bar ==== */
+.lux-hero { height: 128px; margin: 6px 0 8px; }
+.lux-hero-token { width: auto; height: 118px; }
+.lux-hero-bld { max-height: 104px; }
+.lux-hero-stage { width: 118px; height: 118px; }
+.lux-rent-list li { padding-top: 5px; padding-bottom: 5px; }
+.lux-actions {
+  position: sticky; bottom: -1px; z-index: 5;
+  margin-top: 8px;
+  padding: 9px 0 2px;
+  background: linear-gradient(180deg, rgba(247, 240, 227, .86), #F7F0E3 42%);
+  border-top: 1px solid rgba(217, 182, 107, .45);
+  backdrop-filter: blur(3px);
+}
+.lux-actions .lux-hint { margin-bottom: 6px; }
+.lux-act-main { gap: 8px; }
+.lux-btn { min-height: 42px; }
+
+/* ==== v4 architecture: cream header -> dark scene -> cream table -> dark actions ==== */
+.lux-head {
+  background: linear-gradient(180deg, #fcf6ea, #f3e8d2);
+  padding: 16px 20px 14px;
+}
+.lux-head::after {
+  inset-inline: 20px;
+  background: linear-gradient(90deg, transparent, #b08a3e99, transparent);
+}
+.lux-kicker { color: #8a6a2f; }
+.lux-badge { background: #0d2340; color: #f0d79b; border-color: #d9b66b55; }
+.lux-badge.is-hotel { background: #1f5c3d; color: #d7f5e5; border-color: #7fd2a47a; }
+.lux-badge.is-free { background: #0d2340; color: #dce6f3; border-color: #ffffff33; }
+.lux-title { color: #18243a; text-shadow: none; }
+.lux-type { color: #8a6a2f; }
+.lux-type::before { background: #b08a3e; }
+.lux-meta { color: #5d5b53; }
+.lux-price { border-inline-start-color: #c9a55e66; }
+.lux-price-label { color: #8a7a5c; }
+.lux-price-value { color: #8a5a12; }
+.lux-logo-plate {
+  background: #fff;
+  border: 1px solid #d9b66b77;
+  box-shadow: 0 6px 16px #0000002e;
+}
+.lux-x { background: #fff8e8; color: #3a2b0e; border: 1px solid #d9b66b66; }
+.lux-card.is-scrolled .lux-x { background: #fff8e8; }
+
+.lux-body {
+  margin: 0;
+  border-radius: 0 0 16px 16px;
+  padding: 12px 20px 14px;
+  overflow: visible;
+}
+.lux-actions {
+  position: sticky; bottom: -1px; z-index: 5;
+  margin: 10px -20px 0;
+  padding: 12px 20px 14px;
+  background: linear-gradient(180deg, #0a1c33f2, #071528);
+  border-top: 1px solid #d9b66b55;
+  border-radius: 0 0 14px 14px;
+  backdrop-filter: blur(4px);
+}
+.lux-hint { color: #9fb4cf !important; }
+.lux-actions .lux-btn {
+  background: linear-gradient(180deg, #14294a, #0d2038);
+  color: #e6d3a4; border: 1px solid #d9b66b66;
+}
+.lux-actions .lux-btn.is-primary {
+  background: linear-gradient(180deg, #f7dd9c, #cf9f3c);
+  color: #241a06; border-color: #ffe7ad; font-weight: 900;
+}
+.lux-actions .lux-btn.is-quiet { background: transparent; color: #9fb4cf; border-color: #ffffff1f; }
+.lux-actions .lux-btn.is-ghost { background: #10294a; color: #dbe6f4; }
+.lux-title { font-family: Georgia, serif; }
+
+/* hero: shared podium scene */
+.lux-hero {
+  position: relative;
+  height: 150px;
+  margin: 4px 0 10px;
+  border-radius: 10px;
+  background:
+    radial-gradient(80% 70% at 32% 108%, #d9b66b55 0%, transparent 62%),
+    radial-gradient(80% 70% at 72% 108%, #d9b66b33 0%, transparent 60%),
+    linear-gradient(180deg, #0d2542, #08172b 72%);
+  border: 1px solid #d9b66b3d;
+  overflow: hidden;
+}
+.lux-hero::after {
+  content: ""; position: absolute; left: 8%; right: 8%; bottom: 3px; height: 15px;
+  background:
+    radial-gradient(38% 100% at 30% 50%, #e3bd6bcc, transparent 74%),
+    radial-gradient(36% 100% at 72% 50%, #e3bd6b99, transparent 74%);
+  filter: blur(1.5px);
+}
+.lux-hero-stage {
+  position: absolute; left: 6%; bottom: 4px;
+  width: 42%; height: 140px;
+  display: flex; align-items: flex-end; justify-content: center;
+  z-index: 1;
+}
+.lux-hero-token { width: auto; height: 136px; object-fit: contain; filter: drop-shadow(0 10px 12px #000a); }
+.lux-hero-estate {
+  position: absolute; right: 4%; bottom: 4px; width: 48%;
+  display: flex; align-items: flex-end; justify-content: center;
+  z-index: 1;
+}
+.lux-hero-bld { max-height: 130px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 10px 12px #000a); }
+.lux-estate-visual { display: none; }
