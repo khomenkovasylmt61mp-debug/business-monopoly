@@ -605,6 +605,11 @@ function clockTick() {
 function openTileInfo(i) {
   const st = S.state;
   if (!st) return;
+  const tileType = (S.boardData.board[i] || {}).type;
+  if (window.PremiumCard && ['street', 'rr', 'util'].includes(tileType)) {
+    window.PremiumCard.open(st, i);
+    return;
+  }
   const t = S.boardData.board[i];
   const ts = st.tiles[i];
   const owner = ts.owner ? playerById(st, ts.owner) : null;
