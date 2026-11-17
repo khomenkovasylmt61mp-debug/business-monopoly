@@ -499,6 +499,16 @@ input.code {
 .tile.top .houses { top: 19%; bottom: auto; left: 6%; right: 6%; }
 .tile.left .houses { top: auto; bottom: 13%; left: 8%; right: 8%; }
 .tile.right .houses { top: auto; bottom: 13%; left: 8%; right: 8%; }
+.house-img {
+  max-height: 1.2em; max-width: 3.9em; width: auto; height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 1.5px 1.5px #00000066);
+}
+.hotel-img {
+  max-height: 1.45em; max-width: 4.2em; width: auto; height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px #00000066);
+}
 .house {
   width: 1.05em; height: 1.05em;
   background:
@@ -678,7 +688,9 @@ input.code {
   height: clamp(58px, 11cqw, 112px);
   margin: 4px -14px 0;
   overflow: hidden;
+  background: url('/img/city.webp') center bottom / cover no-repeat;
 }
+.cp-scene .cp-city { display: none; }
 .cp-scene .cp-city { position: absolute; inset: 0; width: 100%; height: 100%; }
 .cp-decks {
   position: absolute; left: 0; right: 0; bottom: 7%;
