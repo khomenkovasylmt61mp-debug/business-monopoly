@@ -1663,8 +1663,40 @@ input.code {
   .pr-val { font-size: 12.5px; }
 }
 
-/* ============ мобільна оболонка ============ */
-@media (max-width: 980px) {
+/* ============ ліва навігація (desktop) ============ */
+.rail { display: none; }
+@media (min-width: 1101px) {
+  #screen-game { padding-left: 80px; transition: padding-left .18s ease; }
+  .rail {
+    display: flex; flex-direction: column; gap: 5px;
+    position: fixed; left: 0; top: 0; bottom: 0; width: 80px; z-index: 35;
+    padding: 66px 7px 10px;
+    background: linear-gradient(180deg, #0a1c33, #07172b);
+    border-right: 1px solid #d9b66b33;
+    box-shadow: 6px 0 24px #00000055;
+    transition: width .18s ease;
+  }
+  .rail button {
+    min-height: 58px; border-radius: 12px;
+    border: 1px solid #ffffff10;
+    background: linear-gradient(180deg, #10294a, #0c1d36);
+    color: #eaf1fb; font-size: 20px; line-height: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    transition: border-color .15s, background .15s, transform .12s;
+  }
+  .rail button span { font-size: 9px; letter-spacing: .02em; color: #9fb4cf; }
+  .rail button:hover { border-color: #d9b66b66; background: #123154; }
+  .rail button:active { transform: scale(.97); }
+  .rail button.on { border-color: #d9b66b; background: #17335a; }
+  .rail button.on span { color: #ffe6ae; }
+  .rail-toggle { margin-top: auto; min-height: 38px !important; font-size: 16px !important; }
+  #screen-game.rail-collapsed { padding-left: 56px; }
+  .rail.collapsed { width: 56px; }
+  .rail.collapsed button span { display: none; }
+  .rail.collapsed button { min-height: 44px; }
+}
+
+/* ============ мобільна оболонка ============ */@media (max-width: 980px) {
   #screen-game { padding-bottom: calc(126px + env(safe-area-inset-bottom, 0px)); }
   .topbar { display: none; }
   .m-topbar {
@@ -1700,6 +1732,8 @@ input.code {
 
   .layout { padding-bottom: 0; }
   .panel .status { display: none; }
+  /* на мобільному головна дія — тільки в нижній панелі */
+  #actions > .btn.primary.big { display: none; }
   .board-wrap { position: relative; padding: 6px; touch-action: none; overscroll-behavior: contain; }
   .board-zoom { display: block; width: 100%; transform-origin: 0 0; will-change: transform; }
   .board { width: 100%; max-width: none; min-width: 0; }
