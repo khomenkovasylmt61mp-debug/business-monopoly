@@ -385,11 +385,9 @@
     if (isProp && t.type === 'street' && houses > 0) {
       var units = '';
       if (houses >= 5) {
-        units = '<span class="lux-hotel" aria-hidden="true"></span>';
+        units = '<img class="lux-estate-img" src="/buildings/hotel.webp" alt="" draggable="false">';
       } else {
-        for (var h = 0; h < houses; h++) {
-          units += '<span class="lux-house" aria-hidden="true"></span>';
-        }
+        units = '<img class="lux-estate-img" src="/buildings/house_' + houses + '.webp" alt="" draggable="false">';
       }
       estateHtml =
         '<div class="lux-estate">' +
