@@ -270,6 +270,13 @@ function sideClass(i) {
   return 'right';
 }
 
+function v8Variant(i, side) {
+  const all = window.V8_TILES;
+  const entry = all && all[i];
+  if (!entry) return null;
+  return entry.v[side] || entry.v.corner || null;
+}
+
 const TILE_WBR = {
   "Медитеранська": "Медите<wbr>ранська",
   "Коннектикут": "Коннек<wbr>тикут",
@@ -332,6 +339,26 @@ function buildBoard() {
     el.dataset.i = i;
     const isProp = ['street', 'rr', 'util'].includes(t.type);
     if (isProp) el.classList.add('is-prop');
+    const side = sideClass(i);
+    const v8 = S.theme !== 'classic' ? v8Variant(i, side) : null;
+    if (v8) {
+      el.classList.add('v8');
+      el.style.setProperty('--v8-bg-d', `url("${v8.d}")`);
+      el.style.setProperty('--v8-bg-m', `url("${v8.m}")`);
+      const mr = v8.money || [0, 0, 0, 0];
+      const or = v8.owner || [0, 0, 0, 0];
+      el.style.setProperty('--mx', mr[0]);
+      el.style.setProperty('--my', mr[1]);
+      el.style.setProperty('--mw', mr[2]);
+      el.style.setProperty('--mh', mr[3]);
+      el.style.setProperty('--ox', or[0]);
+      el.style.setProperty('--oy', or[1]);
+      el.style.setProperty('--ow', or[2]);
+      el.style.setProperty('--oh', or[3]);
+      el.innerHTML = `<div class="tile-price v8-money" hidden></div>`
+        + '<div class="own-zone v8-own" hidden><span class="owner-dot" hidden></span><div class="houses"></div></div>'
+        + '<div class="v8-frame" hidden></div>';
+    } else {
     const col2 = groupColor(t);
     let bar = '';
     if (col2) bar = `<div class="bar" style="background:${col2}"></div>`;
@@ -359,6 +386,7 @@ function buildBoard() {
       </div>`;
     const face = `<div class="tile-face">${bar}${body}${priceHtml}</div>`;
     el.innerHTML = `${face}<div class="own-zone"${isProp ? '' : ' hidden'}><span class="owner-dot" hidden></span><div class="houses"></div><span class="own-free">вільна</span></div>`;
+    }
     el.addEventListener('click', () => openTileInfo(i));
     board.insertBefore(el, $('tokenLayer'));
     tileEls[i] = el;
@@ -366,9 +394,51 @@ function buildBoard() {
 }
 
 /* Single source of truth: the rent comes from st.rents[] (server _rent_for). */
+function paintV8Price(el, p, t, ts, st, i) {
+  if (!['street', 'rr', 'util'].includes(t.type)) {
+    if (t.type === 'go') {
+      p.hidden = false;
+      p.className = 'v8-money is-free';
+      p.textContent = '+200 ₴';
+    } else if (t.type === 'tax') {
+      p.hidden = false;
+      p.className = 'v8-money is-tax';
+      p.textContent = '−' + money(t.amount);
+    } else {
+      p.hidden = true;
+    }
+    return;
+  }
+  p.hidden = false;
+  if (!ts.owner) {
+    p.className = 'v8-money is-free' + (money(t.price).length > 8 ? ' is-xlong' : '');
+    p.textContent = money(t.price);
+    return;
+  }
+  if (ts.mortgaged) {
+    p.className = 'v8-money is-mortgage';
+    p.textContent = 'Застава';
+    return;
+  }
+  const rent = st.rents ? st.rents[i] : null;
+  if (rent && rent.kind === 'util') {
+    p.className = 'v8-money is-rent';
+    p.textContent = rent.mult + '×куб';
+    return;
+  }
+  const now = rent && rent.now != null ? rent.now : 0;
+  const label = money(now);
+  p.className = 'v8-money is-rent'
+    + (ts.houses === 5 ? ' is-hotel' : '')
+    + (label.length > 8 ? ' is-xlong' : label.length > 4 ? ' is-long' : '');
+  p.textContent = label;
+}
+
 function paintTilePrice(el, t, ts, st, i) {
   const p = el.querySelector('.tile-price');
-  if (!p || !['street', 'rr', 'util'].includes(t.type)) return;
+  if (!p) return;
+  if (el.classList.contains('v8')) { paintV8Price(el, p, t, ts, st, i); return; }
+  if (!['street', 'rr', 'util'].includes(t.type)) return;
   const rent = st.rents ? st.rents[i] : null;
   if (!ts.owner) {
     p.className = 'tile-price is-price';
@@ -401,24 +471,35 @@ function renderBoard(st) {  const cur = curP(st);
     const dot = el.querySelector('.owner-dot');
     const edge = el.querySelector('.owner-edge');
     const zone = el.querySelector('.own-zone');
+    const frame = el.querySelector('.v8-frame');
     el.classList.toggle('owned', !!owner);
     if (owner) {
       el.style.setProperty('--own', owner.hex);
-      dot.hidden = false;
+      if (dot) {
+        dot.hidden = false;
+        dot.innerHTML = pieceHTML(owner.piece, 'dot-img');
+        dot.style.borderColor = owner.hex;
+        dot.title = owner.name + (owner.pieceName ? ' · ' + owner.pieceName : '');
+      }
       if (zone) { zone.hidden = false; zone.classList.remove('is-free'); }
-      dot.innerHTML = pieceHTML(owner.piece, 'dot-img');
-      dot.style.borderColor = owner.hex;
-      dot.title = owner.name + (owner.pieceName ? ' · ' + owner.pieceName : '');
       if (edge) edge.hidden = false;
+      if (frame) frame.hidden = false;
     } else {
       el.style.removeProperty('--own');
-      dot.hidden = true;
-      dot.textContent = '';
+      if (dot) {
+        dot.hidden = true;
+        dot.textContent = '';
+      }
       if (zone) {
-        zone.hidden = !el.classList.contains('is-prop');
-        zone.classList.toggle('is-free', el.classList.contains('is-prop'));
+        if (el.classList.contains('v8')) {
+          zone.hidden = true;
+        } else {
+          zone.hidden = !el.classList.contains('is-prop');
+          zone.classList.toggle('is-free', el.classList.contains('is-prop'));
+        }
       }
       if (edge) edge.hidden = true;
+      if (frame) frame.hidden = true;
     }
     el.classList.toggle('mortgaged', !!ts.mortgaged);
     el.classList.toggle('hl', !!(cur && cur.pos === i));
@@ -426,7 +507,18 @@ function renderBoard(st) {  const cur = curP(st);
 
     const hEl = el.querySelector('.houses');
     const canBuild = t.type === 'street';
-    if (!canBuild) {
+    if (el.classList.contains('v8')) {
+      const mob = window.matchMedia && window.matchMedia('(max-width: 980px)').matches;
+      if (!canBuild) {
+        hEl.innerHTML = '';
+      } else if (ts.houses === 5) {
+        hEl.innerHTML = `<img class="v8-hotel" src="${mob ? '/v8/sprites/hotel.webp' : '/v8/sprites/hotel.png'}" alt="" draggable="false">`;
+      } else if (ts.houses > 0) {
+        hEl.innerHTML = `<img class="v8-house" src="${mob ? '/v8/sprites/house.webp' : '/v8/sprites/house.png'}" alt="" draggable="false"><b class="v8-mult">×${ts.houses}</b>`;
+      } else {
+        hEl.innerHTML = '';
+      }
+    } else if (!canBuild) {
       hEl.innerHTML = '';
     } else if (ts.houses === 5) {
       hEl.innerHTML = '<img class="hotel-img" src="/buildings/hotel.webp" alt="" draggable="false">';
