@@ -404,6 +404,7 @@ function renderBoard(st) {
   });
   renderTokens(st);
   renderCenter(st);
+  if (window.TileArt) window.TileArt.apply(st, S.boardData);
 }
 
 function renderTokens(st) {
