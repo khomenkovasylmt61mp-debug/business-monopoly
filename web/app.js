@@ -354,7 +354,7 @@ function buildBoard() {
         <div class="tile-name${longest > 10 ? ' long' : ''}">${tileLabel(label)}</div>
         ${sub ? `<div class="tile-sub">${sub}</div>` : ''}
       </div>`;
-    el.innerHTML = `${bar}${body}${priceHtml}<div class="houses"></div><div class="owner-edge" hidden></div><div class="owner-dot" hidden></div>`;
+    el.innerHTML = `${bar}${body}${priceHtml}<div class="own-zone" hidden><span class="owner-dot" hidden></span><div class="houses"></div></div><div class="owner-edge" hidden></div>`;
     el.addEventListener('click', () => openTileInfo(i));
     board.insertBefore(el, $('tokenLayer'));
     tileEls[i] = el;
@@ -372,10 +372,12 @@ function renderBoard(st) {
     const owner = ts.owner ? playerById(st, ts.owner) : null;
     const dot = el.querySelector('.owner-dot');
     const edge = el.querySelector('.owner-edge');
+    const zone = el.querySelector('.own-zone');
     el.classList.toggle('owned', !!owner);
     if (owner) {
       el.style.setProperty('--own', owner.hex);
       dot.hidden = false;
+      if (zone) zone.hidden = false;
       dot.innerHTML = pieceHTML(owner.piece, 'dot-img');
       dot.style.borderColor = owner.hex;
       dot.title = owner.name + (owner.pieceName ? ' · ' + owner.pieceName : '');
@@ -383,6 +385,7 @@ function renderBoard(st) {
     } else {
       el.style.removeProperty('--own');
       dot.hidden = true;
+      if (zone) zone.hidden = true;
       dot.textContent = '';
       if (edge) edge.hidden = true;
     }
@@ -393,10 +396,11 @@ function renderBoard(st) {
     if (ts.houses === 5) {
       hEl.innerHTML = '<img class="hotel-img" src="/buildings/hotel.webp" alt="" draggable="false">';
     } else if (ts.houses > 0) {
-      hEl.innerHTML = new Array(ts.houses).fill('<img class="house-img" src="/buildings/house.webp" alt="" draggable="false">').join('');
+      hEl.innerHTML = `<img class="house-img" src="/buildings/house_${ts.houses}.webp" alt="" draggable="false"><span class="bld-count">${ts.houses}</span>`;
     } else {
       hEl.innerHTML = '';
     }
+    if (zone) zone.classList.toggle('no-bld', !(ts.houses > 0));
     const bar = el.querySelector('.bar');
     if (bar && t.type === 'street') {
       bar.style.background = ts.mortgaged ? '#a7a093' : groupColor(t);
