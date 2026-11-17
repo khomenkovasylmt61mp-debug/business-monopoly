@@ -401,18 +401,19 @@
 
     /* ---------- забудова ---------- */
     var estateHtml = '';
-    if (isProp && t.type === 'street' && houses > 0) {
+    if (isProp && t.type === 'street') {
       var units = '';
       if (houses >= 5) {
         units = '<img class="lux-estate-img" src="/buildings/hotel.webp" alt="" draggable="false">';
-      } else {
+      } else if (houses > 0) {
         units = '<img class="lux-estate-img" src="/buildings/house_' + houses + '.webp" alt="" draggable="false">';
       }
+      var estateState = houses >= 5 ? 'Готель · 5/5' : houses + '/4 будинки · Готель: ні';
       estateHtml =
         '<div class="lux-estate">' +
           '<div class="lux-estate-copy">' +
             '<span>Забудова</span>' +
-            '<b>' + esc(housesLabel(houses)) + '</b>' +
+            '<b>' + esc(estateState) + '</b>' +
           '</div>' +
           '<div class="lux-estate-visual">' + units + '</div>' +
         '</div>';
@@ -422,10 +423,17 @@
     var rentHtml = '';
     if (isProp && rows.length) {
       var rowHtml = rows.map(function (row) {
+        var icon = '';
+        if (t.type === 'street' && row.tier >= 1) {
+          var src = row.tier >= 5 ? '/buildings/hotel.webp' : '/buildings/house_' + row.tier + '.webp';
+          icon = '<span class="lux-rent-icon"><img src="' + src + '" alt="" draggable="false"></span>';
+        }
         return '<li class="lux-rent-row' + (row.current ? ' is-current' : '') + '"' +
           (row.current ? ' aria-current="true"' : '') + '>' +
-          '<span class="lux-rent-label">' + esc(row.label) +
-            (row.note ? '<span class="lux-rent-note">' + esc(row.note) + '</span>' : '') +
+          '<span class="lux-rent-label">' + icon +
+            '<span class="lux-rent-text">' + esc(row.label) +
+              (row.note ? '<span class="lux-rent-note">' + esc(row.note) + '</span>' : '') +
+            '</span>' +
           '</span>' +
           '<span class="lux-rent-dots" aria-hidden="true"></span>' +
           '<span class="lux-rent-value">' + esc(row.value) + '</span>' +
