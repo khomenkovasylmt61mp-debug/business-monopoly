@@ -13,7 +13,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 from engine.game import Room, RulesError
-from engine.data import BOARD, GROUPS, PLAYER_COLORS, GROUP_TILES, SCALES, THEMES
+from engine.data import BOARD, GROUPS, PLAYER_COLORS, GROUP_TILES, SCALES, THEMES, PIECES
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 WEB = os.path.join(ROOT, "web")
@@ -146,7 +146,7 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/board":
                 return self._json({"board": BOARD, "groups": GROUPS, "colors": PLAYER_COLORS,
                                    "groupTiles": GROUP_TILES, "scales": SCALES,
-                                   "themes": THEMES})
+                                   "themes": THEMES, "pieces": PIECES})
             if u.path == "/api/health":
                 return self._json({"ok": True, "rooms": len(ROOMS)})
             return self._static(u.path)
