@@ -935,7 +935,8 @@ input.code {
 .token-stack[data-n="2"] { --tokscale: .92; }
 .token-stack[data-n="3"], .token-stack[data-n="4"] { --tokscale: .85; }
 .token-stack[data-n="5"], .token-stack[data-n="6"], .token-stack[data-n="7"] { --tokscale: .7; }
-.token-stack[data-n="8"] { --tokscale: .62; }
+.token-stack[data-n="8"], .token-stack[data-n="9"], .token-stack[data-n="10"] { --tokscale: .62; }
+.token-stack[data-n="11"], .token-stack[data-n="12"] { --tokscale: .55; }
 .token-cell.tok-bottom .token-stack { padding-bottom: 13%; }
 .token-cell.tok-top .token-stack { padding-top: 13%; }
 .token-cell.tok-left .token-stack { padding-left: 13%; }
@@ -945,7 +946,7 @@ input.code {
 .token-cell.c-tl .token-stack { justify-content: flex-start; align-content: flex-start; padding: 5%; }
 .token-cell.c-tr .token-stack { justify-content: flex-end; align-content: flex-start; padding: 5%; }
 .token {
-  --tok: clamp(18px, 4.2cqw, 40px);
+  --tok: clamp(12px, 4.2cqw, 40px);
   --sz: calc(var(--tok) * var(--tokscale, 1));
   position: relative;
   pointer-events: auto; cursor: pointer;
@@ -1673,7 +1674,7 @@ input.code {
     border-bottom: 1px solid #d9b66b33;
     position: sticky; top: 0; z-index: 30;
   }
-  .m-brand { font-family: Georgia, serif; font-weight: 800; letter-spacing: .14em; font-size: 12px; }
+  .m-brand { font-family: Georgia, serif; font-weight: 800; letter-spacing: .14em; font-size: 12px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .m-brand span {
     background: linear-gradient(180deg, #fff3ca, #d9b66b 55%, #b8872e);
     -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -1684,7 +1685,7 @@ input.code {
     border: 1px solid #d9b66b55; color: #f8f1e5; font-weight: 800; font-size: 13px;
   }
   .m-pill b { color: #ffd477; }
-  .m-hud { display: flex; align-items: center; gap: 8px; }
+  .m-hud { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .m-balance {
     min-height: 40px; display: flex; align-items: center; padding: 0 12px;
     border-radius: 99px; background: #0c2038; border: 1px solid #d9b66b33;
@@ -1742,6 +1743,13 @@ input.code {
     font-weight: 700; font-size: 11px; letter-spacing: .02em;
   }
   .m-nav button.on, .m-nav button:active { color: #ffd477; }
+}
+
+@media (max-width: 360px) {
+  .m-brand { display: none; }
+  .m-hud { margin-left: auto; }
+  .m-balance { padding: 0 8px; font-size: 12px; }
+  .m-pill { min-width: 52px; padding: 0 10px; }
 }
 
 /* альбомна орієнтація: поле має влізати по висоті */
