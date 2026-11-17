@@ -610,6 +610,162 @@ body.big-board #bigBoardBtn,
 .lobby-player .piece { width: 30px; height: 30px; }
 .lobby-player .piece img { width: 27px; height: 27px; }
 
+/* ============================================================
+   V5 TILE — fixed composition per the schematic reference:
+   gold price pill, logo/name face, ownership block with the
+   real 3D token on a podium + 3D buildings. The card never
+   shrinks when bought.
+   ============================================================ */
+.board .tile.is-prop.has-art.bottom,
+.board .tile.is-prop.has-art.top {
+  background-size: 100% 60%;
+  background-position: top center;
+}
+.board .tile.is-prop.has-art.left {
+  background-size: 58% 100%;
+  background-position: left center;
+}
+.board .tile.is-prop.has-art.right {
+  background-size: 58% 100%;
+  background-position: right center;
+}
+
+/* gold price pill (single, like the reference) */
+.tile.has-art.bottom .tile-price,
+.tile.has-art.top .tile-price,
+.tile.has-art.left .tile-price,
+.tile.has-art.right .tile-price {
+  background: linear-gradient(180deg, #ffe9b8 0%, #e3bd6b 55%, #c99a37 100%);
+  border: 1px solid #fff3cf;
+  box-shadow: inset 0 1px 0 #fffbe8, inset 0 -2px 3px #00000022, 0 1px 3px #00000066;
+  color: #2a1f08 !important;
+  text-shadow: 0 1px 0 #ffffff99;
+}
+.tile.has-art.bottom .tile-price,
+.tile.has-art.top .tile-price {
+  border-radius: 99px;
+}
+
+.board .tile.is-prop .own-zone {
+  position: absolute; z-index: 7;
+  box-sizing: border-box;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 3px; padding: 2px 4px 3px;
+  border-radius: 7px;
+  border: 1.5px solid #d9b66b88;
+  background: linear-gradient(180deg, #fbf5e6, #efe2c4);
+  box-shadow: inset 0 1px 0 #fffdf6, 0 1px 3px #00000055;
+}
+.board .tile.is-prop.bottom .own-zone,
+.board .tile.is-prop.top .own-zone {
+  left: 2px; right: 2px; bottom: 2px; height: 40%;
+  flex-direction: row;
+}
+.board .tile.is-prop.left .own-zone,
+.board .tile.is-prop.right .own-zone {
+  top: 2px; bottom: 2px; width: 42%;
+  flex-direction: column; align-items: center; justify-content: flex-end;
+}
+.board .tile.is-prop.left .own-zone { right: 2px; left: auto; }
+.board .tile.is-prop.right .own-zone { left: 2px; right: auto; }
+
+.board .tile.owned .own-zone {
+  border-color: color-mix(in srgb, var(--own, #c0392b) 75%, #3a2408);
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--own, #c0392b) 52%, #150a0e) 0%,
+      color-mix(in srgb, var(--own, #c0392b) 26%, #0c0509) 100%);
+  box-shadow:
+    inset 0 1px 0 #ffffff30,
+    inset 0 0 0 1px #d9b66b66,
+    0 0 10px -2px var(--own, #c0392b);
+}
+
+.board .tile.is-prop .own-zone.is-free {
+  align-items: center; justify-content: center;
+  border-style: dashed;
+  border-color: #c9a55e99;
+  background: linear-gradient(180deg, #fbf5e6, #f2e6cc);
+  box-shadow: inset 0 1px 0 #fffdf6;
+}
+.own-free {
+  display: none;
+  font-size: clamp(7px, .95cqw, 10px);
+  letter-spacing: .14em; text-transform: uppercase;
+  color: #a9853f; font-weight: 800;
+}
+.board .tile .own-zone.is-free .own-free { display: block; }
+.board .tile .own-zone.is-free .houses,
+.board .tile .own-zone.is-free .owner-dot { display: none; }
+
+/* owner token: raw 3D sprite on a gold podium (no round icon) */
+.board .tile .owner-dot {
+  position: relative;
+  width: 46%; height: 94%;
+  flex: none;
+  padding: 0 0 3px;
+  border: 0; border-radius: 0;
+  background: none; box-shadow: none;
+  display: flex; align-items: flex-end; justify-content: center;
+  z-index: 7;
+}
+.board .tile .owner-dot::after {
+  content: ""; position: absolute; left: 6%; right: 6%; bottom: 0; height: 16%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #ffe9b8 0%, #d9b66b 55%, #8a6a2f 100%);
+  box-shadow: 0 1px 3px #000000aa;
+  z-index: -1;
+}
+.board .tile .owner-dot[hidden] { display: none; }
+.owner-dot .dot-img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px #000000aa);
+}
+.board .tile.left .owner-dot,
+.board .tile.right .owner-dot {
+  width: 92%; height: 46%;
+}
+
+/* buildings: simplified vector sprites, readable at 8–20 px */
+.board .tile .houses {
+  position: relative;
+  flex: 1 1 auto; min-width: 0;
+  height: 100%; width: auto;
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: flex-end;
+  align-content: flex-end;
+  gap: 0;
+  padding: 0 10px 0 0;
+}
+.board .tile.left .houses,
+.board .tile.right .houses {
+  width: 100%; height: auto; min-height: 0;
+  padding: 0; justify-content: center;
+}
+.board .tile .house-img {
+  height: 50%; width: auto; max-width: 50%;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 1px #000000aa);
+}
+.board .tile .houses[data-bld="1"] .house-img { height: 92%; }
+.board .tile .houses[data-bld="2"] .house-img { height: 74%; }
+.board .tile .houses[data-bld="3"] .house-img { height: 60%; flex: 0 0 32%; }
+.board .tile .houses[data-bld="4"] .house-img { height: 46%; flex: 0 0 48%; }
+.board .tile .hotel-img {
+  height: 96%; width: auto; max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px #000000aa);
+}
+.board .tile.left .house-img, .board .tile.right .house-img,
+.board .tile.left .hotel-img, .board .tile.right .hotel-img {
+  height: auto; width: 100%; max-width: 100%; max-height: 100%;
+}
+
+/* keep the moving player token away from the ownership block */
+.token-cell.tok-bottom .token-stack, .token-cell.tok-top .token-stack { padding-bottom: 40%; }
+.token-cell.tok-left .token-stack { padding-right: 40%; }
+.token-cell.tok-right .token-stack { padding-left: 40%; }
+
 /* touch: no sticky hover states (mobile-native baseline) */
 @media (hover: none) {
   .rail button:hover { background: transparent; border-color: transparent; color: #9fb4cf; }
