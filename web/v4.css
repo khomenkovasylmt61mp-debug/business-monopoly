@@ -332,8 +332,9 @@
 .lobby-bottom {
   position: sticky; bottom: 0; z-index: 20;
   margin-top: 14px; padding: 14px 18px;
-  background: linear-gradient(180deg, rgba(7, 23, 43, 0), #07172b 42%);
-  border-top: 1px solid #d9b66b2e;
+  background: linear-gradient(180deg, #081a30f2, #07172b);
+  border-top: 1px solid #d9b66b44;
+  box-shadow: 0 -14px 34px #000000aa;
   display: flex; align-items: center; gap: 14px;
 }
 .lobby-bottom .hint { margin: 0; flex: 1; }
@@ -353,7 +354,9 @@
   background: radial-gradient(90% 80% at 50% 0%, #14304f, #0a1c31 70%);
   border: 1px solid #ffffff14;
 }
-.piece-btn .piece-img { width: 62px; height: 62px; object-fit: contain; filter: drop-shadow(0 6px 8px #000a); }
+.piece-btn .piece-img { width: 66px; height: 66px; object-fit: contain; filter: drop-shadow(0 6px 8px #000a); }
+.piece-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.piece-btn { padding: 8px 4px 6px; }
 .piece-btn.active { border-color: #ffd58a; box-shadow: 0 0 0 1px #ffd58a, 0 0 22px -4px #ffd58a; }
 .piece-btn { position: relative; }
 .piece-btn.taken { opacity: 1; background: #091a2e; border-color: #ffffff0d; }
