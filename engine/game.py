@@ -58,6 +58,7 @@ class Room:
             "auction": None,
             "trade": None,
             "lastCard": None,
+            "casinoSpin": None,
             "winner": None,
             "pot": 0,
             "round": 1,
@@ -881,6 +882,11 @@ class Room:
                          "dozen3": "3-тя дюжина"}[kind]
 
             p["money"] += net
+            st["casinoSpin"] = {
+                "pid": p["id"], "n": n, "red": bool(red), "bet": bet,
+                "kind": kind, "number": number, "label": label,
+                "win": bool(win), "net": net, "t": time.time(),
+            }
             if win:
                 p["casinoWins"] = p.get("casinoWins", 0) + 1
                 self._log(f"{p['name']} ставить {fmt(bet)} на {label}: {n} {shown} — виграш +{fmt(net)}", "money", p["id"])
@@ -989,6 +995,7 @@ class Room:
             st["auction"] = None
             st["trade"] = None
             st["lastCard"] = None
+            st["casinoSpin"] = None
             st["dice"] = None
             st["doubles"] = 0
             st["startedAt"] = None
@@ -1187,6 +1194,17 @@ class Room:
 
     def _start_auction(self, p, idx):
         st = self.state
+        price = int(self.board[idx].get("price") or 0)
+        able = [x for x in self._alive() if x["money"] >= price]
+        if len(able) < 2:
+            # A one-bidder auction is meaningless: the lot stays with the bank.
+            self._log(
+                f"«{self.board[idx]['name']}» залишається в банку: "
+                f"лише {len(able)} з {len(self._alive())} можуть сплатити {fmt(price)}",
+                "auction",
+            )
+            st["awaiting"] = {"type": "endturn"}
+            return
         alive = [x["id"] for x in self._alive()]
         start = self._next_alive(p["id"])
         st["awaiting"] = {"type": "auction"}
@@ -1786,6 +1804,7 @@ class Room:
                 "auction": st["auction"],
                 "trade": st["trade"],
                 "lastCard": st["lastCard"],
+                "casinoSpin": st.get("casinoSpin"),
                 "winner": st["winner"],
                 "pot": st.get("pot", 0),
                 "round": st.get("round", 1),
