@@ -173,10 +173,13 @@
   background-size: 100% 67%;
   background-position: top center;
 }
-.board .tile.has-art.owned.left,
-.board .tile.has-art.owned.right {
+.board .tile.has-art.owned.left {
   background-size: 66% 100%;
   background-position: left center;
+}
+.board .tile.has-art.owned.right {
+  background-size: 66% 100%;
+  background-position: right center;
 }
 .board .tile.owned {
   outline: 2.5px solid var(--own, #c0392b);
@@ -222,6 +225,13 @@
   border-top: 0;
   border-left: 2px solid var(--own, #c0392b);
   box-shadow: -4px 0 10px #00000055, inset 0 1px 0 #ffffff1f;
+}
+/* right column: inner edge is the left side */
+.board .tile.right .own-zone {
+  left: 0; right: auto;
+  border-left: 0;
+  border-right: 2px solid var(--own, #c0392b);
+  box-shadow: 4px 0 10px #00000055, inset 0 1px 0 #ffffff1f;
 }
 
 .board .tile .owner-dot {
@@ -277,7 +287,8 @@
   gap: 3px;
 }
 .token-cell.tok-bottom .token-stack, .token-cell.tok-top .token-stack { padding-bottom: 30%; }
-.token-cell.tok-left .token-stack, .token-cell.tok-right .token-stack { padding-right: 30%; }
+.token-cell.tok-left .token-stack { padding-right: 30%; }
+.token-cell.tok-right .token-stack { padding-left: 30%; }
 .token { --tok: clamp(12px, 3.5cqw, 34px); }
 
 /* exact building count — stays readable at small cell sizes */
