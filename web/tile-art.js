@@ -102,11 +102,15 @@
     return cached;
   }
 
-  function applyToTile(el, url) {
+  function applyToTile(el, url, anchor) {
     if (el.dataset.artUrl === url) return; // уже стоит
     imageExists(url).then(function (ok) {
       if (!ok || !el.isConnected) return; // файла нет — вид не меняем
       el.style.setProperty('--tile-img', 'url("' + url.replace(/"/g, '%22') + '")');
+      if (anchor && anchor.length === 2) {
+        el.style.setProperty('--px', String(anchor[0]));
+        el.style.setProperty('--py', String(anchor[1]));
+      }
       el.classList.add('has-art');
       el.dataset.artUrl = url;
     });
@@ -119,6 +123,8 @@
     document.querySelectorAll('.tile.has-art').forEach(function (el) {
       el.classList.remove('has-art');
       el.style.removeProperty('--tile-img');
+      el.style.removeProperty('--px');
+      el.style.removeProperty('--py');
       delete el.dataset.artUrl;
     });
   }
@@ -153,7 +159,7 @@
         var url = assetUrl(path);
         if (!url) return; // graceful fallback
 
-        applyToTile(el, url);
+        applyToTile(el, url, entry.price_anchor && entry.price_anchor[orientation]);
       });
     });
   }
