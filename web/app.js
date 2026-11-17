@@ -344,8 +344,7 @@ function renderBoard(st) {
       el.style.setProperty('--own', owner.hex);
       dot.hidden = false;
       dot.textContent = owner.piece || '';
-      dot.style.background = owner.hex;
-      dot.style.borderColor = '#fffdf6e6';
+      dot.style.borderColor = owner.hex;
       dot.title = owner.name + (owner.pieceName ? ' · ' + owner.pieceName : '');
       if (edge) edge.hidden = false;
     } else {
