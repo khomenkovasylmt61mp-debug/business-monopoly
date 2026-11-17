@@ -915,6 +915,7 @@ function renderActions(st) {
     row.appendChild(black);
     card.appendChild(row);
     el.appendChild(card);
+    el.appendChild(btn('🎡 Стіл рулетки', 'gold', () => openCasinoTable()));
     el.appendChild(btn('Пропустити', 'ghost', () => act('casino_skip')));
     return;
   }
@@ -1410,8 +1411,61 @@ function confirmBankrupt() {
   $('yesBankrupt').onclick = () => { closeModal(); act('bankrupt'); };
 }
 
-/* ---------- вібрація ---------- */
-function maybeVibrate(st) {
+const ROULETTE_RED = new Set([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]);
+
+function openCasinoTable() {
+  const st = S.state;
+  const me = meP(st);
+  if (!st || !me) return;
+  if (![100, 200, 500].includes(S.casinoBet)) S.casinoBet = 200;
+  const bet = S.casinoBet;
+  const chips = [100, 200, 500].map((v) => `<button class="rt-chip${v === bet ? ' active' : ''}" data-bet="${v}" ${me.money < v ? 'disabled' : ''}>${money(v)}</button>`).join('');
+  const nums = Array.from({ length: 36 }, (_, i) => i + 1).map((n) => {
+    const red = ROULETTE_RED.has(n);
+    return `<button class="rt-num ${red ? 'red' : 'black'}" data-num="${n}">${n}</button>`;
+  }).join('');
+  const modal = openModal(`
+    <h2>🎡 Рулетка</h2>
+    <div class="sub">Ставка <b>${money(bet)}</b> · баланс ${money(me.money)} · зеро забирає все</div>
+    <div class="rt-chips">${chips}</div>
+    <div class="rt-outs">
+      <button class="rt-out red" data-kind="red">♥ Червоне · 1:1</button>
+      <button class="rt-out black" data-kind="black">♠ Чорне · 1:1</button>
+      <button class="rt-out" data-kind="even">Парне · 1:1</button>
+      <button class="rt-out" data-kind="odd">Непарне · 1:1</button>
+      <button class="rt-out" data-kind="low">1–18 · 1:1</button>
+      <button class="rt-out" data-kind="high">19–36 · 1:1</button>
+      <button class="rt-out gold" data-kind="dozen1">1–12 · 2:1</button>
+      <button class="rt-out gold" data-kind="dozen2">13–24 · 2:1</button>
+      <button class="rt-out gold" data-kind="dozen3">25–36 · 2:1</button>
+    </div>
+    <div class="rt-label">На число — 35:1</div>
+    <div class="rt-grid">
+      <button class="rt-num zero" data-num="0">0 — зеро</button>
+      ${nums}
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="rtSkip">Пропустити</button>
+      <button class="btn ghost" id="rtClose">Закрити</button>
+    </div>`);
+  const place = (kind, number) => {
+    closeModal();
+    act('casino_bet', number === undefined ? { bet, kind } : { bet, kind, number });
+  };
+  modal.querySelectorAll('[data-bet]').forEach((b) => {
+    b.onclick = () => { S.casinoBet = Number(b.dataset.bet); openCasinoTable(); };
+  });
+  modal.querySelectorAll('[data-kind]').forEach((b) => {
+    b.onclick = () => { if (me.money >= bet) place(b.dataset.kind); };
+  });
+  modal.querySelectorAll('[data-num]').forEach((b) => {
+    b.onclick = () => { if (me.money >= bet) place('number', Number(b.dataset.num)); };
+  });
+  modal.querySelector('#rtSkip').onclick = () => { closeModal(); act('casino_skip'); };
+  modal.querySelector('#rtClose').onclick = closeModal;
+}
+
+/* ---------- вібрація ---------- */function maybeVibrate(st) {
   const mine = st.phase === 'playing' && st.turn === S.pid && st.awaiting &&
     ['roll', 'jail', 'buy', 'endturn', 'debt'].includes(st.awaiting.type) && !st.auction;
   if (mine && !S.myTurn) {
