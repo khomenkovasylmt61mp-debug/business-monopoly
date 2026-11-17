@@ -30,7 +30,7 @@
   z-index: 4;
 }
 
-/* В арті вже намальовані лого, назва і смуга групи — ховаємо дублі DOM. */
+/* Ціна лишається на штатному зовнішньому краї клітинки. */
 .tile.has-art .tile-body,
 .tile.has-art .bar { display: none; }
 .tile.has-art .houses { z-index: 6; }
