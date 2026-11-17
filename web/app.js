@@ -424,7 +424,7 @@ function renderTokens(st) {
       const pb = (b.id === st.turn ? 2 : 0) + (b.id === S.pid ? 1 : 0);
       return pb - pa;
     });
-    const maxShow = window.innerWidth <= 640 ? 4 : 7;
+    const maxShow = window.innerWidth <= 640 ? 4 : 6;
     const shown = ordered.slice(0, maxShow);
     stack.dataset.n = String(shown.length + (list.length > shown.length ? 1 : 0));
     shown.forEach((p) => {
@@ -1680,7 +1680,11 @@ function openTilePlayers(idx) {
 }
 
 function openPlayersList(st) {
-  const list = [...st.players].sort((a, b) => (b.id === st.turn) - (a.id === st.turn));
+  const rank = (p) => (p.id === S.pid ? 0 : (p.id === st.turn ? 1 : 2));
+  const list = [...st.players].sort((a, b) => {
+    const d = rank(a) - rank(b);
+    return d !== 0 ? d : b.money - a.money;
+  });
   openModal(`
     <h2>Гравці (${st.players.length})</h2>
     <div class="m-players">
@@ -1759,8 +1763,13 @@ function mobilePrimary(st) {
 function renderMobile(st) {
   const count = $('mPlayersCount');
   if (count) count.textContent = String(st.players.length);
+  const me = meP(st);
+  const bal = $('mBalance');
+  if (bal && me) bal.textContent = money(me.money);
   const pb = $('mPlayersBtn');
   if (pb) pb.onclick = () => openPlayersList(st);
+  const mb = $('mMenuBtn');
+  if (mb) mb.onclick = openMenu;
   const prim = $('mPrimary');
   if (!prim) return;
   const info = mobilePrimary(st);
