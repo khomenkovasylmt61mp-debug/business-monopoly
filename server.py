@@ -22,6 +22,35 @@ ROOMS = {}
 ROOMS_LOCK = threading.Lock()
 CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
+MAX_ROOMS = 20000
+MAX_BODY = 2_000_000
+RATE = {}
+RATE_LOCK = threading.Lock()
+
+
+def allow(ip, kind, limit, window=60.0):
+    """Simple per-IP token bucket (sliding window)."""
+    now = time.time()
+    key = (ip, kind)
+    with RATE_LOCK:
+        hits = [t for t in RATE.get(key, ()) if now - t < window]
+        if len(hits) >= limit:
+            RATE[key] = hits
+            return False
+        hits.append(now)
+        RATE[key] = hits
+        if len(RATE) > 5000:
+            for k in [k for k, v in RATE.items() if not v or now - v[-1] > 120]:
+                RATE.pop(k, None)
+    return True
+
+
+class BodyError(Exception):
+    def __init__(self, msg, code=400):
+        super().__init__(msg)
+        self.code = code
+
+
 MIME = {
     ".html": "text/html; charset=utf-8",
     ".js": "application/javascript; charset=utf-8",
@@ -56,6 +85,10 @@ def cleanup_loop():
                 last = max([st["updated"]] + [p["lastSeen"] for p in st["players"]])
                 if now - last > 6 * 3600:
                     del ROOMS[code]
+                    continue
+                # abandoned lobbies die much sooner
+                if st["phase"] == "lobby" and len(st["players"]) <= 1 and now - last > 15 * 60:
+                    del ROOMS[code]
 
 
 class Server(ThreadingHTTPServer):
@@ -70,13 +103,24 @@ class Server(ThreadingHTTPServer):
 
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
-    server_version = "MonopolyRu/1.0"
+    server_version = "MonopolyRu"
+    sys_version = ""
+    timeout = 20
 
     def log_message(self, fmt, *args):
         if os.environ.get("MONOPOLY_VERBOSE"):
-            sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
+            line = fmt % args
+            line = line.replace("token=", "token=***")
+            sys.stderr.write("%s - %s\n" % (self.address_string(), line))
 
     # ---------- helpers ----------
+    def _headers(self):
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "no-referrer")
+        if self.close_connection:
+            self.send_header("Connection", "close")
+
     def _json(self, obj, code=200):
         raw = json.dumps(obj, ensure_ascii=False).encode("utf-8")
         try:
@@ -84,6 +128,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(raw)))
             self.send_header("Cache-Control", "no-store")
+            self._headers()
             self.end_headers()
             self.wfile.write(raw)
         except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
@@ -93,24 +138,33 @@ class Handler(BaseHTTPRequestHandler):
         self._json({"error": msg}, code)
 
     def _body(self):
+        te = (self.headers.get("Transfer-Encoding") or "").strip().lower()
+        if te and te != "identity":
+            raise BodyError("Непідтримувана передача", 400)
         try:
             length = int(self.headers.get("Content-Length") or 0)
         except ValueError:
-            length = 0
-        if length > 2_000_000:
-            raise ValueError("too big")
+            raise BodyError("Некоректна довжина запиту", 400)
+        if length < 0:
+            raise BodyError("Некоректна довжина запиту", 400)
+        if length > MAX_BODY:
+            raise BodyError("Занадто великий запит", 413)
         raw = self.rfile.read(length) if length else b"{}"
         try:
-            return json.loads(raw.decode("utf-8") or "{}")
+            data = json.loads(raw.decode("utf-8") or "{}")
         except Exception:
-            return {}
+            raise BodyError("Некоректний JSON", 400)
+        if not isinstance(data, dict):
+            raise BodyError("Некоректний запит", 400)
+        return data
 
     def _static(self, path):
         if path in ("/", ""):
             path = "/index.html"
         rel = os.path.normpath(path.lstrip("/")).replace("\\", "/")
         full = os.path.abspath(os.path.join(WEB, rel))
-        if not full.startswith(os.path.abspath(WEB)):
+        root = os.path.abspath(WEB)
+        if not (full == root or full.startswith(root + os.sep)):
             return self._err("forbidden", 403)
         if not os.path.isfile(full):
             return self._err("not found", 404)
@@ -122,8 +176,12 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(raw)))
         if ext in (".html", ".js", ".css"):
             self.send_header("Cache-Control", "no-store")
+        self._headers()
         self.end_headers()
-        self.wfile.write(raw)
+        try:
+            self.wfile.write(raw)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            return
 
     def _room(self, code):
         with ROOMS_LOCK:
@@ -170,6 +228,9 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/action":
                 return self.api_action(data)
             return self._err("not found", 404)
+        except BodyError as e:
+            self.close_connection = True
+            return self._err(str(e), e.code)
         except RulesError as e:
             return self._err(str(e), 400)
         except ConnectionError:
@@ -183,8 +244,12 @@ class Handler(BaseHTTPRequestHandler):
         name = str(data.get("name", "")).strip()
         if not name:
             return self._err("Введіть імʼя")
+        if not allow(self.client_address[0], "create", 10):
+            return self._err("Занадто багато кімнат — зачекайте хвилину", 429)
         token = secrets.token_urlsafe(18)
         with ROOMS_LOCK:
+            if len(ROOMS) >= MAX_ROOMS:
+                return self._err("Сервер перевантажений", 503)
             code = new_code()
             room = Room(code)
             ROOMS[code] = room
@@ -196,6 +261,8 @@ class Handler(BaseHTTPRequestHandler):
         name = str(data.get("name", "")).strip()
         if not name:
             return self._err("Введіть імʼя")
+        if not allow(self.client_address[0], "join", 20):
+            return self._err("Занадто багато спроб — зачекайте хвилину", 429)
         room = self._room(code)
         if not room:
             return self._err("Кімнату не знайдено — перевірте код", 404)
