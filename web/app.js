@@ -557,6 +557,12 @@ function renderCenter(st) {
   const anim = key && key !== S.diceKey;
   S.diceKey = key;
   const cur = curP(st);
+  const auction = st.auction;
+  const timerP = auction ? playerById(st, auction.turn) : cur;
+  const timerPiece = timerP && window.pieceHTML ? pieceHTML(timerP.piece, 'cp-timer-piece') : '';
+  const timerName = timerP ? esc(timerP.name) : '';
+  const timerMine = !!(timerP && timerP.id === S.pid);
+  const timerKicker = auction ? 'АУКЦІОН · ЗАЛИШИЛОСЯ' : 'ЗАЛИШИЛОСЯ НА ХІД';
   const potOn = st.options && st.options.parkingPot;
 
   let line = '';
@@ -580,9 +586,6 @@ function renderCenter(st) {
   st.log.forEach((l) => {
     if (l.kind === 'join' || l.kind === 'leave') return;
     events.push({ t: l.t, kind: l.kind, text: l.text });
-  });
-  st.chat.forEach((m) => {
-    events.push({ t: m.t, kind: 'chat', name: m.name, color: m.color, text: m.text });
   });
   events.sort((a, b) => a.t - b.t);
   const items = events.slice(-40).map((e) => (e.kind === 'chat'
@@ -618,15 +621,17 @@ function renderCenter(st) {
       </div>
       <div class="cp-scene">
         ${CITY_SVG}
-        <div class="cp-decks">
-          <span class="cp-deck d1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16v9H4z" fill="#f3d9a4" stroke="#8a5a1d" stroke-width="1.4"/><path d="M4 10c0-3 3-5 8-5s8 2 8 5" fill="#ffcf8a" stroke="#8a5a1d" stroke-width="1.4"/><rect x="10.5" y="11.5" width="3" height="4" rx=".6" fill="#8a5a1d"/></svg><b>Скарбниця</b></span>
-          <span class="cp-deck d2"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#ffe6a8" stroke="#8a5a1d" stroke-width="1.4"/><text x="12" y="17" text-anchor="middle" font-family="Georgia, serif" font-size="13" font-weight="700" fill="#6b4312">?</text></svg><b>Шанс</b></span>
-          <span class="cp-deck d3"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h11l-2.6-2.6M19 15H8l2.6 2.6" fill="none" stroke="#cfe0f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Угода</b></span>
+        <div class="cp-timer" id="cpTimer" data-tone="gold">
+          <div class="cp-timer-kicker" id="cpTimerKicker">${timerKicker}</div>
+          <div class="cp-timer-time" id="cpTimerTime">--:--</div>
+          <div class="cp-timer-bar"><i id="cpTimerBar"></i></div>
+          <div class="cp-timer-who">
+            ${timerPiece}<b>${timerName}</b>${timerMine ? '<span>· ваш хід</span>' : ''}
+          </div>
         </div>
       </div>
       <div class="cp-foot">
         <span class="cp-line">${esc(line)}</span>
-        <span class="turn-clock" id="turnClock"></span>
         <span class="cp-bank">🏠 ${st.housesLeft} · 🏨 ${st.hotelsLeft}${potOn ? ` · 🅿️ ${money(st.pot || 0)}` : ''}</span>
       </div>
       ${card}
@@ -641,18 +646,44 @@ function renderCenter(st) {
 function fmtClock(sec) {
   const s = Math.max(0, Math.ceil(sec));
   const m = Math.floor(s / 60);
-  return m + ':' + String(s % 60).padStart(2, '0');
+  return String(m).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
 }
 
 function clockTick() {
-  const el = document.getElementById('turnClock');
-  if (!el) return;
+  const box = document.getElementById('cpTimer');
+  const timeEl = document.getElementById('cpTimerTime');
+  const bar = document.getElementById('cpTimerBar');
+  const kicker = document.getElementById('cpTimerKicker');
   const st = S.state;
-  const total = Number(st && st.turnLeft) || 0;
-  if (!total) { el.textContent = ''; el.classList.remove('warn'); return; }
-  const left = Math.max(0, total - (Date.now() - (S.turnLeftAt || 0)) / 1000);
-  el.textContent = '⏳ ' + fmtClock(left);
-  el.classList.toggle('warn', left <= 10);
+  if (!box || !timeEl || !bar || !st) return;
+
+  let left = 0;
+  let total = 0;
+  if (st.auction && st.auction.deadline) {
+    const now = Date.now() / 1000 + (S.clockOffset || 0);
+    left = Math.max(0, st.auction.deadline - now);
+    total = Math.max(1, st.auction.deadline - (st.auction.started || st.auction.deadline - 30));
+    if (kicker) kicker.textContent = 'АУКЦІОН · ЗАЛИШИЛОСЯ';
+  } else {
+    total = Number((st.options || {}).turnTimer) || 0;
+    if (total > 0) {
+      left = Math.max(0, (S.turnLeft || 0) - (Date.now() - (S.turnLeftAt || 0)) / 1000);
+    }
+    if (kicker) kicker.textContent = 'ЗАЛИШИЛОСЯ НА ХІД';
+  }
+
+  if (!total) {
+    timeEl.textContent = '—:—';
+    bar.style.width = '0%';
+    box.dataset.tone = 'muted';
+    box.classList.remove('is-pulse');
+    return;
+  }
+
+  timeEl.textContent = fmtClock(left);
+  bar.style.width = Math.max(0, Math.min(100, (left / total) * 100)) + '%';
+  box.dataset.tone = left > 20 ? 'gold' : left > 10 ? 'orange' : 'red';
+  box.classList.toggle('is-pulse', left <= 5);
 }
 
 function openTileInfo(i) {
@@ -956,6 +987,7 @@ function renderGame(st) {
   renderMobile(st);
   renderHud(st);
   renderTab(st);
+  if (S.mChat) renderMobileChat(st);
   maybeGameOver(st);
   maybeVibrate(st);
 }
@@ -1300,6 +1332,7 @@ function renderTab(st) {
       body.dataset.tab = 'chat';
       body.innerHTML = `<div class="chat-wrap">
         <div class="chat-list" id="chatList"></div>
+        <button type="button" class="chat-new" id="chatNew" hidden>↓ Нові повідомлення</button>
         <div class="chat-input-row">
           <input id="chatInput" maxlength="300" placeholder="Повідомлення…" autocomplete="off">
           <button id="chatSend" class="btn primary">→</button>
@@ -1307,6 +1340,15 @@ function renderTab(st) {
       </div>`;
       $('chatSend').onclick = sendChat;
       $('chatInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); });
+      $('chatNew').onclick = () => {
+        const list = $('chatList');
+        if (list) list.scrollTop = list.scrollHeight;
+        $('chatNew').hidden = true;
+      };
+      $('chatList').addEventListener('scroll', () => {
+        const list = $('chatList');
+        if (list.scrollHeight - list.scrollTop - list.clientHeight < 40) $('chatNew').hidden = true;
+      });
     }
     renderChat(st);
     return;
@@ -1328,15 +1370,103 @@ function sendChat() {
 function renderChat(st) {
   const list = $('chatList');
   if (!list) return;
-  const atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 30;
+  const wasBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 40;
+  const prevTop = list.scrollTop;
+  const prevLast = Number(list.dataset.lastId || 0);
+  const last = st.chat.length ? st.chat[st.chat.length - 1].id : 0;
   list.innerHTML = st.chat.map((m) => `
     <div class="msg ${m.pid === S.pid ? 'mine' : ''}">
       <span class="nm" style="color:${m.color}">${esc(m.name)}</span>
-      <span>${esc(m.text)}</span>
+      <span class="tx">${esc(m.text)}</span>
     </div>`).join('') || '<div class="empty-note">Поки тихо</div>';
+  list.dataset.lastId = String(last);
+  const newBtn = $('chatNew');
+  if (wasBottom) {
+    list.scrollTop = list.scrollHeight;
+    if (newBtn) newBtn.hidden = true;
+  } else {
+    list.scrollTop = prevTop;
+    if (newBtn) newBtn.hidden = !(last > prevLast);
+  }
   if (S.chatUnread > 0) { S.chatUnread = 0; $('chatDot').classList.remove('on'); }
-  S.chatSeen = st.chat.length ? st.chat[st.chat.length - 1].id : 0;
-  if (atBottom) list.scrollTop = list.scrollHeight;
+  S.chatSeen = last;
+}
+
+function openMobileChat() {
+  const st = S.state;
+  if (!st) return;
+  openModal(`<div class="chat-wrap">
+    <div class="chat-list" id="mChatList"></div>
+    <button type="button" class="chat-new" id="mChatNew" hidden>↓ Нові повідомлення</button>
+    <div class="chat-input-row">
+      <input id="mChatInput" maxlength="300" placeholder="Повідомлення…" autocomplete="off" enterkeyhint="send">
+      <button id="mChatSend" class="btn primary">→</button>
+    </div>
+  </div>`, { cls: 'm-chat-modal' });
+  const send = () => {
+    const i = $('mChatInput');
+    if (!i) return;
+    const text = i.value.trim();
+    if (!text) return;
+    i.value = '';
+    act('chat', { text });
+  };
+  $('mChatSend').onclick = send;
+  $('mChatInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+  $('mChatNew').onclick = () => {
+    const l = $('mChatList');
+    if (l) l.scrollTop = l.scrollHeight;
+    $('mChatNew').hidden = true;
+  };
+  $('mChatList').addEventListener('scroll', () => {
+    const l = $('mChatList');
+    if (l && l.scrollHeight - l.scrollTop - l.clientHeight < 40) $('mChatNew').hidden = true;
+  });
+  S.mChat = true;
+  renderMobileChat(st);
+  syncChatViewport();
+}
+
+function renderMobileChat(st) {
+  const list = $('mChatList');
+  if (!list) { S.mChat = false; return; }
+  const wasBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 40;
+  const prevTop = list.scrollTop;
+  const prevLast = Number(list.dataset.lastId || 0);
+  const last = st.chat.length ? st.chat[st.chat.length - 1].id : 0;
+  list.innerHTML = st.chat.map((m) => `
+    <div class="msg ${m.pid === S.pid ? 'mine' : ''}">
+      <span class="nm" style="color:${m.color}">${esc(m.name)}</span>
+      <span class="tx">${esc(m.text)}</span>
+    </div>`).join('') || '<div class="empty-note">Поки тихо</div>';
+  list.dataset.lastId = String(last);
+  const newBtn = $('mChatNew');
+  if (wasBottom) {
+    list.scrollTop = list.scrollHeight;
+    if (newBtn) newBtn.hidden = true;
+  } else {
+    list.scrollTop = prevTop;
+    if (newBtn) newBtn.hidden = !(last > prevLast);
+  }
+}
+
+function syncChatViewport() {
+  const vv = window.visualViewport;
+  if (!vv) return;
+  const apply = () => {
+    const sheet = document.querySelector('.m-chat-modal');
+    if (!sheet) {
+      vv.removeEventListener('resize', apply);
+      vv.removeEventListener('scroll', apply);
+      return;
+    }
+    const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    sheet.style.height = Math.min(vv.height * 0.92, 680) + 'px';
+    sheet.style.bottom = kb + 'px';
+  };
+  vv.addEventListener('resize', apply);
+  vv.addEventListener('scroll', apply);
+  apply();
 }
 
 function renderMine(st, body) {
@@ -2157,6 +2287,11 @@ function switchTab(tab) {
   S.tab = tab;
   if (tab === 'chat') { S.chatUnread = 0; $('chatDot').classList.remove('on'); }
   if (S.state) renderTab(S.state);
+  const tabs = $('tabs');
+  const body = $('tabBody');
+  if (body && body.scrollIntoView) {
+    setTimeout(() => body.scrollIntoView({ block: 'end' }), 40);
+  }
 }
 
 function openMenu() {
@@ -2168,6 +2303,7 @@ function openMenu() {
     <div class="kv"><span>Режим</span><span>${st.options && st.options.mode === 'classic' ? 'Офіційні правила' : 'Під компанію'}</span></div>
     <div class="row" style="gap:8px">
       <button class="btn wide" id="mCopy">Скопіювати посилання</button>
+      <button class="btn wide ghost" id="mChat">Чат</button>
       <button class="btn wide ghost" id="mRules">Правила</button>
     </div>
     <div class="modal-actions">
@@ -2178,6 +2314,7 @@ function openMenu() {
     </div>`);
   $('mCopy').onclick = copyLink;
   $('mRules').onclick = showRules;
+  $('mChat').onclick = openMobileChat;
   const ms = $('mSkip');
   if (ms) ms.onclick = () => {
     const nm = curP(st).name;
