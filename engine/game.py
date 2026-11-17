@@ -764,23 +764,65 @@ class Room:
                 raise RulesError("Ставка: 100, 200 або 500 ₴")
             if p["money"] < bet:
                 raise RulesError("Недостатньо грошей")
-            color = str(a.get("color", ""))
-            if color not in ("red", "black"):
-                raise RulesError("Оберіть червоне або чорне")
+
+            kind = str(a.get("kind") or a.get("color") or "")
+            number = None
+            if kind == "number":
+                try:
+                    number = int(a.get("number", -1))
+                except (TypeError, ValueError):
+                    raise RulesError("Невірне число")
+                if number < 0 or number > 36:
+                    raise RulesError("Число від 0 до 36")
+            elif kind not in ("red", "black", "even", "odd", "low", "high",
+                              "dozen1", "dozen2", "dozen3"):
+                raise RulesError("Оберіть ставку")
+
             n = self.rng.randint(0, 36)
-            if n == 0:
-                p["money"] -= bet
-                self._log(f"{p['name']} у казино: випадає 0 — зеро, програш −{fmt(bet)}", "money", p["id"])
+            red = 1 <= n <= 18
+            shown = "зеро" if n == 0 else ("червоне" if red else "чорне")
+
+            if kind == "number":
+                win = n == number
+                net = bet * 35 if win else -bet
+                label = f"число {number}"
+            elif kind == "red":
+                win = red
+                net = bet if win else -bet
+                label = "червоне"
+            elif kind == "black":
+                win = 19 <= n <= 36
+                net = bet if win else -bet
+                label = "чорне"
+            elif kind == "even":
+                win = n != 0 and n % 2 == 0
+                net = bet if win else -bet
+                label = "парне"
+            elif kind == "odd":
+                win = n % 2 == 1
+                net = bet if win else -bet
+                label = "непарне"
+            elif kind == "low":
+                win = 1 <= n <= 18
+                net = bet if win else -bet
+                label = "1–18"
+            elif kind == "high":
+                win = 19 <= n <= 36
+                net = bet if win else -bet
+                label = "19–36"
             else:
-                shown = "червоне" if n <= 18 else "чорне"
-                win = (n <= 18 and color == "red") or (n > 18 and color == "black")
-                if win:
-                    p["money"] += bet
-                    p["casinoWins"] = p.get("casinoWins", 0) + 1
-                    self._log(f"{p['name']} у казино: {n} {shown} — виграш +{fmt(bet)}", "money", p["id"])
-                else:
-                    p["money"] -= bet
-                    self._log(f"{p['name']} у казино: {n} {shown} — програш −{fmt(bet)}", "money", p["id"])
+                lo = {"dozen1": 1, "dozen2": 13, "dozen3": 25}[kind]
+                win = lo <= n <= lo + 11
+                net = bet * 2 if win else -bet
+                label = {"dozen1": "1-ша дюжина", "dozen2": "2-га дюжина",
+                         "dozen3": "3-тя дюжина"}[kind]
+
+            p["money"] += net
+            if win:
+                p["casinoWins"] = p.get("casinoWins", 0) + 1
+                self._log(f"{p['name']} ставить {fmt(bet)} на {label}: {n} {shown} — виграш +{fmt(net)}", "money", p["id"])
+            else:
+                self._log(f"{p['name']} ставить {fmt(bet)} на {label}: {n} {shown} — програш −{fmt(-net)}", "money", p["id"])
             st["awaiting"] = {"type": "endturn"}
             return
 
