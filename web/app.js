@@ -845,6 +845,25 @@ function renderStatus(st) {
     </div>`;
 }
 
+function liquidation(st, me) {
+  const full = st.options.mode !== 'classic';
+  let houses = 0;
+  let mortgages = 0;
+  st.tiles.forEach((ts, i) => {
+    if (ts.owner !== me.id) return;
+    const t = S.boardData.board[i];
+    if (!t || !t.price) return;
+    if (ts.houses > 0 && t.house) {
+      const sum = t.house * ts.houses * (ts.houses + 1) / 2;
+      houses += full ? sum : sum / 2;
+    }
+    if (!ts.mortgaged) mortgages += Math.floor(t.price / 2);
+  });
+  houses = Math.round(houses);
+  mortgages = Math.round(mortgages);
+  return { cash: me.money, houses, mortgages, total: me.money + houses + mortgages };
+}
+
 function renderActions(st) {
   const el = $('actions');
   el.innerHTML = '';
@@ -874,11 +893,33 @@ function renderActions(st) {
 
   if (me && me.debt) {
     const d = me.debt;
+    const liq = liquidation(st, me);
+    const enough = liq.total >= d.amount;
+    const left = liq.total - d.amount;
+    const need = Math.max(0, d.amount - liq.cash);
+    const assets = liq.houses + liq.mortgages;
+    const pct = assets > 0 ? Math.min(100, Math.round(need / assets * 100)) : 0;
+    const verdict = need <= 0
+      ? 'Грошей вистачає — борг можна закрити зараз'
+      : enough
+        ? `Треба добрати ${money(need)} — це ≈${pct}% майна. Вистачить.`
+        : `Навіть продаж усього не покриє: не вистачить ${money(d.amount - liq.total)}`;
+    const calc = `
+      <div class="debt-calc ${enough ? 'good' : 'bad'}">
+        <div class="dc-row"><span>Гроші зараз</span><b>${money(liq.cash)}</b></div>
+        ${liq.houses ? `<div class="dc-row"><span>Продаж будинків</span><b>+${money(liq.houses)}</b></div>` : ''}
+        ${liq.mortgages ? `<div class="dc-row"><span>Застава майна</span><b>+${money(liq.mortgages)}</b></div>` : ''}
+        <div class="dc-bar"><i style="width:${Math.min(100, Math.round((liq.cash / Math.max(1, d.amount)) * 100))}%"></i></div>
+        <div class="dc-total"><span>Разом після продажу всього</span><b>${money(liq.total)}</b></div>
+        <div class="dc-verdict">${verdict}</div>
+        ${enough && need > 0 ? `<div class="dc-hint">Можна не продавати все: достатньо ≈${pct}% активів</div>` : ''}
+      </div>`;
     const card = document.createElement('div');
     card.className = 'action-card debt';
     card.innerHTML = `
       <div class="ac-title">Борг ${money(d.amount)}</div>
-      <div class="ac-sub">У вас ${money(me.money)}. Продайте будинки або заставте вулиці в розділі «Мої».</div>`;
+      <div class="ac-sub">У вас ${money(me.money)}. Продайте будинки або заставте вулиці в розділі «Мої».</div>
+      ${calc}`;
     card.appendChild(btn('Мої володіння', 'gold', () => switchTab('mine')));
     card.appendChild(btn('Оголосити банкрутство', 'danger', () => confirmBankrupt()));
     el.appendChild(card);
