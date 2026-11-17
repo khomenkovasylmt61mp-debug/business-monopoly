@@ -1222,3 +1222,27 @@ body.big-board #bigBoardBtn,
   transform: rotate(1.9deg);
 }
 
+/* Dynamic rent on the tile: label + authoritative value */
+.tile-price {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0; line-height: 1.02; text-align: center;
+}
+.tile-price i {
+  font-style: normal;
+  font-size: .40em; font-weight: 800;
+  letter-spacing: .10em; text-transform: uppercase;
+  opacity: .82;
+}
+.tile-price b {
+  font-size: .62em; font-weight: 900;
+  letter-spacing: .01em; white-space: nowrap;
+}
+.tile.has-art.bottom .tile-price,
+.tile.has-art.top .tile-price { height: 18%; }
+.tile.has-art.left .tile-price,
+.tile.has-art.right .tile-price { height: 20%; }
+.tile-price.is-rent b { font-variant-numeric: tabular-nums; }
+.tile-price.is-high b { font-size: .58em; color: #fff3ca; text-shadow: 0 0 7px #ffd58a88, 0 1px 1px #00000088; }
+.tile-price.is-mortgage b { font-size: .60em; letter-spacing: .04em; }
+.tile-price.is-price b { opacity: .95; }
+
