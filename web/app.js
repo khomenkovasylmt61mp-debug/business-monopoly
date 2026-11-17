@@ -400,9 +400,9 @@ function renderBoard(st) {
 
     const hEl = el.querySelector('.houses');
     if (ts.houses === 5) {
-      hEl.innerHTML = '<img class="hotel-img" src="/buildings/hotel.webp" alt="" draggable="false"><span class="bld-count is-hotel">H</span>';
+      hEl.innerHTML = '<img class="hotel-img" src="/buildings/hotel.webp" alt="" draggable="false">';
     } else if (ts.houses > 0) {
-      hEl.innerHTML = `<img class="house-img" src="/buildings/house_${ts.houses}.webp" alt="" draggable="false"><span class="bld-count">${ts.houses}</span>`;
+      hEl.innerHTML = `<img class="house-img" src="/buildings/house_${ts.houses}.webp" alt="" draggable="false">`;
     } else {
       hEl.innerHTML = '';
     }
