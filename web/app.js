@@ -447,7 +447,7 @@ function renderTokens(st) {
       const pb = (b.id === st.turn ? 2 : 0) + (b.id === S.pid ? 1 : 0);
       return pb - pa;
     });
-    const maxShow = window.innerWidth < 560 ? 3 : (window.innerWidth <= 640 ? 4 : 12);
+    const maxShow = window.innerWidth <= 640 ? 4 : 6;
     const shown = ordered.slice(0, maxShow);
     stack.dataset.n = String(shown.length + (list.length > shown.length ? 1 : 0));
     shown.forEach((p) => {
@@ -591,9 +591,9 @@ function renderCenter(st) {
       <div class="cp-scene">
         ${CITY_SVG}
         <div class="cp-decks">
-          <span class="cp-deck d1">Скарбниця</span>
-          <span class="cp-deck d2">Шанс</span>
-          <span class="cp-deck d3">Угода</span>
+          <span class="cp-deck d1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16v9H4z" fill="#f3d9a4" stroke="#8a5a1d" stroke-width="1.4"/><path d="M4 10c0-3 3-5 8-5s8 2 8 5" fill="#ffcf8a" stroke="#8a5a1d" stroke-width="1.4"/><rect x="10.5" y="11.5" width="3" height="4" rx=".6" fill="#8a5a1d"/></svg><b>Скарбниця</b></span>
+          <span class="cp-deck d2"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#ffe6a8" stroke="#8a5a1d" stroke-width="1.4"/><text x="12" y="17" text-anchor="middle" font-family="Georgia, serif" font-size="13" font-weight="700" fill="#6b4312">?</text></svg><b>Шанс</b></span>
+          <span class="cp-deck d3"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h11l-2.6-2.6M19 15H8l2.6 2.6" fill="none" stroke="#cfe0f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Угода</b></span>
         </div>
       </div>
       <div class="cp-foot">
