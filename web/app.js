@@ -364,8 +364,32 @@ function buildBoard() {
   });
 }
 
-function renderBoard(st) {
-  const cur = curP(st);
+/* Single source of truth: the rent comes from st.rents[] (server _rent_for). */
+function paintTilePrice(el, t, ts, st, i) {
+  const p = el.querySelector('.tile-price');
+  if (!p || !['street', 'rr', 'util'].includes(t.type)) return;
+  const rent = st.rents ? st.rents[i] : null;
+  if (!ts.owner) {
+    p.className = 'tile-price is-price';
+    p.innerHTML = `<i>Ціна</i><b>${money(t.price)}</b>`;
+    return;
+  }
+  if (ts.mortgaged) {
+    p.className = 'tile-price is-mortgage';
+    p.innerHTML = '<i>Статус</i><b>Застава</b>';
+    return;
+  }
+  if (rent && rent.kind === 'util') {
+    p.className = 'tile-price is-rent';
+    p.innerHTML = `<i>Рента</i><b>${rent.mult}×куб</b>`;
+    return;
+  }
+  const now = rent && rent.now != null ? rent.now : 0;
+  p.className = 'tile-price is-rent' + (now >= 400 ? ' is-high' : '');
+  p.innerHTML = `<i>Рента</i><b>${money(now)}</b>`;
+}
+
+function renderBoard(st) {  const cur = curP(st);
   const occupied = new Set(st.players.filter((p) => !p.bankrupt).map((p) => p.pos));
   S.boardData.board.forEach((t, i) => {
     const el = tileEls[i];
@@ -397,6 +421,7 @@ function renderBoard(st) {
     }
     el.classList.toggle('mortgaged', !!ts.mortgaged);
     el.classList.toggle('hl', !!(cur && cur.pos === i));
+    paintTilePrice(el, t, ts, st, i);
 
     const hEl = el.querySelector('.houses');
     const canBuild = t.type === 'street';
@@ -885,9 +910,15 @@ function renderHud(st) {
       const owner = ts.owner ? playerById(st, ts.owner) : null;
       const status = ts.mortgaged ? 'Застава' : ts.houses === 5 ? 'Готель'
         : ts.houses ? `${ts.houses} будинки` : (owner ? 'У власності' : 'Вільна');
-      const priceLine = ts.houses === 5 ? `Готель · ${money(t.house * 5 || t.price)}`
-        : ts.houses ? `${ts.houses} буд. · ${money(t.house * ts.houses || t.price)}`
-          : t.price ? `Оренда · ${money(t.rent ? t.rent[0] : t.price)}` : '';
+      const rentInfo = st.rents ? st.rents[i] : null;
+      let priceLine = '';
+      if (ts.mortgaged) {
+        priceLine = 'Застава · оренда не нараховується';
+      } else if (owner && rentInfo) {
+        priceLine = rentInfo.kind === 'util' ? `Рента · ${rentInfo.mult}×кубик` : `Рента · ${money(rentInfo.now)}`;
+      } else if (t.price) {
+        priceLine = `Ціна · ${money(t.price)}`;
+      }
       const stage = owner && window.pieceHTML ? pieceHTML(owner.piece, 'hud-podium-token') : '';
       const bld = ts.houses === 5
         ? '<img class="hud-podium-bld" src="/buildings/hotel.webp" alt="" draggable="false">'
@@ -1384,6 +1415,10 @@ function propRow(st, i, me) {
   const acts = info.acts.map((a) => `<button class="pc-btn" data-pact="${a.pact}" data-i="${i}" ${a.disabled ? 'disabled' : ''}>${a.label}</button>`).join('');
   const houses = info.ts.houses;
   const hBadge = houses === 5 ? '🏨' : houses ? `🏠×${houses}` : '';
+  const rentInfo = st.rents ? st.rents[i] : null;
+  const val = info.ts.mortgaged ? 'Застава'
+    : rentInfo ? (rentInfo.kind === 'util' ? `${rentInfo.mult}×куб` : money(rentInfo.now))
+      : (t.price ? money(t.price) : '');
   return `<div class="prop-row${info.ts.mortgaged ? ' mortgaged' : ''}" data-open="${i}" style="--row-color:${color}" title="Відкрити картку">
       <div class="pr-line">
         <span class="pr-logo" style="border-color:${color}">${logo}</span>
@@ -1392,7 +1427,7 @@ function propRow(st, i, me) {
           <i>${info.status}</i>
         </span>
         ${hBadge ? `<span class="pr-houses">${hBadge}</span>` : ''}
-        <span class="pr-val">${t.price ? money(t.price) : ''}</span>
+        <span class="pr-val">${val}</span>
       </div>
       ${acts ? `<div class="pr-acts">${acts}</div>` : ''}
     </div>`;
