@@ -206,6 +206,8 @@ window.addEventListener('load', async () => {
       document.body.classList.add('big-board');
       setTimeout(fitBoard, 100);
     }
+    const tab = q.get('tab');
+    if (tab) setTimeout(() => switchTab(tab), 300);
   } catch (e) { document.title = 'ERR ' + e.message; }
 });
 </script>
