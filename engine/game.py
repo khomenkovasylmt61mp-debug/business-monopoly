@@ -769,6 +769,21 @@ class Room:
             self.board = BOARD_BRANDS if theme == "brands" else BOARD
             return
 
+        if t == "set_piece":
+            p = self._player(pid)
+            if st["phase"] != "lobby":
+                raise RulesError("Фішку обирають у лобі")
+            icon = str(a.get("piece", ""))
+            info = next((x for x in PIECES if x["icon"] == icon), None)
+            if not info:
+                raise RulesError("Невідома фішка")
+            if any(q["id"] != pid and q.get("piece") == icon for q in st["players"]):
+                raise RulesError("Ця фішка вже зайнята")
+            p["piece"] = info["icon"]
+            p["pieceName"] = info["name"]
+            self._log(f"{p['name']} обрав фішку «{info['name']}»", "join", pid)
+            return
+
         if t == "set_parking":
             if st["host"] != pid:
                 raise RulesError("Лише власник кімнати")
