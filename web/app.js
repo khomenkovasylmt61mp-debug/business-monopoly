@@ -195,6 +195,28 @@ const CITY_SVG = `<svg class="cp-city" viewBox="0 0 600 170" preserveAspectRatio
     <line x1="430" y1="164" x2="470" y2="164"/>
   </g>
 </svg>`;
+const CROWN_SVG = `<svg class="cp-crown" viewBox="0 0 72 46" aria-hidden="true">
+  <defs><linearGradient id="crownG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fff3ca"/><stop offset=".55" stop-color="#e3bd6b"/><stop offset="1" stop-color="#b8872e"/>
+  </linearGradient></defs>
+  <path d="M6 36 L10 12 L24 22 L36 5 L48 22 L62 12 L66 36 Z" fill="url(#crownG)" stroke="#8a6318" stroke-width="1.5" stroke-linejoin="round"/>
+  <rect x="6" y="36" width="60" height="6" rx="2.5" fill="#d6a64d" stroke="#8a6318" stroke-width="1"/>
+  <circle cx="36" cy="14" r="2.4" fill="#fff8dd"/>
+  <circle cx="12" cy="15" r="1.8" fill="#fff8dd"/><circle cx="60" cy="15" r="1.8" fill="#fff8dd"/>
+</svg>`;
+
+const LAUREL_SVG = `<svg class="cp-laurel" viewBox="0 0 44 110" aria-hidden="true">
+  <path d="M34 104 C12 84 8 58 16 30 C19 20 24 12 30 6" fill="none" stroke="#c9a24a" stroke-width="2"/>
+  <g fill="#d6a64d" opacity=".92">
+    <ellipse cx="18" cy="92" rx="8" ry="3.6" transform="rotate(-38 18 92)"/>
+    <ellipse cx="12" cy="76" rx="8.5" ry="3.8" transform="rotate(-28 12 76)"/>
+    <ellipse cx="10" cy="60" rx="9" ry="4" transform="rotate(-18 10 60)"/>
+    <ellipse cx="11" cy="44" rx="9" ry="4" transform="rotate(-8 11 44)"/>
+    <ellipse cx="15" cy="28" rx="8.5" ry="3.8" transform="rotate(6 15 28)"/>
+    <ellipse cx="22" cy="14" rx="7.5" ry="3.4" transform="rotate(18 22 14)"/>
+  </g>
+</svg>`;
+
 const LOG_ICONS = {
   roll: '🎲', move: '👣', money: '💰', rent: '🏠', prop: '🏷', build: '🏗',
   mortgage: '🏦', auction: '🔨', trade: '🤝', jail: '🚔', card: '🎴',
@@ -515,29 +537,40 @@ function renderCenter(st) {
 
   el.innerHTML = `
     <div class="center-panel">
-      <div class="cp-emblem">
-        <div class="cp-title"><span>БІЗНЕС</span><b>МОНОПОЛІЯ</b></div>
-        <div class="cp-sub">бренди · угоди · великі гроші</div>
+      <div class="cp-head">
+        ${CROWN_SVG}
+        <div class="cp-emblem">
+          ${LAUREL_SVG}
+          <div class="cp-title"><span>БІЗНЕС</span><b>МОНОПОЛІЯ</b></div>
+          <span class="cp-laurel-flip">${LAUREL_SVG}</span>
+        </div>
+        <div class="cp-ribbon">Бренди · Угоди · Великі гроші</div>
       </div>
-      <div class="cp-top">
-        <div class="cp-banner">Події гри</div>
-        <div class="cp-dice-wrap">
-          <div class="cp-dice">
-            ${dieHTML(dice ? dice[0] : 0, anim)}
-            ${dieHTML(dice ? dice[1] : 0, anim)}
-          </div>
-          ${dice ? `<div class="cp-sum"><span>${dice[0]} + ${dice[1]} =</span><b>${dice[0] + dice[1]}</b></div>` : ''}
+      <div class="cp-dice-stage">
+        <div class="cp-dice">
+          ${dieHTML(dice ? dice[0] : 0, anim)}
+          ${dieHTML(dice ? dice[1] : 0, anim)}
+        </div>
+        ${dice ? `<div class="cp-sum"><span>${dice[0]} + ${dice[1]} =</span><b>${dice[0] + dice[1]}</b></div>` : '<div class="cp-sum"><span>кидок</span></div>'}
+      </div>
+      <div class="cp-feed-panel">
+        <div class="cp-feed-label">Події гри</div>
+        <div class="cp-feed" id="cpFeed">${items || '<div class="feed-empty">Гра от-от почнеться…</div>'}</div>
+      </div>
+      <div class="cp-scene">
+        ${CITY_SVG}
+        <div class="cp-decks">
+          <span class="cp-deck d1">Скарбниця</span>
+          <span class="cp-deck d2">Шанс</span>
+          <span class="cp-deck d3">Угода</span>
         </div>
       </div>
-      <div class="cp-feed" id="cpFeed">${items || '<div class="feed-empty">Гра от-от почнеться…</div>'}</div>
-      ${CITY_SVG}
       <div class="cp-foot">
         <span class="cp-line">${esc(line)}</span>
         <span class="turn-clock" id="turnClock"></span>
         <span class="cp-bank">🏠 ${st.housesLeft} · 🏨 ${st.hotelsLeft}${potOn ? ` · 🅿️ ${money(st.pot || 0)}` : ''}</span>
       </div>
       ${card}
-      <div class="cp-ribbon"></div>
     </div>`;
   const feed = $('cpFeed');
   if (feed) feed.scrollTop = feed.scrollHeight;
@@ -772,7 +805,7 @@ function renderStrip(st) {
       <div class="pav" style="background:${p.hex}22;border-color:${p.hex}">${p.piece || initials(p.name)}</div>
       <div class="pmeta">
         <div class="pname">${esc(p.name)}</div>
-        <div class="pmoney">${money(p.money)}</div>
+        <div class="pmoney${p.money < 0 ? ' neg' : ''}">${money(p.money)}</div>
       </div>
       <div class="pbadges">
         ${p.jail && !p.bankrupt ? '<span>🚔</span>' : ''}
