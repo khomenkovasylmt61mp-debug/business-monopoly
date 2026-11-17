@@ -412,8 +412,13 @@ function renderTokens(st) {
     const corner = idx === 0 ? 'br' : idx === 10 ? 'bl' : idx === 20 ? 'tl' : idx === 30 ? 'tr' : '';
     cell.className = 'token-cell tok-' + side + (corner ? ' c-' + corner : '');
     cell.style.gridArea = `${row} / ${col}`;
+    cell.dataset.tile = String(idx);
     const stack = document.createElement('div');
     stack.className = 'token-stack';
+    stack.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      openTilePlayers(idx);
+    });
     const ordered = [...list].sort((a, b) => {
       const pa = (a.id === st.turn ? 2 : 0) + (a.id === S.pid ? 1 : 0);
       const pb = (b.id === st.turn ? 2 : 0) + (b.id === S.pid ? 1 : 0);
@@ -800,6 +805,7 @@ function renderGame(st) {
   renderBoard(st);
   renderStatus(st);
   renderActions(st);
+  renderMobile(st);
   renderTab(st);
   maybeGameOver(st);
   maybeVibrate(st);
@@ -1550,7 +1556,217 @@ function openCasinoTable() {
   modal.querySelector('#rtClose').onclick = closeModal;
 }
 
-/* ---------- вібрація ---------- */function maybeVibrate(st) {
+/* ---------- мобільний режим ---------- */
+const MZ = { s: 1, x: 0, y: 0, drag: null, pinch: null, moved: false };
+
+function applyZoom() {
+  const el = $('boardZoom');
+  if (!el) return;
+  el.style.transform = `translate(${MZ.x}px, ${MZ.y}px) scale(${MZ.s})`;
+}
+
+function resetZoom() {
+  MZ.s = 1; MZ.x = 0; MZ.y = 0;
+  applyZoom();
+}
+
+function clampZoom() {
+  MZ.s = Math.min(3, Math.max(1, MZ.s));
+  const wrap = $('boardWrap');
+  if (!wrap) return;
+  const maxX = wrap.clientWidth * (MZ.s - 1);
+  const maxY = wrap.clientHeight * (MZ.s - 1);
+  MZ.x = Math.min(0, Math.max(-maxX, MZ.x));
+  MZ.y = Math.min(0, Math.max(-maxY, MZ.y));
+}
+
+function wireZoom() {
+  const wrap = $('boardWrap');
+  if (!wrap || wrap.dataset.zoom) return;
+  wrap.dataset.zoom = '1';
+  const pts = new Map();
+
+  const dist = () => {
+    const [a, b] = [...pts.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  };
+
+  wrap.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse') return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    MZ.moved = false;
+    if (pts.size === 1) {
+      MZ.drag = { x: e.clientX, y: e.clientY, ox: MZ.x, oy: MZ.y };
+    } else if (pts.size === 2) {
+      MZ.drag = null;
+      MZ.pinch = { d: dist(), s: MZ.s, x: MZ.x, y: MZ.y };
+    }
+  }, { passive: true });
+
+  wrap.addEventListener('pointermove', (e) => {
+    if (!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 2 && MZ.pinch) {
+      const k = dist() / Math.max(1, MZ.pinch.d);
+      MZ.s = MZ.pinch.s * k;
+      clampZoom();
+      applyZoom();
+      MZ.moved = true;
+    } else if (pts.size === 1 && MZ.drag) {
+      const dx = e.clientX - MZ.drag.x;
+      const dy = e.clientY - MZ.drag.y;
+      if (Math.abs(dx) + Math.abs(dy) > 6) MZ.moved = true;
+      if (MZ.s > 1) {
+        MZ.x = MZ.drag.ox + dx;
+        MZ.y = MZ.drag.oy + dy;
+        clampZoom();
+        applyZoom();
+      }
+    }
+  }, { passive: true });
+
+  const up = (e) => {
+    pts.delete(e.pointerId);
+    if (pts.size < 2) MZ.pinch = null;
+    if (pts.size === 0) MZ.drag = null;
+  };
+  wrap.addEventListener('pointerup', up, { passive: true });
+  wrap.addEventListener('pointercancel', up, { passive: true });
+
+  wrap.addEventListener('click', (e) => {
+    if (MZ.moved) {
+      e.stopPropagation();
+      e.preventDefault();
+      MZ.moved = false;
+    }
+  }, true);
+
+  $('mZoomReset').onclick = () => { resetZoom(); toast('Масштаб скинуто'); };
+  window.addEventListener('resize', () => { clampZoom(); applyZoom(); });
+}
+
+function openTilePlayers(idx) {
+  const st = S.state;
+  if (!st) return;
+  const t = S.boardData.board[idx] || {};
+  const list = st.players.filter((p) => p.pos === idx && !p.bankrupt);
+  openModal(`
+    <h2>${esc(t.name || 'Клітинка')}</h2>
+    <div class="sub">Тут зараз: ${list.length}</div>
+    <div class="m-players">
+      ${list.length ? list.map((p) => `
+        <div class="m-player${p.id === S.pid ? ' active' : ''}">
+          <span class="m-av" style="background:${p.hex}22;border-color:${p.hex}">${p.piece || ''}</span>
+          <span class="m-pname">${esc(p.name)}</span>
+          <span class="m-pmoney">${money(p.money)}</span>
+        </div>`).join('') : '<div class="empty-note">Нікого</div>'}
+    </div>
+    <div class="modal-actions"><button class="btn ghost" onclick="window.__closeModal()">Закрити</button></div>`);
+}
+
+function openPlayersList(st) {
+  const list = [...st.players].sort((a, b) => (b.id === st.turn) - (a.id === st.turn));
+  openModal(`
+    <h2>Гравці (${st.players.length})</h2>
+    <div class="m-players">
+      ${list.map((p) => `
+        <div class="m-player${p.id === st.turn ? ' active' : ''}${p.bankrupt ? ' off' : ''}">
+          <span class="m-av" style="background:${p.hex}22;border-color:${p.hex}">${p.piece || ''}</span>
+          <span class="m-pname">${esc(p.name)}${p.id === S.pid ? ' <i>(ви)</i>' : ''}</span>
+          <span class="m-pmoney">${money(p.money)}</span>
+          <span class="m-ptags">
+            ${p.bot ? '🤖' : ''}${p.id === st.host ? ' 👑' : ''}${p.jail ? ' 🚔' : ''}${p.credit ? ' 💳' : ''}${p.afk ? ' 💤' : ''}${p.bankrupt ? ' 💀' : ''}
+          </span>
+        </div>`).join('')}
+    </div>
+    <div class="modal-actions"><button class="btn ghost" id="mpClose">Закрити</button></div>`);
+  $('mpClose').onclick = closeModal;
+}
+
+function openCreditModal(st) {
+  const me = meP(st);
+  if (!me) return;
+  const cr = me.credit;
+  const cool = me.creditCool || 0;
+  openModal(`
+    <h2>💳 Кредит</h2>
+    <div class="sub">${cr ? `Борг ${money(cr.due)} · залишилось ${cr.turns} ход.` : (cool > 0 ? `Новий кредит через ${cool} ход.` : '500 ₴ зараз → 600 ₴ за 15 ходів.')}</div>
+    <div class="modal-actions">
+      ${cr
+      ? `<button class="btn primary" id="mcRepay" ${me.money < cr.due ? 'disabled' : ''}>Погасити ${money(cr.due)}</button>`
+      : `<button class="btn primary" id="mcTake" ${cool > 0 ? 'disabled' : ''}>Взяти 500 ₴</button>`}
+      <button class="btn ghost" id="mcClose">Закрити</button>
+    </div>`);
+  $('mcClose').onclick = closeModal;
+  if ($('mcTake')) $('mcTake').onclick = async () => { closeModal(); await act('take_credit'); };
+  if ($('mcRepay')) $('mcRepay').onclick = async () => { closeModal(); await act('repay_credit'); };
+}
+
+function openMissionsModal(st) {
+  const me = meP(st);
+  const list = (me && me.missions) || [];
+  openModal(`
+    <h2>🎯 Місії</h2>
+    <div class="sub">Секретні цілі. Бонус нараховується одразу після виконання.</div>
+    <div class="mission-list">
+      ${list.length ? list.map((m) => `<div class="mm-item${m.done ? ' done' : ''}">
+        <span>${m.done ? '✅' : '⬜'}</span><b>${esc(m.text)}</b><i>+${m.reward} ₴</i>
+      </div>`).join('') : '<div class="empty-note">Місій немає</div>'}
+    </div>
+    <div class="modal-actions"><button class="btn ghost" id="mmClose">Закрити</button></div>`);
+  $('mmClose').onclick = closeModal;
+}
+
+function mobilePrimary(st) {
+  const me = meP(st);
+  const aw = st.awaiting || {};
+  if (st.phase === 'ended') {
+    return st.host === S.pid
+      ? { label: 'Нова гра', run: () => act('restart') }
+      : { label: 'Партію завершено', run: null };
+  }
+  if (me && me.debt) return { label: `Борг ${money(me.debt.amount)}`, run: () => switchTab('mine') };
+  if (st.auction) return { label: 'Аукціон…', run: null };
+  if (st.trade && st.trade.to === S.pid) return { label: 'Обмін — відповісти', run: () => switchTab('mine') };
+  if (st.turn !== S.pid) {
+    const cur = curP(st);
+    return { label: `Чекаємо ${cur ? cur.name : '…'}`, run: null };
+  }
+  if (aw.type === 'roll') return { label: '🎲 Кинути кубики', run: () => act('roll') };
+  if (aw.type === 'buy') return { label: `Купити ${money(S.boardData.board[aw.tile].price)}`, run: () => act('buy') };
+  if (aw.type === 'pay_rent') return { label: `Сплатити ${money(aw.amount)}`, run: () => act('pay_rent') };
+  if (aw.type === 'casino') return { label: '🎰 Казино', run: () => openCasinoTable() };
+  if (aw.type === 'jail') return { label: '🎲 Кинути дубль', run: () => act('roll') };
+  if (aw.type === 'endturn') return { label: 'Завершити хід', run: () => act('end_turn') };
+  return { label: 'Дія', run: null };
+}
+
+function renderMobile(st) {
+  const count = $('mPlayersCount');
+  if (count) count.textContent = String(st.players.length);
+  const pb = $('mPlayersBtn');
+  if (pb) pb.onclick = () => openPlayersList(st);
+  const prim = $('mPrimary');
+  if (!prim) return;
+  const info = mobilePrimary(st);
+  prim.textContent = info.label;
+  prim.disabled = !info.run;
+  prim.onclick = info.run || null;
+  const nav = document.querySelector('.m-nav');
+  if (nav) {
+    nav.querySelectorAll('[data-mact]').forEach((b) => {
+      b.onclick = () => {
+        const actName = b.dataset.mact;
+        if (actName === 'events') $('boardWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        else if (actName === 'mine') { switchTab('mine'); document.querySelector('.panel').scrollIntoView({ behavior: 'smooth' }); }
+        else if (actName === 'trade') openTrade();
+        else if (actName === 'credit') openCreditModal(st);
+        else if (actName === 'missions') openMissionsModal(st);
+        nav.querySelectorAll('[data-mact]').forEach((x) => x.classList.toggle('on', x === b));
+      };
+    });
+  }
+}function maybeVibrate(st) {
   const mine = st.phase === 'playing' && st.turn === S.pid && st.awaiting &&
     ['roll', 'jail', 'buy', 'endturn', 'debt'].includes(st.awaiting.type) && !st.auction;
   if (mine && !S.myTurn) {
@@ -1789,6 +2005,7 @@ async function boot() {
   }
   buildBoard();
   wire();
+  wireZoom();
   fitBoard();
   setInterval(clockTick, 250);
   if (window.ResizeObserver) {
