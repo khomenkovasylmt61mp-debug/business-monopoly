@@ -1,4 +1,4 @@
-/* ================= Монополія — клієнт ================= */
+﻿/* ================= Монополія — клієнт ================= */
 'use strict';
 
 const $ = (id) => document.getElementById(id);
@@ -9,7 +9,7 @@ const S = {
   diceKey: '', overShown: null, myTurn: false,
   chatSeen: 0, chatUnread: 0, connected: true,
   clockOffset: 0, theme: null, tapped: false,
-  turnLeft: 0, turnLeftAt: 0, prevPos: {}, casinoBet: 200,
+  turnLeft: 0, turnLeftAt: 0, prevPos: {}, casinoBet: 200, hlOwner: null,
   casinoSeen: 0, casinoReady: false,
 };
 
@@ -95,6 +95,7 @@ function fitBoard() {
 /* ---------- модалки ---------- */
 function openModal(html, opts) {
   const ov = $('overlay');
+  ov.className = 'overlay' + (opts && opts.overlayCls ? ' ' + opts.overlayCls : '');
   ov.innerHTML = `<div class="modal ${(opts && opts.cls) || ''}">${html}</div>`;
   ov.classList.remove('hidden');
   ov.dataset.static = opts && opts.static ? '1' : '';
@@ -105,7 +106,8 @@ function openModal(html, opts) {
 }
 function closeModal() {
   const ov = $('overlay');
-  ov.classList.add('hidden');
+  ov.className = 'overlay hidden';
+  ov.style.padding = '';
   ov.innerHTML = '';
 }
 
@@ -366,7 +368,10 @@ function buildBoard() {
       el.style.setProperty('--ow', or[2]);
       el.style.setProperty('--oh', or[3]);
       el.innerHTML = `<div class="tile-price v8-money" hidden></div>`
-        + '<div class="own-zone v8-own" hidden><span class="owner-dot" hidden></span><div class="houses"></div></div>'
+        + '<div class="own-zone v8-own" hidden>'
+        + '<span class="owner-id"><span class="owner-dot" hidden></span></span>'
+        + '<div class="houses"></div>'
+        + '</div>'
         + '<div class="v8-frame" hidden></div>';
     } else {
     const col2 = groupColor(t);
@@ -488,6 +493,7 @@ function renderBoard(st) {  const cur = curP(st);
     const zone = el.querySelector('.own-zone');
     const frame = el.querySelector('.v8-frame');
     el.classList.toggle('owned', !!owner);
+    el.classList.toggle('owner-hl', !!(S.hlOwner && ts.owner === S.hlOwner));
     if (owner) {
       el.style.setProperty('--own', owner.hex);
       if (dot) {
@@ -557,6 +563,65 @@ function renderBoard(st) {  const cur = curP(st);
 }
 
 function renderTokens(st) {
+  if (S.theme === 'classic') { renderTokensClassic(st); return; }
+  const layer = $('tokenLayer');
+  const prevPos = S.prevPos || {};
+  layer.innerHTML = '';
+  const byTile = new Map();
+  st.players.forEach((p) => {
+    if (p.bankrupt) return;
+    if (!byTile.has(p.pos)) byTile.set(p.pos, []);
+    byTile.get(p.pos).push(p);
+  });
+  byTile.forEach((list, idx) => {
+    const [row, col] = cellPos(idx);
+    const cell = document.createElement('div');
+    const side = (idx === 0 || idx === 10) ? 'bottom' : (idx === 20 || idx === 30) ? 'top' : sideClass(idx);
+    const corner = idx === 0 ? 'br' : idx === 10 ? 'bl' : idx === 20 ? 'tl' : idx === 30 ? 'tr' : '';
+    cell.className = 'token-cell v84 tok-' + side + (corner ? ' c-' + corner : '');
+    cell.style.gridArea = `${row} / ${col}`;
+    cell.dataset.tile = String(idx);
+    const stack = document.createElement('div');
+    stack.className = 'token-stack tok-v84';
+    stack.dataset.tile = String(idx);
+    stack.dataset.count = String(list.length);
+    const active = list.find((p) => p.id === st.turn) || null;
+    const guests = list.length - (active ? 1 : 0);
+    if (active) {
+      const t = document.createElement('div');
+      t.className = 'token v84-token is-turn';
+      t.dataset.pid = active.id;
+      t.innerHTML = v8PieceHTML(active.piece, 'tok-img');
+      t.classList.toggle('has-img', !!pieceSrc(active.piece));
+      t.title = active.name + (active.pieceName ? ' · ' + active.pieceName : '')
+        + (guests ? ` · тут ще ${guests}` : '');
+      stack.appendChild(t);
+    }
+    if (guests > 0) {
+      const c = document.createElement('button');
+      c.type = 'button';
+      c.className = 'v84-count';
+      c.innerHTML = (active ? '<i>+</i>' : '') + `<b>${guests}</b>`;
+      c.title = `На клітинці: ${list.length}`;
+      c.setAttribute('aria-label',
+        `Гравців на клітинці: ${list.length}. ${list.map((p) => p.name).join(', ')}`);
+      stack.appendChild(c);
+    }
+    stack.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      openTilePlayers(idx);
+    });
+    cell.appendChild(stack);
+    layer.appendChild(cell);
+  });
+  const nextPos = {};
+  st.players.forEach((p) => { nextPos[p.id] = p.pos; });
+  S.prevPos = nextPos;
+  animateMoves(st, prevPos);
+}
+
+/* classic theme keeps the V7 multi-token stack */
+function renderTokensClassic(st) {
   const layer = $('tokenLayer');
   const prevPos = S.prevPos || {};
   layer.innerHTML = '';
@@ -1031,12 +1096,20 @@ function renderHud(st) {
   if (box) {
     const rank = [...st.players].sort((a, b) => (a.bankrupt ? 1 : 0) - (b.bankrupt ? 1 : 0) || b.money - a.money);
     box.innerHTML = `<div class="hud-title">Гравці <span class="hud-count">(${st.players.length})</span><i>капітал</i></div>
-      <div class="hud-list">${rank.map((p, i) => `<div class="hud-row${p.id === st.turn ? ' on' : ''}${p.bankrupt ? ' off' : ''}">
+      <div class="hud-list">${rank.map((p, i) => `<div class="hud-row${p.id === st.turn ? ' on' : ''}${p.bankrupt ? ' off' : ''}" data-pid="${p.id}">
         <span class="hud-rank" style="--rc:${p.hex}">${i + 1}</span>
         <span class="hud-av">${pieceHTML(p.piece)}</span>
         <span class="hud-name">${esc(p.name)}</span>
         <span class="hud-money">${money(p.money)}</span>
       </div>`).join('')}</div>`;
+    box.querySelectorAll('.hud-row').forEach((row) => {
+      const pid = row.dataset.pid;
+      row.onmouseenter = () => highlightOwner(pid);
+      row.onmouseleave = () => highlightOwner(null);
+      row.onclick = () => {
+        if (window.innerWidth <= 980) toggleOwner(pid);
+      };
+    });
   }
   const sel = $('hudSelected');
   if (sel) {
@@ -2242,18 +2315,53 @@ function openTilePlayers(idx) {
   if (!st) return;
   const t = S.boardData.board[idx] || {};
   const list = st.players.filter((p) => p.pos === idx && !p.bankrupt);
+  const turnP = list.find((p) => p.id === st.turn) || null;
+  const rows = list.map((p) => `
+    <div class="tp-row${p.id === st.turn ? ' is-turn' : ''}${p.id === S.pid ? ' is-me' : ''}">
+      <span class="tp-av" style="--pc:${p.hex}">${v8PieceHTML(p.piece, 'tp-img')}</span>
+      <span class="tp-name">${esc(p.name)}${p.id === S.pid ? ' <i>· ви</i>' : ''}</span>
+      ${p.id === st.turn ? '<span class="tp-turn">ходить</span>' : ''}
+      <span class="tp-color" style="background:${p.hex}" title="${esc(p.name)}"></span>
+    </div>`).join('');
+  const n = list.length;
   openModal(`
-    <h2>${esc(t.name || 'Клітинка')}</h2>
-    <div class="sub">Тут зараз: ${list.length}</div>
-    <div class="m-players">
-      ${list.length ? list.map((p) => `
-        <div class="m-player${p.id === S.pid ? ' active' : ''}">
-          <span class="m-av" style="background:${p.hex}22;border-color:${p.hex}">${pieceHTML(p.piece)}</span>
-          <span class="m-pname">${esc(p.name)}</span>
-          <span class="m-pmoney">${money(p.money)}</span>
-        </div>`).join('') : '<div class="empty-note">Нікого</div>'}
+    <div class="tp-head">
+      <b>${esc(t.name || 'Клітинка')}</b>
+      <span>${n ? `${n} ${n === 1 ? 'гравець' : n < 5 ? 'гравці' : 'гравців'}` : 'порожньо'}</span>
     </div>
-    <div class="modal-actions"><button class="btn ghost" onclick="window.__closeModal()">Закрити</button></div>`);
+    ${turnP ? `<div class="tp-sub">Зараз ходить <b>${esc(turnP.name)}</b></div>` : ''}
+    <div class="tp-list">
+      ${rows || '<div class="tp-empty">Нікого немає</div>'}
+    </div>
+    <div class="modal-actions"><button class="btn ghost" id="tpClose">Закрити</button></div>`,
+    { cls: 'tp-modal', overlayCls: 'tp-open' });
+  $('tpClose').onclick = closeModal;
+  positionTilePopover(idx);
+  requestAnimationFrame(() => positionTilePopover(idx));
+  setTimeout(() => positionTilePopover(idx), 80);
+}
+
+function positionTilePopover(idx) {
+  if (window.innerWidth <= 640) return;
+  const m = document.querySelector('#overlay .tp-modal');
+  const el = tileEls[idx];
+  if (!m || !el) return;
+  const ov = $('overlay');
+  const r = el.getBoundingClientRect();
+  const mw = 340;
+  ov.style.padding = '0';
+  m.style.position = 'absolute';
+  m.style.width = mw + 'px';
+  const mh = m.offsetHeight;
+  let left = r.right + 12;
+  if (left + mw > window.innerWidth - 12) left = r.left - mw - 12;
+  if (left < 12) left = 12;
+  let top = r.bottom + 8;
+  if (top + mh > window.innerHeight - 12) top = r.top - mh - 8;
+  top = Math.max(12, top);
+  m.style.left = left + 'px';
+  m.style.top = top + 'px';
+  m.style.transform = 'none';
 }
 
 function openPlayersList(st) {
@@ -2262,11 +2370,11 @@ function openPlayersList(st) {
     const d = rank(a) - rank(b);
     return d !== 0 ? d : b.money - a.money;
   });
-  openModal(`
+  const modal = openModal(`
     <h2>Гравці (${st.players.length})</h2>
     <div class="m-players">
       ${list.map((p) => `
-        <div class="m-player${p.id === st.turn ? ' active' : ''}${p.bankrupt ? ' off' : ''}">
+        <div class="m-player${p.id === st.turn ? ' active' : ''}${p.bankrupt ? ' off' : ''}" data-pid="${p.id}">
           <span class="m-av" style="background:${p.hex}22;border-color:${p.hex}">${pieceHTML(p.piece)}</span>
           <span class="m-pname">${esc(p.name)}${p.id === S.pid ? ' <i>(ви)</i>' : ''}</span>
           <span class="m-pmoney">${money(p.money)}</span>
@@ -2276,6 +2384,9 @@ function openPlayersList(st) {
         </div>`).join('')}
     </div>
     <div class="modal-actions"><button class="btn ghost" id="mpClose">Закрити</button></div>`);
+  modal.querySelectorAll('.m-player[data-pid]').forEach((row) => {
+    row.onclick = () => { toggleOwner(row.dataset.pid); closeModal(); };
+  });
   $('mpClose').onclick = closeModal;
 }
 
@@ -2653,3 +2764,17 @@ async function boot() {
 }
 
 boot();
+
+function highlightOwner(pid) {
+  S.hlOwner = pid || null;
+  const st = S.state;
+  if (!st) return;
+  tileEls.forEach((el, i) => {
+    if (!el) return;
+    el.classList.toggle('owner-hl', !!S.hlOwner && st.tiles[i].owner === S.hlOwner);
+  });
+}
+
+function toggleOwner(pid) {
+  highlightOwner(S.hlOwner === pid ? null : pid);
+}
