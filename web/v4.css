@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    V4 — premium overhaul layer. Loaded last, overrides only.
    ============================================================ */
 
@@ -98,8 +98,8 @@
   max-width: none;
   aspect-ratio: 1 / 1;
   display: grid;
-  grid-template-columns: 5.5fr repeat(9, 3fr) 5.5fr;
-  grid-template-rows: 5.5fr repeat(9, 3fr) 5.5fr;
+  grid-template-columns: 6.6fr repeat(9, 3fr) 6.6fr;
+  grid-template-rows: 6.6fr repeat(9, 3fr) 6.6fr;
   gap: 3px;
   padding: 6px;
   background:
@@ -288,8 +288,8 @@
 /* keep moving player tokens off the ownership band */
 .token-layer {
   inset: 6px;
-  grid-template-columns: 5.5fr repeat(9, 3fr) 5.5fr;
-  grid-template-rows: 5.5fr repeat(9, 3fr) 5.5fr;
+  grid-template-columns: 6.6fr repeat(9, 3fr) 6.6fr;
+  grid-template-rows: 6.6fr repeat(9, 3fr) 6.6fr;
   gap: 3px;
 }
 .token-cell.tok-bottom .token-stack, .token-cell.tok-top .token-stack { padding-bottom: 30%; }
@@ -1541,4 +1541,7 @@ body.big-board #bigBoardBtn,
 @media (prefers-reduced-motion: reduce) {
   .rl-wheel, .rl-orbit { animation: none !important; transition: none !important; }
 }
+
+
+
 
