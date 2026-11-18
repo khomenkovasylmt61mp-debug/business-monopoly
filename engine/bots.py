@@ -89,8 +89,8 @@ def choose_action(state, p):
             return None
         price = BOARD[auc["tile"]]["price"]
         bid = auc["bid"]
-        nxt = bid + 10 if bid else 10
-        if p["money"] >= nxt + 100 and bid < price * 0.75:
+        nxt = bid + 10 if bid else max(price, 10)
+        if p["money"] >= nxt and bid < price:
             return {"type": "bid", "amount": nxt}
         return {"type": "auction_pass"}
 
