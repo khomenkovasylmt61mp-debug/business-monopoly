@@ -7,9 +7,11 @@
    depend on the card orientation. --bw is set by fitBoard(). */
 .board {
   --v8-fs: min(18px, calc(var(--bw, 800) * 0.0175px));
-  --v8-tok: min(28px, calc(var(--bw, 800) * 0.0245px));
-  --v8-bld: min(15px, calc(var(--bw, 800) * 0.0115px));
-  --v8-mult: min(15px, calc(var(--bw, 800) * 0.0135px));
+  --v8-token: min(22px, calc(var(--bw, 800) * 0.0211px));
+  --v8-house: min(17px, calc(var(--bw, 800) * 0.0195px));
+  --v8-hotel: min(19px, calc(var(--bw, 800) * 0.0215px));
+  --v8-mult: min(15px, calc(var(--bw, 800) * 0.018px));
+
 }
 
 .board .tile.v8 {
@@ -89,6 +91,8 @@
   background: linear-gradient(180deg, #942424 0%, #5c1010 58%, #360707 100%);
   text-shadow: 0 1px 0 #000000aa;
 }
+.board .tile.v8.top .v8-money { top: 2.5%; height: 14.2%; }
+.board .tile.v8.bottom .v8-money { top: 2.5%; height: 14.2%; }
 .board .tile.v8 .v8-money.is-mortgage {
   color: #e8e8e8;
   background: linear-gradient(180deg, #6a6a6a 0%, #3a3a3a 60%, #242424 100%);
@@ -109,7 +113,7 @@
   filter: drop-shadow(0 1px 1px #00000066);
 }
 
-/* ---------- owner zone ---------- */
+/* ---------- owner zone: colour band + separate cream buildings block ---------- */
 .board .tile.v8 .own-zone.v8-own {
   position: absolute;
   left: calc(var(--ox) * 100%);
@@ -117,40 +121,64 @@
   width: calc(var(--ow) * 100%);
   height: calc(var(--oh) * 100%);
   margin: 0;
+  padding: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4%;
-  padding: 0 2%;
-  overflow: hidden;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  gap: 2px;
+  overflow: visible;
   border: 0;
-  border-radius: 0;
   background: transparent;
   box-shadow: none;
   z-index: 7;
 }
-.board .tile.v8.bottom .v8-own,
-.board .tile.v8.top .v8-own {
-  flex-direction: row;
-  justify-content: space-between;
-  padding: 0 2%;
-}
-.board .tile.v8.left .v8-own,
-.board .tile.v8.right .v8-own {
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 3% 0;
-}
-/* no buildings: the owner token is the only marker and stays centered */
-.board .tile.v8 .v8-own.no-bld { justify-content: center; padding: 0; }
+/* V8.4: give the two rows a little more depth than the baked panel so the
+   token and the building both stay readable */
+.board .tile.v8.bottom .v8-own { top: 24.6%; height: 27%; flex-direction: column; }
+.board .tile.v8.top .v8-own { top: 69.9%; height: 27%; flex-direction: column-reverse; }
+/* horizontal cards: owner and buildings side by side, not stacked */
+.board .tile.v8.left .v8-own { left: 51%; width: 46.1%; flex-direction: row-reverse; }
+.board .tile.v8.right .v8-own { left: 2.9%; width: 46.1%; flex-direction: row; }
+.board .tile.v8 .v8-own.no-bld .houses { display: none; }
+.board .tile.v8 .own-zone.v8-own[hidden],
+.board .tile.v8 .owner-dot[hidden] { display: none; }
 
+/* the owner colour band: token only */
+.board .tile.v8 .owner-id {
+  flex: 0 0 55%;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #d9b66b99;
+  border-radius: 4px;
+  background-color: var(--own, #c0392b);
+  background-image: linear-gradient(180deg, #ffffff26 0%, #00000040 100%);
+  box-shadow:
+    inset 0 1px 0 #ffffff30,
+    inset 0 0 0 1px #00000033,
+    0 1px 2px #00000055;
+}
+.board .tile.v8.left .owner-id,
+.board .tile.v8.right .owner-id {
+  flex: 0 0 38%;
+  width: auto;
+  height: 100%;
+}
+.board .tile.v8 .v8-own.no-bld .owner-id { flex: 1 1 auto; width: 100%; height: 100%; }
+
+/* one physical token size on all four sides */
 .board .tile.v8 .owner-dot {
   position: static;
   flex: none;
-  width: auto;
-  height: var(--v8-tok);
-  max-width: 46%;
-  aspect-ratio: 1 / 1;
+  width: calc(var(--v8-token) * 1.55);
+  max-width: 94%;
+  height: calc(var(--v8-token) * 0.95);
+  max-height: 88%;
+  aspect-ratio: auto;
   padding: 0;
   border: 0;
   border-radius: 0;
@@ -164,44 +192,47 @@
   object-fit: contain;
   filter: drop-shadow(0 1px 2px #00000099);
 }
-.board .tile.v8.left .owner-dot,
-.board .tile.v8.right .owner-dot {
-  width: 78%;
-  height: calc(var(--v8-tok) * 0.9);
-  max-width: none;
-}
 
-/* secondary marker: one house + ×N, calmer than the owner token */
+/* buildings: separate cream block next to the colour band */
 .board .tile.v8 .houses {
   position: static;
-  flex: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1px;
   flex-wrap: nowrap;
-  width: auto;
+  width: 100%;
   height: auto;
-  padding: 0;
+  padding: 0 1px;
+  border: 1px solid #c9a35b;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #fffdf4, #f4e6c8);
+  box-shadow: 0 1px 3px #00000066, inset 0 1px 0 #ffffffdd;
 }
+.board .tile.v8.left .houses,
+.board .tile.v8.right .houses {
+  width: auto;
+  height: 100%;
+}
+.board .tile.v8 .houses:empty { display: none; }
 .board .tile.v8 .v8-house {
-  height: var(--v8-bld);
+  height: var(--v8-house);
   width: auto;
   max-width: none;
   object-fit: contain;
   filter: drop-shadow(0 1px 1px #00000077);
 }
 .board .tile.v8 .v8-hotel {
-  height: calc(var(--v8-bld) * 1.35);
+  height: var(--v8-hotel);
   width: auto;
   max-width: none;
+  margin: 0 auto;
   object-fit: contain;
   filter: drop-shadow(0 1px 1px #00000077);
 }
-.board .tile.v8.left .v8-house,
-.board .tile.v8.right .v8-house { height: calc(var(--v8-bld) * 1.02); }
-.board .tile.v8.left .v8-hotel,
-.board .tile.v8.right .v8-hotel { height: calc(var(--v8-bld) * 1.4); }
 
 .board .tile.v8 .v8-mult {
   font-size: var(--v8-mult);
@@ -217,6 +248,14 @@
 }
 .board .tile.v8.left .v8-mult,
 .board .tile.v8.right .v8-mult { font-size: var(--v8-mult); }
+
+/* hover/tap: all tiles of one owner */
+.board .tile.v8.owner-hl {
+  outline: 3px solid #ffd58a;
+  outline-offset: 2px;
+  z-index: 3;
+  filter: brightness(1.08);
+}
 
 /* ---------- owner frame: outside the card, never covers the amount band ---------- */
 .board .tile.v8 .v8-frame { display: none; }
@@ -237,14 +276,7 @@
 
 /* same physical scale on all four sides; horizontal strips use a
    slightly smaller box so token + house + badge fit in one row */
-.board .tile.v8.bottom .owner-dot,
-.board .tile.v8.top .owner-dot { height: calc(var(--v8-tok) * 0.93); }
-.board .tile.v8.bottom .v8-house,
-.board .tile.v8.top .v8-house { height: calc(var(--v8-bld) * 1.07); }
-.board .tile.v8.bottom .v8-mult,
-.board .tile.v8.top .v8-mult { font-size: calc(var(--v8-mult) * 1.05); }
-.board .tile.v8.bottom .v8-own,
-.board .tile.v8.top .v8-own { padding: 0; gap: 1px; }
+
 
 
 
@@ -254,5 +286,252 @@
 @media (max-width: 980px) {
   .board { --v8-fs: calc(var(--bw, 360) * 0.0155px); }
 }
+
+
+
+
+/* ---------- player list: owner hover ---------- */
+.hud-row { cursor: pointer; }
+.hud-row:hover { background: #ffffff08; }
+.m-player { cursor: pointer; }
+
+
+
+
+
+
+
+/* hover/tap highlight must win over the owned frame rule */
+.board .tile.v8.owned.owner-hl {
+  outline: 3px solid #ffd58a;
+  outline-offset: -3px;
+  box-shadow: 0 0 0 3px #ffd58a, 0 0 0 6px #ffd58a44;
+  z-index: 5;
+  filter: brightness(1.12);
+}
+
+/* ============ V8.4 — visitors: one active token + counter ============ */
+.board .token-cell.v84 { overflow: visible; z-index: 4; }
+.board .token-cell.v84 .token-stack.tok-v84 {
+  position: absolute;
+  left: 50%;
+  top: 68%;
+  transform: translate(-50%, -50%);
+  width: auto;
+  height: auto;
+  padding: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  pointer-events: none;
+}
+.board .token-cell.v84.tok-bottom .token-stack.tok-v84 { left: 50%; top: 94%; }
+.board .token-cell.v84.tok-top .token-stack.tok-v84 { left: 50%; top: 22.8%; }
+.board .token-cell.v84.tok-left .token-stack.tok-v84 { left: 7.5%; top: 50%; flex-direction: column; gap: 1px; }
+.board .token-cell.v84.tok-right .token-stack.tok-v84 { left: 92.5%; top: 50%; flex-direction: column; gap: 1px; }
+.board .token-cell.v84.c-br .token-stack.tok-v84,
+.board .token-cell.v84.c-bl .token-stack.tok-v84,
+.board .token-cell.v84.c-tl .token-stack.tok-v84,
+.board .token-cell.v84.c-tr .token-stack.tok-v84 { left: 50%; top: 54%; }
+
+/* gold visitor lane: only on occupied tiles, never on corners */
+.board .token-cell.v84::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, #6a4212 0%, #4a2c08 58%, #341f05 100%);
+  box-shadow: inset 0 1px 0 #ffd58a33;
+}
+.board .token-cell.v84.tok-bottom::before {
+  left: 0; right: 0; bottom: 0; height: 11.5%;
+  border-radius: 0 0 5px 5px;
+}
+.board .token-cell.v84.tok-top::before {
+  left: 0; right: 0; top: 16.7%; height: 12.3%;
+  border-radius: 0;
+}
+.board .token-cell.v84.tok-left::before {
+  top: 0; bottom: 0; left: 0; width: 15%;
+  border-radius: 5px 0 0 5px;
+  background: linear-gradient(90deg, #6a4212 0%, #4a2c08 70%, #341f05 100%);
+}
+.board .token-cell.v84.tok-right::before {
+  top: 0; bottom: 0; right: 0; width: 15%;
+  border-radius: 0 5px 5px 0;
+  background: linear-gradient(270deg, #6a4212 0%, #4a2c08 70%, #341f05 100%);
+}
+.board .token-cell.v84.c-br::before,
+.board .token-cell.v84.c-bl::before,
+.board .token-cell.v84.c-tl::before,
+.board .token-cell.v84.c-tr::before { display: none; }
+
+.board .tok-v84 .token.v84-token {
+  position: relative;
+  flex: none;
+  width: calc(var(--v8-token) * 1.0);
+  height: calc(var(--v8-token) * 1.0);
+  border: 0;
+  background: none;
+  box-shadow: none;
+  transform: none;
+  animation: none;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.board .tok-v84 .token.v84-token .tok-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px #000000aa);
+}
+.board .tok-v84 .token.v84-token.is-turn {
+  filter: drop-shadow(0 0 2px #ffe4a3) drop-shadow(0 0 6px #ffc24d99);
+}
+.board .tok-v84 .token.v84-token.is-turn::before {
+  content: '';
+  position: absolute;
+  inset: -24%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd16688 0%, #ffd16622 46%, transparent 72%);
+  animation: v84Halo 2.4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+@keyframes v84Halo {
+  0%, 100% { opacity: .5; transform: scale(.92); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+.board .tok-v84 .v84-count {
+  flex: none;
+  min-width: calc(var(--v8-token) * 0.86);
+  height: calc(var(--v8-token) * 0.86);
+  padding: 0 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 99px;
+  border: 1px solid #8e6a2c;
+  background: linear-gradient(180deg, #fff8e6 0%, #f3dda6 55%, #dfbe78 100%);
+  color: #241a06;
+  font-family: inherit;
+  font-weight: 900;
+  font-size: calc(var(--v8-token) * 0.58);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.03em;
+  box-shadow: 0 1px 3px #00000099, inset 0 1px 0 #fffdf2;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.board .tok-v84 .v84-count i {
+  font-style: normal;
+  font-size: .86em;
+  margin-right: 1px;
+  opacity: .85;
+}
+.board .tok-v84 .v84-count b { font-weight: 900; }
+.board .tok-v84 .v84-count:hover { filter: brightness(1.07); }
+.board .tok-v84 .v84-count:active { transform: translateY(1px); }
+
+/* ---------- V8.4 tile players: compact popover / mobile bottom sheet ---------- */
+.overlay.tp-open {
+  align-items: flex-end;
+  padding: 18px;
+  background: #040b16b8;
+  backdrop-filter: blur(3px);
+}
+.overlay.tp-open .modal.tp-modal {
+  width: min(360px, 100%);
+  max-height: min(70dvh, 520px);
+  padding: 12px 12px 10px;
+  gap: 8px;
+  border-radius: 16px;
+  border-color: #3a5a80;
+  animation: tpIn .16s ease-out;
+}
+@keyframes tpIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.tp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.tp-head b { font-size: 15px; color: #f1e6c8; }
+.tp-head span { font-size: 12px; color: #9fb4cf; }
+.tp-sub { font-size: 12px; color: #9fb4cf; margin-top: -4px; }
+.tp-sub b { color: #ffe6a8; }
+.tp-list { display: flex; flex-direction: column; gap: 4px; }
+.tp-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 7px;
+  border-radius: 10px;
+  background: #ffffff08;
+  border: 1px solid #ffffff10;
+}
+.tp-row.is-turn {
+  background: #ffd1661a;
+  border-color: #ffd16666;
+}
+.tp-row.is-me .tp-name { color: #ffe6a8; }
+.tp-av {
+  flex: none; width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  background: #00000033;
+  border: 1px solid var(--pc, #ffffff22);
+}
+.tp-img {
+  width: 22px; height: 22px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 1px #00000088);
+}
+.tp-name {
+  flex: 1 1 auto; min-width: 0;
+  font-size: 13px; font-weight: 700; color: #e8f0fb;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tp-name i { font-style: normal; font-weight: 600; font-size: 11px; color: #9fb4cf; }
+.tp-turn {
+  flex: none;
+  font-size: 10px; font-weight: 900;
+  text-transform: uppercase; letter-spacing: .06em;
+  color: #241a06;
+  background: linear-gradient(180deg, #ffe29a, #e6bb5c);
+  border-radius: 99px;
+  padding: 2px 6px;
+}
+.tp-color {
+  flex: none; width: 8px; height: 8px; border-radius: 50%;
+  box-shadow: 0 0 0 1px #ffffff44;
+}
+.tp-empty { padding: 10px; text-align: center; color: #9fb4cf; font-size: 12px; }
+@media (max-width: 640px) {
+  .overlay.tp-open { padding: 0; align-items: flex-end; }
+  .overlay.tp-open .modal.tp-modal {
+    width: 100%;
+    max-height: 60dvh;
+    border-radius: 18px 18px 0 0;
+    padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+    animation: tpSheet .18s ease-out;
+  }
+  @keyframes tpSheet {
+    from { transform: translateY(100%); }
+    to { transform: none; }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
