@@ -93,6 +93,20 @@
 }
 .board .tile.v8.top .v8-money { top: 83%; height: 14%; }
 .board .tile.v8.bottom .v8-money { top: 2.5%; height: 14.2%; }
+/* horizontal cards: the price is the innermost ring — a vertical tab at the
+   inner edge, label rotated */
+.board .tile.v8.left .v8-money,
+.board .tile.v8.right .v8-money {
+  top: 3%;
+  height: 94%;
+  width: 10%;
+  padding: 2% 0;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+}
+.board .tile.v8.left .v8-money { left: 89%; }
+.board .tile.v8.right .v8-money { left: 1%; }
 .board .tile.v8 .v8-money.is-mortgage {
   color: #e8e8e8;
   background: linear-gradient(180deg, #6a6a6a 0%, #3a3a3a 60%, #242424 100%);
@@ -138,8 +152,8 @@
 .board .tile.v8.bottom .v8-own { top: 24.6%; height: 27%; flex-direction: column; }
 .board .tile.v8.top .v8-own { top: 57%; height: 26%; flex-direction: column-reverse; }
 /* horizontal cards: owner and buildings side by side, not stacked */
-.board .tile.v8.left .v8-own { left: 51%; width: 46.1%; flex-direction: row-reverse; }
-.board .tile.v8.right .v8-own { left: 2.9%; width: 46.1%; flex-direction: row; }
+.board .tile.v8.left .v8-own { left: 56%; width: 33%; flex-direction: row-reverse; }
+.board .tile.v8.right .v8-own { left: 11%; width: 33%; flex-direction: row; }
 .board .tile.v8 .v8-own.no-bld .houses { display: none; }
 .board .tile.v8.top .owner-id { flex: 0 0 50%; }
 .board .tile.v8 .own-zone.v8-own[hidden],
@@ -165,7 +179,7 @@
 }
 .board .tile.v8.left .owner-id,
 .board .tile.v8.right .owner-id {
-  flex: 0 0 38%;
+  flex: 0 0 48%;
   width: auto;
   height: 100%;
 }
@@ -217,6 +231,7 @@
 .board .tile.v8.right .houses {
   width: auto;
   height: 100%;
+  flex-direction: column;
 }
 .board .tile.v8 .houses:empty { display: none; }
 .board .tile.v8 .v8-house {
