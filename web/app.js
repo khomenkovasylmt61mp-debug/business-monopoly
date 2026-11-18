@@ -122,6 +122,16 @@ function pieceHTML(icon, cls) {
   if (!src) return icon || '';
   return `<img class="${cls || ''}" src="${src}" alt="" draggable="false">`;
 }
+
+/* V8 owner tokens use trimmed archive sprites (no transparent padding). */
+function v8PieceHTML(icon, cls) {
+  const list = (S.boardData && S.boardData.pieces) || [];
+  const found = list.find((x) => x.icon === icon);
+  const name = found && found.img ? String(found.img).replace(/\.webp$/i, '') : '';
+  if (!name) return pieceHTML(icon, cls);
+  const mob = window.matchMedia && window.matchMedia('(max-width: 980px)').matches;
+  return `<img class="${cls || ''}" src="/v8/sprites/${mob ? 'mobile/' : ''}${name}.${mob ? 'webp' : 'png'}" alt="" draggable="false">`;
+}
 function curP(st) { return (st || S.state).players.find((p) => p.id === (st || S.state).turn) || null; }
 function playerById(st, id) { return st.players.find((p) => p.id === id) || null; }
 function groupOf(tile) { return tile.group ? S.boardData.groups[tile.group] : null; }
@@ -423,14 +433,19 @@ function paintV8Price(el, p, t, ts, st, i) {
   const rent = st.rents ? st.rents[i] : null;
   if (rent && rent.kind === 'util') {
     p.className = 'v8-money is-rent';
-    p.textContent = rent.mult + '×куб';
+    p.innerHTML = `${rent.mult}×<svg class="v8-die" viewBox="0 0 24 24" aria-hidden="true">`
+      + '<rect x="2" y="2" width="20" height="20" rx="5" fill="#f7ecd2" stroke="#8a5a1d" stroke-width="1.6"/>'
+      + '<circle cx="8" cy="8" r="2" fill="#3a2408"/><circle cx="16" cy="8" r="2" fill="#3a2408"/>'
+      + '<circle cx="12" cy="12" r="2" fill="#3a2408"/>'
+      + '<circle cx="8" cy="16" r="2" fill="#3a2408"/><circle cx="16" cy="16" r="2" fill="#3a2408"/>'
+      + '</svg>';
     return;
   }
   const now = rent && rent.now != null ? rent.now : 0;
   const label = money(now);
   p.className = 'v8-money is-rent'
     + (ts.houses === 5 ? ' is-hotel' : '')
-    + (label.length > 8 ? ' is-xlong' : label.length > 4 ? ' is-long' : '');
+    + (label.length >= 8 ? ' is-xlong' : label.length > 4 ? ' is-long' : '');
   p.textContent = label;
 }
 
@@ -477,7 +492,9 @@ function renderBoard(st) {  const cur = curP(st);
       el.style.setProperty('--own', owner.hex);
       if (dot) {
         dot.hidden = false;
-        dot.innerHTML = pieceHTML(owner.piece, 'dot-img');
+        dot.innerHTML = el.classList.contains('v8')
+          ? v8PieceHTML(owner.piece, 'dot-img')
+          : pieceHTML(owner.piece, 'dot-img');
         dot.style.borderColor = owner.hex;
         dot.title = owner.name + (owner.pieceName ? ' · ' + owner.pieceName : '');
       }
