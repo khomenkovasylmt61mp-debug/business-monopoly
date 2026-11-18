@@ -233,6 +233,11 @@ window.addEventListener('load', async () => {
         bw: Math.round(r.width), bx: Math.round(r.x), br: Math.round(r.right),
       });
     }, 1500);
+    if (q.get('mzoom')) setTimeout(() => {
+      MZ.s = Math.min(3, Math.max(1, Number(q.get('mzoom')) || 1.6));
+      MZ.x = 0; MZ.y = 0;
+      clampZoom(); applyZoom();
+    }, 800);
     const spin = q.get('spin');
     if (spin) setTimeout(() => {
       const info = { bet: 200, kind: 'number', number: 9 };
