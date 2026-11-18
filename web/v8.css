@@ -1,0 +1,235 @@
+﻿/* ============================================================
+   PREMIUM V8 — readable tiles (price/rent band, owner frame,
+   one house + ×N, hotel). Desktop + mobile.
+   ============================================================ */
+
+.board .tile.v8 {
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background-color: #f7f1e1;
+  background-image: var(--v8-bg-d);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  box-shadow: none;
+  overflow: hidden;
+  container-type: size;
+  display: block;
+}
+.board .tile.v8.is-prop,
+.board .tile.v8.corner {
+  background-image: var(--v8-bg-d);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+@media (max-width: 980px) {
+  .board .tile.v8.is-prop,
+  .board .tile.v8.corner { background-image: var(--v8-bg-m); }
+}
+
+/* ---------- full-width amount band ---------- */
+.board .tile.v8 .v8-money {
+  position: absolute;
+  left: calc(var(--mx) * 100%);
+  top: calc(var(--my) * 100%);
+  width: calc(var(--mw) * 100%);
+  height: calc(var(--mh) * 100%);
+  margin: 0;
+  padding: 0 1.5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  z-index: 6;
+  pointer-events: none;
+  color: #2a1a06;
+  background: linear-gradient(180deg, #fff7db 0%, #f6e2ab 56%, #e6c274 100%);
+  text-shadow: 0 1px 0 #fffbee;
+  box-shadow:
+    inset 0 1px 0 #fffdf2,
+    inset 0 -1px 0 #b8862f55,
+    0 1px 2px #00000022;
+}
+.board .tile.v8.bottom .v8-money,
+.board .tile.v8.top .v8-money { font-size: 16cqh; }
+.board .tile.v8.left .v8-money,
+.board .tile.v8.right .v8-money { font-size: 19cqh; }
+.board .tile.v8.corner .v8-money { font-size: 9.6cqh; }
+.board .tile.v8 .v8-money.is-long {
+  font-size: 12.4cqh;
+  letter-spacing: -0.04em;
+}
+.board .tile.v8 .v8-money.is-xlong {
+  font-size: 9.4cqh;
+  letter-spacing: -0.05em;
+}
+
+.board .tile.v8 .v8-money.is-rent {
+  color: #ffe6a8;
+  background: linear-gradient(180deg, #7d5722 0%, #4a2c0a 58%, #2d1a05 100%);
+  text-shadow: 0 1px 0 #000000aa;
+  box-shadow:
+    inset 0 1px 0 #ffffff22,
+    inset 0 -1px 0 #00000066,
+    0 1px 2px #00000044;
+}
+.board .tile.v8 .v8-money.is-hotel {
+  color: #ffd98a;
+  background: linear-gradient(180deg, #942424 0%, #5c1010 58%, #360707 100%);
+  text-shadow: 0 1px 0 #000000aa;
+}
+.board .tile.v8 .v8-money.is-mortgage {
+  color: #e8e8e8;
+  background: linear-gradient(180deg, #6a6a6a 0%, #3a3a3a 60%, #242424 100%);
+  font-size: 11.2cqh;
+  letter-spacing: 0.02em;
+}
+.board .tile.v8 .v8-money.is-tax {
+  color: #fff1e0;
+  background: linear-gradient(180deg, #a83a2a 0%, #6a1d12 60%, #43100a 100%);
+  text-shadow: 0 1px 0 #000000aa;
+}
+
+/* ---------- owner zone ---------- */
+.board .tile.v8 .own-zone.v8-own {
+  position: absolute;
+  left: calc(var(--ox) * 100%);
+  top: calc(var(--oy) * 100%);
+  width: calc(var(--ow) * 100%);
+  height: calc(var(--oh) * 100%);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5cqmin;
+  padding: 0 2%;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  z-index: 7;
+}
+.board .tile.v8.bottom .v8-own,
+.board .tile.v8.top .v8-own { flex-direction: row; }
+.board .tile.v8.left .v8-own,
+.board .tile.v8.right .v8-own { flex-direction: column; }
+
+.board .tile.v8 .owner-dot {
+  position: static;
+  flex: none;
+  width: auto;
+  height: 17cqh;
+  max-width: 42%;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+.board .tile.v8 .owner-dot::after { display: none; }
+.board .tile.v8 .owner-dot .dot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px #00000099);
+}
+.board .tile.v8.left .owner-dot,
+.board .tile.v8.right .owner-dot {
+  height: 23cqh;
+  max-width: 82%;
+}
+
+.board .tile.v8 .houses {
+  position: static;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1cqmin;
+  width: auto;
+  height: auto;
+  padding: 0;
+}
+.board .tile.v8 .v8-house {
+  height: 14cqh;
+  width: auto;
+  max-width: none;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px #00000088);
+}
+.board .tile.v8 .v8-hotel {
+  height: 19.5cqh;
+  width: auto;
+  max-width: none;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px #00000088);
+}
+.board .tile.v8.left .v8-house,
+.board .tile.v8.right .v8-house { height: 16cqh; }
+.board .tile.v8.left .v8-hotel,
+.board .tile.v8.right .v8-hotel { height: 22cqh; }
+
+.board .tile.v8 .v8-mult {
+  font-size: 11cqh;
+  line-height: 1;
+  font-weight: 900;
+  color: #ffffff;
+  background: linear-gradient(180deg, #a42828 0%, #661010 100%);
+  border: 1px solid #ffe3a6;
+  border-radius: 3px;
+  padding: 1px 2px;
+  text-shadow: 0 1px 0 #00000088;
+  box-shadow: 0 1px 2px #00000055;
+}
+.board .tile.v8.left .v8-mult,
+.board .tile.v8.right .v8-mult { font-size: 12cqh; }
+
+/* ---------- owner frame ---------- */
+.board .tile.v8 .v8-frame {
+  position: absolute;
+  inset: 0;
+  border: 3px solid var(--own, #c0392b);
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 9;
+  box-shadow: inset 0 0 0 1px #00000044;
+}
+.board .tile.v8.owned {
+  outline: 0;
+  box-shadow: none;
+}
+.board .tile.v8.hl .v8-frame { border-color: #ffd58a; }
+.board .tile.v8 .v8-frame[hidden] { display: none; }
+
+/* keep selected/hover from adding old borders */
+.board .tile.v8:hover { filter: brightness(1.03); }
+
+/* V8: no diagonal hatching on mortgaged cards */
+.board .tile.v8.mortgaged::before { display: none; }
+.board .tile.v8 .owner-dot { height: 18cqh; }
+.board .tile.v8.left .owner-dot,
+.board .tile.v8.right .owner-dot { height: 24cqh; }
+.board .tile.v8 .v8-house { height: 15cqh; }
+.board .tile.v8.left .v8-house,
+.board .tile.v8.right .v8-house { height: 17cqh; }
+
+/* mobile: keep long amounts inside the narrow cards */
+@media (max-width: 980px) {
+  .board .tile.v8.bottom .v8-money,
+  .board .tile.v8.top .v8-money { font-size: 13cqh; letter-spacing: -0.04em; }
+  .board .tile.v8.left .v8-money,
+  .board .tile.v8.right .v8-money { font-size: 14cqh; letter-spacing: -0.04em; }
+  .board .tile.v8 .v8-money.is-long { font-size: 10.4cqh; }
+  .board .tile.v8 .owner-dot { height: 19cqh; }
+  .board .tile.v8 .v8-house { height: 16cqh; }
+  .board .tile.v8 .v8-mult { font-size: 12cqh; }
+}
+
