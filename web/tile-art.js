@@ -131,6 +131,8 @@
 
   function apply(state, boardData) {
     var theme = (state && state.options && state.options.theme) || 'brands';
+    // V8 pack replaces the legacy art faces; never paint them over it.
+    if (window.V8_TILES && theme !== 'classic') { clear(); return; }
     if (theme === 'classic') { clear(); return; } // классика — без арта
 
     lastApply = { state: state, boardData: boardData };
