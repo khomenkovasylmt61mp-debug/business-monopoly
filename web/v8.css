@@ -138,8 +138,8 @@
 .board .tile.v8.bottom .v8-own { top: 24.6%; height: 27%; flex-direction: column; }
 .board .tile.v8.top .v8-own { top: 57%; height: 26%; flex-direction: column-reverse; }
 /* horizontal cards: owner and buildings side by side, not stacked */
-.board .tile.v8.left .v8-own { left: 51%; width: 46.1%; flex-direction: row-reverse; }
-.board .tile.v8.right .v8-own { left: 2.9%; width: 46.1%; flex-direction: row; }
+.board .tile.v8.left .v8-own { left: 51%; width: 46.1%; flex-direction: row; }
+.board .tile.v8.right .v8-own { left: 2.9%; width: 46.1%; flex-direction: row-reverse; }
 .board .tile.v8 .v8-own.no-bld .houses { display: none; }
 .board .tile.v8.top .owner-id { flex: 0 0 50%; }
 .board .tile.v8 .own-zone.v8-own[hidden],
@@ -524,6 +524,7 @@
     to { transform: none; }
   }
 }
+
 
 
 
