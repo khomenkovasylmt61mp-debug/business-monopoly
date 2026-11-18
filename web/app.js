@@ -586,6 +586,7 @@ function renderTokens(st) {
     stack.dataset.tile = String(idx);
     stack.dataset.count = String(list.length);
     const active = list.find((p) => p.id === st.turn) || null;
+    cell.style.setProperty('--vis', active ? active.hex : '#6a4212');
     const guests = list.length - (active ? 1 : 0);
     if (active) {
       const t = document.createElement('div');
@@ -2778,3 +2779,4 @@ function highlightOwner(pid) {
 function toggleOwner(pid) {
   highlightOwner(S.hlOwner === pid ? null : pid);
 }
+
