@@ -7,9 +7,9 @@
    depend on the card orientation. --bw is set by fitBoard(). */
 .board {
   --v8-fs: min(18px, calc(var(--bw, 800) * 0.0175px));
-  --v8-tok: min(24px, calc(var(--bw, 800) * 0.017px));
-  --v8-bld: min(24px, calc(var(--bw, 800) * 0.017px));
-  --v8-mult: min(20px, calc(var(--bw, 800) * 0.0145px));
+  --v8-tok: min(28px, calc(var(--bw, 800) * 0.0245px));
+  --v8-bld: min(15px, calc(var(--bw, 800) * 0.0115px));
+  --v8-mult: min(15px, calc(var(--bw, 800) * 0.0135px));
 }
 
 .board .tile.v8 {
@@ -117,12 +117,11 @@
   width: calc(var(--ow) * 100%);
   height: calc(var(--oh) * 100%);
   margin: 0;
-  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.5cqmin;
-  padding: 0 1%;
+  gap: 4%;
+  padding: 0 2%;
   overflow: hidden;
   border: 0;
   border-radius: 0;
@@ -131,16 +130,26 @@
   z-index: 7;
 }
 .board .tile.v8.bottom .v8-own,
-.board .tile.v8.top .v8-own { flex-direction: row; }
+.board .tile.v8.top .v8-own {
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 2%;
+}
 .board .tile.v8.left .v8-own,
-.board .tile.v8.right .v8-own { flex-direction: column; }
+.board .tile.v8.right .v8-own {
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3% 0;
+}
+/* no buildings: the owner token is the only marker and stays centered */
+.board .tile.v8 .v8-own.no-bld { justify-content: center; padding: 0; }
 
 .board .tile.v8 .owner-dot {
   position: static;
   flex: none;
   width: auto;
   height: var(--v8-tok);
-  max-width: 42%;
+  max-width: 46%;
   aspect-ratio: 1 / 1;
   padding: 0;
   border: 0;
@@ -157,18 +166,19 @@
 }
 .board .tile.v8.left .owner-dot,
 .board .tile.v8.right .owner-dot {
-  width: 92%;
-  height: calc(var(--v8-tok) * 0.92);
+  width: 78%;
+  height: calc(var(--v8-tok) * 0.9);
   max-width: none;
 }
 
+/* secondary marker: one house + ×N, calmer than the owner token */
 .board .tile.v8 .houses {
   position: static;
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1cqmin;
+  gap: 1px;
   flex-wrap: nowrap;
   width: auto;
   height: auto;
@@ -179,31 +189,31 @@
   width: auto;
   max-width: none;
   object-fit: contain;
-  filter: drop-shadow(0 1px 2px #00000088);
+  filter: drop-shadow(0 1px 1px #00000077);
 }
 .board .tile.v8 .v8-hotel {
   height: calc(var(--v8-bld) * 1.35);
   width: auto;
   max-width: none;
   object-fit: contain;
-  filter: drop-shadow(0 1px 2px #00000088);
+  filter: drop-shadow(0 1px 1px #00000077);
 }
 .board .tile.v8.left .v8-house,
 .board .tile.v8.right .v8-house { height: calc(var(--v8-bld) * 1.02); }
 .board .tile.v8.left .v8-hotel,
-.board .tile.v8.right .v8-hotel { height: calc(var(--v8-bld) * 1.45); }
+.board .tile.v8.right .v8-hotel { height: calc(var(--v8-bld) * 1.4); }
 
 .board .tile.v8 .v8-mult {
   font-size: var(--v8-mult);
   line-height: 1;
   font-weight: 900;
-  color: #ffffff;
-  background: linear-gradient(180deg, #a42828 0%, #661010 100%);
-  border: 1px solid #ffe3a6;
-  border-radius: 3px;
+  color: #ffe6a8;
+  background: linear-gradient(180deg, #5e1c1c 0%, #360c0c 100%);
+  border: 1px solid #d9b66b66;
+  border-radius: 2px;
   padding: 0 1px;
   text-shadow: 0 1px 0 #00000088;
-  box-shadow: 0 1px 2px #00000055;
+  box-shadow: 0 1px 1px #00000044;
 }
 .board .tile.v8.left .v8-mult,
 .board .tile.v8.right .v8-mult { font-size: var(--v8-mult); }
@@ -244,4 +254,5 @@
 @media (max-width: 980px) {
   .board { --v8-fs: calc(var(--bw, 360) * 0.0155px); }
 }
+
 
