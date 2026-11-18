@@ -8,9 +8,8 @@
 .board {
   --v8-fs: min(18px, calc(var(--bw, 800) * 0.0175px));
   --v8-token: min(22px, calc(var(--bw, 800) * 0.0211px));
-  --v8-house: min(17px, calc(var(--bw, 800) * 0.0195px));
-  --v8-hotel: min(19px, calc(var(--bw, 800) * 0.0215px));
-  --v8-mult: min(15px, calc(var(--bw, 800) * 0.018px));
+  --v8-bld: min(13px, calc(var(--bw, 800) * 0.010px));
+  --v8-mult: min(13px, calc(var(--bw, 800) * 0.0125px));
 
 }
 
@@ -113,7 +112,7 @@
   filter: drop-shadow(0 1px 1px #00000066);
 }
 
-/* ---------- owner zone: colour band + separate cream buildings block ---------- */
+/* ---------- owner zone: two rows — colour band with token + cream buildings row ---------- */
 .board .tile.v8 .own-zone.v8-own {
   position: absolute;
   left: calc(var(--ox) * 100%);
@@ -133,23 +132,33 @@
   box-shadow: none;
   z-index: 7;
 }
-/* V8.4: give the two rows a little more depth than the baked panel so the
-   token and the building both stay readable */
-.board .tile.v8.bottom .v8-own { top: 24.6%; height: 27%; flex-direction: column; }
-.board .tile.v8.top .v8-own { top: 57%; height: 26%; flex-direction: column-reverse; }
-/* horizontal cards: owner and buildings side by side, not stacked */
-.board .tile.v8.left .v8-own { left: 51%; width: 46.1%; flex-direction: row; }
-.board .tile.v8.right .v8-own { left: 2.9%; width: 46.1%; flex-direction: row-reverse; }
+/* bottom row: amount, colour band (inner edge), buildings row below */
+.board .tile.v8.bottom .v8-own {
+  top: 24.6%;
+  height: 33%;
+  flex-direction: column;
+}
+/* top row: buildings row above, colour band at the inner bottom edge */
+.board .tile.v8.top .v8-own { flex-direction: column-reverse; }
+/* Side cards: logo, buildings, owner towards the inside of the board. */
+.board .tile.v8.left .v8-own {
+  left: 58%;
+  width: 39%;
+  flex-direction: row-reverse;
+}
+.board .tile.v8.right .v8-own {
+  left: 2.9%;
+  width: 39%;
+  flex-direction: row;
+}
 .board .tile.v8 .v8-own.no-bld .houses { display: none; }
-.board .tile.v8.top .owner-id { flex: 0 0 50%; }
 .board .tile.v8 .own-zone.v8-own[hidden],
 .board .tile.v8 .owner-dot[hidden] { display: none; }
 
-/* the owner colour band: token only */
+/* the owner colour band: token only, no buildings */
 .board .tile.v8 .owner-id {
-  flex: 0 0 55%;
+  flex: 0 0 58%;
   width: 100%;
-  min-width: 0;
   min-height: 0;
   display: flex;
   align-items: center;
@@ -163,22 +172,24 @@
     inset 0 0 0 1px #00000033,
     0 1px 2px #00000055;
 }
+.board .tile.v8 .v8-own.no-bld .owner-id { flex: 1 1 auto; }
+.board .tile.v8.bottom .owner-id { flex-basis: 45%; }
+.board .tile.v8.bottom .v8-own.no-bld .owner-id { flex: 1 1 auto; }
 .board .tile.v8.left .owner-id,
 .board .tile.v8.right .owner-id {
-  flex: 0 0 38%;
+  flex: 0 0 50%;
   width: auto;
+  min-width: 0;
   height: 100%;
 }
-.board .tile.v8 .v8-own.no-bld .owner-id { flex: 1 1 auto; width: 100%; height: 100%; }
-
-/* one physical token size on all four sides */
+.board .tile.v8.left .v8-own.no-bld .owner-id,
+.board .tile.v8.right .v8-own.no-bld .owner-id { flex: 1 1 auto; }
 .board .tile.v8 .owner-dot {
   position: static;
   flex: none;
-  width: calc(var(--v8-token) * 1.55);
-  max-width: 94%;
-  height: calc(var(--v8-token) * 0.95);
-  max-height: 88%;
+  width: 55%;
+  height: 86%;
+  max-width: none;
   aspect-ratio: auto;
   padding: 0;
   border: 0;
@@ -193,12 +204,16 @@
   object-fit: contain;
   filter: drop-shadow(0 1px 2px #00000099);
 }
+.board .tile.v8.left .owner-dot,
+.board .tile.v8.right .owner-dot {
+  width: 80%;
+  height: 80%;
+}
 
-/* buildings: separate cream block next to the colour band */
+/* buildings: separate cream row, never inside the colour band */
 .board .tile.v8 .houses {
   position: static;
   flex: 1 1 auto;
-  min-width: 0;
   min-height: 0;
   display: flex;
   align-items: center;
@@ -208,32 +223,40 @@
   width: 100%;
   height: auto;
   padding: 0 1px;
-  border: 1px solid #c9a35b;
+  border: 1px solid #d9b66b99;
   border-radius: 3px;
-  background: linear-gradient(180deg, #fffdf4, #f4e6c8);
-  box-shadow: 0 1px 3px #00000066, inset 0 1px 0 #ffffffdd;
+  background: linear-gradient(180deg, #fff8e6, #f1dfb8);
+  box-shadow: 0 1px 2px #00000055;
 }
+.board .tile.v8 .houses:empty { display: none; }
 .board .tile.v8.left .houses,
 .board .tile.v8.right .houses {
   width: auto;
   height: 100%;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0;
 }
-.board .tile.v8 .houses:empty { display: none; }
 .board .tile.v8 .v8-house {
-  height: var(--v8-house);
+  height: calc(var(--v8-bld) * 1.35);
   width: auto;
   max-width: none;
   object-fit: contain;
   filter: drop-shadow(0 1px 1px #00000077);
 }
+.board .tile.v8.bottom .v8-house { height: calc(var(--v8-bld) * 2.6); }
 .board .tile.v8 .v8-hotel {
-  height: var(--v8-hotel);
+  height: calc(var(--v8-bld) * 1.5);
   width: auto;
   max-width: none;
   margin: 0 auto;
   object-fit: contain;
   filter: drop-shadow(0 1px 1px #00000077);
 }
+.board .tile.v8.left .v8-house,
+.board .tile.v8.right .v8-house { height: calc(var(--v8-bld) * 2.3); }
+.board .tile.v8.left .v8-hotel,
+.board .tile.v8.right .v8-hotel { height: calc(var(--v8-bld) * 2.3); max-width: 100%; }
 
 .board .tile.v8 .v8-mult {
   font-size: var(--v8-mult);
@@ -249,6 +272,7 @@
 }
 .board .tile.v8.left .v8-mult,
 .board .tile.v8.right .v8-mult { font-size: var(--v8-mult); }
+.board .tile.v8.bottom .v8-mult { font-size: calc(var(--v8-mult) * 1.3); }
 
 /* hover/tap: all tiles of one owner */
 .board .tile.v8.owner-hl {
@@ -310,6 +334,135 @@
   z-index: 5;
   filter: brightness(1.12);
 }
+
+/* ============ V8.4 — outer route: visitor lane around the cards ============ */
+/* the board padding becomes the track: the cards never host visitor markers */
+.board:has(.tile.v8) {
+  --v8-track: clamp(28px, calc(var(--bw, 800) * 0.055px), 46px);
+  --v8-trk: calc(var(--v8-track) * 0.86);
+  padding: var(--v8-track);
+  grid-template-columns: 8.5fr repeat(9, 3fr) 8.5fr;
+}
+.board:has(.tile.v8) .cp-head .cp-title b {
+  font-size: clamp(18px, 5.4cqw, 64px);
+}
+.board:has(.tile.v8)::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--v8-track) - 1px);
+  border-radius: 10px;
+  border: 1px solid #d9b66b26;
+  pointer-events: none;
+  z-index: 0;
+}
+.track-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+}
+.track-tok {
+  position: absolute;
+  width: var(--v8-trk);
+  height: var(--v8-trk);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.track-piece {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+  cursor: pointer;
+  filter: drop-shadow(0 2px 3px #000000cc);
+}
+.track-piece img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.track-piece::after {
+  content: '';
+  position: absolute;
+  inset: -16%;
+  border-radius: 50%;
+}
+.track-piece.is-turn {
+  filter: drop-shadow(0 0 2px #ffe4a3) drop-shadow(0 0 7px #ffc24daa);
+}
+.track-piece.is-turn::before {
+  content: '';
+  position: absolute;
+  inset: -26%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd16699 0%, #ffd16622 46%, transparent 72%);
+  animation: v84Halo 2.4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+.track-count {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translate(-30%, -50%);
+  z-index: 2;
+  min-width: calc(var(--v8-trk) * 0.58);
+  height: calc(var(--v8-trk) * 0.58);
+  padding: 0 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 99px;
+  border: 1px solid #8e6a2c;
+  background: linear-gradient(180deg, #fff8e6 0%, #f3dda6 55%, #dfbe78 100%);
+  color: #241a06;
+  font-family: inherit;
+  font-weight: 900;
+  font-size: calc(var(--v8-trk) * 0.42);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.03em;
+  box-shadow: 0 1px 3px #00000099, inset 0 1px 0 #fffdf2;
+  cursor: pointer;
+  pointer-events: auto;
+}
+/* vertical lanes: the chip sits under the piece, along the lane */
+.track-tok.tok-left .track-count,
+.track-tok.tok-right .track-count {
+  left: 50%;
+  top: 100%;
+  transform: translate(-50%, -30%);
+}
+/* right-hand corners: the lane runs leftwards, keep the chip inside the board */
+.track-tok.c-tr .track-count,
+.track-tok.c-br .track-count {
+  left: auto;
+  right: 100%;
+  transform: translate(30%, -50%);
+}
+.track-count i {
+  font-style: normal;
+  font-size: .9em;
+  margin-right: 1px;
+  opacity: .85;
+}
+.track-count:hover { filter: brightness(1.07); }
+.track-count:active { transform: translateY(1px); }
+.track-ghost {
+  position: absolute;
+  width: var(--v8-trk);
+  height: var(--v8-trk);
+  transform: translate(-50%, -50%);
+  transition: left .17s linear, top .17s linear;
+  z-index: 30;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 3px #000000cc);
+}
+.track-ghost img { width: 100%; height: 100%; object-fit: contain; }
+@media (max-width: 640px) {
+  .board:has(.tile.v8) { --v8-track: 28px; }
+}
+
 
 /* ============ V8.4 — visitors: one active token + counter ============ */
 .board .token-cell.v84 { overflow: visible; z-index: 4; --vis: #6a4212; }
@@ -444,8 +597,8 @@
 .overlay.tp-open {
   align-items: flex-end;
   padding: 18px;
-  background: #040b16b8;
-  backdrop-filter: blur(3px);
+  background: transparent;
+  backdrop-filter: none;
 }
 .overlay.tp-open .modal.tp-modal {
   width: min(360px, 100%);
@@ -511,7 +664,7 @@
 }
 .tp-empty { padding: 10px; text-align: center; color: #9fb4cf; font-size: 12px; }
 @media (max-width: 640px) {
-  .overlay.tp-open { padding: 0; align-items: flex-end; }
+  .overlay.tp-open { padding: 0; align-items: flex-end; background: #040b16a8; backdrop-filter: blur(3px); }
   .overlay.tp-open .modal.tp-modal {
     width: 100%;
     max-height: 60dvh;

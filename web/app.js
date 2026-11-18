@@ -562,11 +562,45 @@ function renderBoard(st) {  const cur = curP(st);
   if (window.TileArt) window.TileArt.apply(st, S.boardData);
 }
 
+function trackMetrics() {
+  const board = $('board');
+  const layer = $('trackLayer');
+  const cs = getComputedStyle(board);
+  const pad = parseFloat(cs.paddingLeft) || 6;
+  const lr = layer ? layer.getBoundingClientRect() : board.getBoundingClientRect();
+  const w = layer ? layer.offsetWidth : lr.width;
+  const h = layer ? layer.offsetHeight : lr.height;
+  const scale = w ? lr.width / w : 1;
+  return { pad, half: pad / 2, left: lr.left, top: lr.top, w, h, scale: scale || 1 };
+}
+
+function trackPoint(idx, m) {
+  const half = m.half + 2;
+  if (idx === 0) return { x: m.w - half, y: m.h - half };
+  if (idx === 10) return { x: half, y: m.h - half };
+  if (idx === 20) return { x: half, y: half };
+  if (idx === 30) return { x: m.w - half, y: half };
+  const tr = tileEls[idx] ? tileEls[idx].getBoundingClientRect() : null;
+  if (!tr) return { x: half, y: half };
+  const cx = (tr.left + tr.width / 2 - m.left) / m.scale;
+  const cy = (tr.top + tr.height / 2 - m.top) / m.scale;
+  const side = sideClass(idx);
+  if (side === 'bottom') return { x: cx, y: m.h - half };
+  if (side === 'top') return { x: cx, y: half };
+  if (side === 'left') return { x: half, y: cy };
+  if (side === 'right') return { x: m.w - half, y: cy };
+  return { x: cx, y: cy };
+}
+
 function renderTokens(st) {
   if (S.theme === 'classic') { renderTokensClassic(st); return; }
-  const layer = $('tokenLayer');
+  const layer = $('trackLayer');
+  const oldLayer = $('tokenLayer');
+  if (!layer) return;
   const prevPos = S.prevPos || {};
+  if (oldLayer) oldLayer.innerHTML = '';
   layer.innerHTML = '';
+  const m = trackMetrics();
   const byTile = new Map();
   st.players.forEach((p) => {
     if (p.bankrupt) return;
@@ -574,51 +608,73 @@ function renderTokens(st) {
     byTile.get(p.pos).push(p);
   });
   byTile.forEach((list, idx) => {
-    const [row, col] = cellPos(idx);
-    const cell = document.createElement('div');
-    const side = (idx === 0 || idx === 10) ? 'bottom' : (idx === 20 || idx === 30) ? 'top' : sideClass(idx);
-    const corner = idx === 0 ? 'br' : idx === 10 ? 'bl' : idx === 20 ? 'tl' : idx === 30 ? 'tr' : '';
-    cell.className = 'token-cell v84 tok-' + side + (corner ? ' c-' + corner : '');
-    cell.style.gridArea = `${row} / ${col}`;
-    cell.dataset.tile = String(idx);
-    const stack = document.createElement('div');
-    stack.className = 'token-stack tok-v84';
-    stack.dataset.tile = String(idx);
-    stack.dataset.count = String(list.length);
-    const active = list.find((p) => p.id === st.turn) || null;
-    cell.style.setProperty('--vis', active ? active.hex : '#6a4212');
-    const guests = list.length - (active ? 1 : 0);
-    if (active) {
-      const t = document.createElement('div');
-      t.className = 'token v84-token is-turn';
-      t.dataset.pid = active.id;
-      t.innerHTML = v8PieceHTML(active.piece, 'tok-img');
-      t.classList.toggle('has-img', !!pieceSrc(active.piece));
-      t.title = active.name + (active.pieceName ? ' · ' + active.pieceName : '')
-        + (guests ? ` · тут ще ${guests}` : '');
-      stack.appendChild(t);
-    }
-    if (guests > 0) {
+    const side = sideClass(idx);
+    const corner = idx === 0 ? 'c-br' : idx === 10 ? 'c-bl' : idx === 20 ? 'c-tl' : idx === 30 ? 'c-tr' : '';
+    const p = trackPoint(idx, m);
+    const wrap = document.createElement('div');
+    wrap.className = 'track-tok' + (side === 'left' ? ' tok-left' : side === 'right' ? ' tok-right' : '')
+      + (corner ? ' ' + corner : '');
+    wrap.style.left = (p.x / m.w * 100) + '%';
+    wrap.style.top = (p.y / m.h * 100) + '%';
+    wrap.dataset.tile = String(idx);
+    const active = list.find((x) => x.id === st.turn) || null;
+    const lead = active || list[0];
+    const others = list.length - 1;
+    const t = document.createElement('div');
+    t.className = 'track-piece' + (active ? ' is-turn' : '');
+    t.dataset.pid = lead.id;
+    t.innerHTML = v8PieceHTML(lead.piece, '');
+    t.title = lead.name + (lead.pieceName ? ' · ' + lead.pieceName : '')
+      + (others ? ` · тут ще ${others}` : '');
+    wrap.appendChild(t);
+    if (others > 0) {
       const c = document.createElement('button');
       c.type = 'button';
-      c.className = 'v84-count';
-      c.innerHTML = (active ? '<i>+</i>' : '') + `<b>${guests}</b>`;
+      c.className = 'track-count';
+      c.innerHTML = active ? ('<i>+</i>' + others) : String(list.length);
       c.title = `На клітинці: ${list.length}`;
       c.setAttribute('aria-label',
-        `Гравців на клітинці: ${list.length}. ${list.map((p) => p.name).join(', ')}`);
-      stack.appendChild(c);
+        `Гравців на клітинці: ${list.length}. ${list.map((x) => x.name).join(', ')}`);
+      wrap.appendChild(c);
     }
-    stack.addEventListener('click', (ev) => {
+    wrap.addEventListener('click', (ev) => {
       ev.stopPropagation();
       openTilePlayers(idx);
     });
-    cell.appendChild(stack);
-    layer.appendChild(cell);
+    layer.appendChild(wrap);
   });
   const nextPos = {};
   st.players.forEach((p) => { nextPos[p.id] = p.pos; });
   S.prevPos = nextPos;
   animateMoves(st, prevPos);
+  requestAnimationFrame(repositionTrackTokens);
+  scheduleTrackPositions();
+}
+
+let trackRepositionTimer = 0;
+function scheduleTrackPositions() {
+  clearTimeout(trackRepositionTimer);
+  trackRepositionTimer = setTimeout(repositionTrackTokens, 80);
+}
+
+function repositionTrackTokens() {
+  if (S.theme === 'classic') return;
+  const layer = $('trackLayer');
+  if (!layer) return;
+  const m = trackMetrics();
+  layer.querySelectorAll('.track-tok[data-tile]').forEach((wrap) => {
+    const idx = Number(wrap.dataset.tile);
+    const p = trackPoint(idx, m);
+    wrap.style.left = (p.x / m.w * 100) + '%';
+    wrap.style.top = (p.y / m.h * 100) + '%';
+  });
+}
+
+window.addEventListener('resize', () => { if (S.state) scheduleTrackPositions(); });
+if (typeof ResizeObserver !== 'undefined') {
+  const ro = new ResizeObserver(() => { if (S.state) scheduleTrackPositions(); });
+  const boardEl = $('board');
+  if (boardEl) ro.observe(boardEl);
 }
 
 /* classic theme keeps the V7 multi-token stack */
@@ -683,41 +739,37 @@ function renderTokensClassic(st) {
 const MOVE_STEP_MS = 170;
 
 function animateMoves(st, prevPos) {
-  const layer = $('tokenLayer');
+  const layer = $('trackLayer');
   if (!layer || !tileEls.length) return;
-  const lr = layer.getBoundingClientRect();
+  const m = trackMetrics();
   st.players.forEach((p) => {
     if (p.bankrupt) return;
     const old = prevPos[p.id];
     if (old == null || old === p.pos) return;
     const steps = (p.pos - old + 40) % 40;
     if (!steps || steps > 12) return;
-    const real = layer.querySelector(`.token[data-pid="${p.id}"]`);
-    const from = tileEls[old];
-    if (!real || !from) return;
+    const real = layer.querySelector(`.track-piece[data-pid="${p.id}"]`);
+    if (!real) return;
+    const from = trackPoint(old, m);
     const ghost = document.createElement('div');
-    ghost.className = 'token token-ghost';
-    ghost.innerHTML = pieceHTML(p.piece, 'tok-img');
-    ghost.classList.toggle('has-img', !!pieceSrc(p.piece));
-    ghost.style.borderColor = p.hex;
-    const place = (idx) => {
-      const r = tileEls[idx].getBoundingClientRect();
-      ghost.style.left = (r.left - lr.left + r.width / 2) + 'px';
-      ghost.style.top = (r.top - lr.top + r.height / 2) + 'px';
-    };
-    place(old);
+    ghost.className = 'track-ghost';
+    ghost.innerHTML = v8PieceHTML(p.piece, '');
+    ghost.style.left = from.x + 'px';
+    ghost.style.top = from.y + 'px';
     layer.appendChild(ghost);
     real.style.visibility = 'hidden';
     let i = 0;
     const step = () => {
       i += 1;
-      place((old + i) % 40);
+      const q = trackPoint((old + i) % 40, m);
+      ghost.style.left = q.x + 'px';
+      ghost.style.top = q.y + 'px';
       if (i < steps) {
         setTimeout(step, MOVE_STEP_MS);
       } else {
         setTimeout(() => {
           ghost.remove();
-          const cur = layer.querySelector(`.token[data-pid="${p.id}"]`);
+          const cur = layer.querySelector(`.track-piece[data-pid="${p.id}"]`);
           if (cur) cur.style.visibility = '';
         }, MOVE_STEP_MS);
       }
@@ -2174,6 +2226,7 @@ function applyZoom() {
   const el = $('boardZoom');
   if (!el) return;
   el.style.transform = `translate(${MZ.x}px, ${MZ.y}px) scale(${MZ.s})`;
+  if (typeof scheduleTrackPositions === 'function') scheduleTrackPositions();
 }
 
 function resetZoom() {
