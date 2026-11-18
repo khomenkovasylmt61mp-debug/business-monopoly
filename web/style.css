@@ -1839,7 +1839,7 @@ input.code {
   /* на мобільному головна дія — тільки в нижній панелі */
   #actions > .btn.primary.big { display: none; }
   .board-wrap { position: relative; padding: 6px; touch-action: none; overscroll-behavior: contain; }
-  .board-zoom { display: block; width: 100%; transform-origin: 0 0; will-change: transform; }
+  .board-zoom { display: block; width: 100%; transform-origin: 0 0; will-change: auto; }
   .board { width: 100%; max-width: none; min-width: 0; }
   .m-icon {
     display: flex; flex: none;
